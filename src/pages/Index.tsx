@@ -434,7 +434,7 @@ const Index = () => {
             <span className="text-sm font-semibold">BrowseAI.dev</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Crafted with <span className="text-red-400">&#9829;</span> and a lot of <span className="text-amber-400">&#9889;</span> by <span className="text-foreground font-medium">Shreyas</span>
+            Crafted with <span className="text-red-400">&#9829;</span> and a lot of <span className="text-amber-400">&#9889;</span> by <a href="https://www.instagram.com/shreyassaw/?hl=en" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">Shreyas</a>
           </p>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <a href="mailto:shreyassaw@gmail.com" className="hover:text-foreground transition-colors">shreyassaw@gmail.com</a>
