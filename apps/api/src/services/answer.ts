@@ -50,7 +50,7 @@ export async function answerQuery(
     detail: `${successfulPages.length} pages (Readability)`,
   });
 
-  // Step 3: Build content for Gemini
+  // Step 3: Build content for LLM
   const pageContents = successfulPages
     .map((p, i) => {
       const url = searchResults[i]?.url || "";
@@ -58,29 +58,29 @@ export async function answerQuery(
     })
     .join("\n\n---\n\n");
 
-  // Step 4: Extract knowledge via Gemini
-  const geminiStart = Date.now();
+  // Step 4: Extract knowledge via LLM (OpenRouter)
+  const llmStart = Date.now();
   const knowledge = await extractKnowledge(
     query,
     pageContents,
-    env.GEMINI_API_KEY
+    env.OPENROUTER_API_KEY
   );
-  const geminiDuration = Date.now() - geminiStart;
+  const llmDuration = Date.now() - llmStart;
 
   trace.push({
     step: "Extract Claims",
-    duration_ms: Math.round(geminiDuration * 0.4),
+    duration_ms: Math.round(llmDuration * 0.4),
     detail: `${knowledge.claims.length} claims`,
   });
   trace.push({
     step: "Build Evidence Graph",
-    duration_ms: Math.round(geminiDuration * 0.1),
+    duration_ms: Math.round(llmDuration * 0.1),
     detail: `${knowledge.sources.length} sources`,
   });
   trace.push({
     step: "Generate Answer",
-    duration_ms: Math.round(geminiDuration * 0.5),
-    detail: "Gemini Flash",
+    duration_ms: Math.round(llmDuration * 0.5),
+    detail: "OpenRouter",
   });
 
   return { ...knowledge, trace };

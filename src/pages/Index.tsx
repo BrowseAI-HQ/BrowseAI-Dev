@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ApiKeySettings } from "@/components/ApiKeySettings";
 
 const EXAMPLE_PROMPTS = [
   "What is a wormhole?",
@@ -71,6 +72,7 @@ const Index = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
             <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">GitHub</a>
           </Button>
+          <ApiKeySettings />
         </div>
       </motion.nav>
 
@@ -299,7 +301,7 @@ const Index = () => {
       "args": ["-y", "browse-ai"],
       "env": {
         "SERP_API_KEY": "your-tavily-key",
-        "GEMINI_API_KEY": "your-gemini-key"
+        "OPENROUTER_API_KEY": "your-openrouter-key"
       }
     }
   }
@@ -318,7 +320,7 @@ const Index = () => {
       "args": ["-y", "browse-ai"],
       "env": {
         "SERP_API_KEY": "your-tavily-key",
-        "GEMINI_API_KEY": "your-gemini-key"
+        "OPENROUTER_API_KEY": "your-openrouter-key"
       }
     }
   }
@@ -412,7 +414,7 @@ const Index = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-12">Tech Stack</h2>
             <div className="flex flex-wrap justify-center gap-4">
               {[
-                "Tavily Search", "Readability", "Gemini 2.5 Flash", "MCP Protocol",
+                "Tavily Search", "Readability", "OpenRouter", "MCP Protocol",
                 "Fastify", "React", "Supabase", "TypeScript",
               ].map((tech) => (
                 <span key={tech} className="px-4 py-2 rounded-full bg-secondary border border-border text-sm text-muted-foreground">

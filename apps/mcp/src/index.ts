@@ -8,9 +8,8 @@ import { parseHTML } from "linkedom";
 
 // --- Constants (inlined for standalone npm package) ---
 const VERSION = "0.1.0";
-const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const LLM_MODEL = "google/gemini-2.5-flash-preview-05-20";
+const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
 const MAX_PAGE_CONTENT_LENGTH = 3000;
 
@@ -30,7 +29,7 @@ if (args.includes("--help") || args.includes("-h")) {
 
   Environment Variables:
     SERP_API_KEY           Tavily API key (get one at https://tavily.com)
-    GEMINI_API_KEY         Google Gemini API key
+    OPENROUTER_API_KEY     OpenRouter API key (get one at https://openrouter.ai)
 
   MCP Tools:
     browse.search          Search the web for information
@@ -40,7 +39,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browse.compare         Compare raw LLM vs evidence-backed answer
 
   Quick Setup:
-    1. Get API keys: https://tavily.com + https://aistudio.google.com
+    1. Get API keys: https://tavily.com + https://openrouter.ai
     2. Run: npx browse-ai setup
     3. Restart Claude Desktop
 `);
@@ -62,21 +61,21 @@ if (args[0] === "setup") {
 // --- Env validation ---
 function getEnvKeys() {
   const SERP_API_KEY = process.env.SERP_API_KEY;
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-  if (!SERP_API_KEY || !GEMINI_API_KEY) {
+  if (!SERP_API_KEY || !OPENROUTER_API_KEY) {
     console.error(`
   browse-ai: Missing required environment variables
 
-  ${!SERP_API_KEY ? "  SERP_API_KEY    - Get one at https://tavily.com" : "  SERP_API_KEY    - Set"}
-  ${!GEMINI_API_KEY ? "  GEMINI_API_KEY  - Get one at https://aistudio.google.com" : "  GEMINI_API_KEY  - Set"}
+  ${!SERP_API_KEY ? "  SERP_API_KEY       - Get one at https://tavily.com" : "  SERP_API_KEY       - Set"}
+  ${!OPENROUTER_API_KEY ? "  OPENROUTER_API_KEY - Get one at https://openrouter.ai" : "  OPENROUTER_API_KEY - Set"}
 
   Quick fix: run 'npx browse-ai setup' to configure automatically.
 `);
     process.exit(1);
   }
 
-  return { SERP_API_KEY, GEMINI_API_KEY };
+  return { SERP_API_KEY, OPENROUTER_API_KEY };
 }
 
 // --- In-memory cache ---
@@ -152,17 +151,17 @@ async function fetchPage(url: string) {
   return page;
 }
 
-// --- Gemini knowledge extraction ---
+// --- LLM knowledge extraction (via OpenRouter) ---
 async function extractKnowledge(query: string, pageContents: string) {
-  const { GEMINI_API_KEY } = getEnvKeys();
-  const res = await fetch(GEMINI_ENDPOINT, {
+  const { OPENROUTER_API_KEY } = getEnvKeys();
+  const res = await fetch(LLM_ENDPOINT, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${GEMINI_API_KEY}`,
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: GEMINI_MODEL,
+      model: LLM_MODEL,
       messages: [
         {
           role: "system",
@@ -227,24 +226,24 @@ async function extractKnowledge(query: string, pageContents: string) {
     }),
   });
 
-  if (!res.ok) throw new Error(`Gemini failed: ${res.status}`);
+  if (!res.ok) throw new Error(`LLM failed: ${res.status}`);
   const data = await res.json();
   const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-  if (!toolCall) throw new Error("Gemini did not return structured output");
+  if (!toolCall) throw new Error("LLM did not return structured output");
   return JSON.parse(toolCall.function.arguments);
 }
 
-// --- Raw Gemini call (no sources, for compare) ---
-async function rawGeminiAnswer(query: string): Promise<string> {
-  const { GEMINI_API_KEY } = getEnvKeys();
-  const res = await fetch(GEMINI_ENDPOINT, {
+// --- Raw LLM call (no sources, for compare) ---
+async function rawLLMAnswer(query: string): Promise<string> {
+  const { OPENROUTER_API_KEY } = getEnvKeys();
+  const res = await fetch(LLM_ENDPOINT, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${GEMINI_API_KEY}`,
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: GEMINI_MODEL,
+      model: LLM_MODEL,
       messages: [
         {
           role: "system",
@@ -255,7 +254,7 @@ async function rawGeminiAnswer(query: string): Promise<string> {
     }),
   });
 
-  if (!res.ok) throw new Error(`Gemini failed: ${res.status}`);
+  if (!res.ok) throw new Error(`LLM failed: ${res.status}`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content || "No response";
 }
@@ -303,24 +302,24 @@ async function answerPipeline(query: string): Promise<BrowseResult> {
     )
     .join("\n\n---\n\n");
 
-  const geminiStart = Date.now();
+  const llmStart = Date.now();
   const knowledge = await extractKnowledge(query, pageContents);
-  const geminiDuration = Date.now() - geminiStart;
+  const llmDuration = Date.now() - llmStart;
 
   trace.push({
     step: "Extract Claims",
-    duration_ms: Math.round(geminiDuration * 0.4),
+    duration_ms: Math.round(llmDuration * 0.4),
     detail: `${knowledge.claims?.length || 0} claims`,
   });
   trace.push({
     step: "Build Evidence Graph",
-    duration_ms: Math.round(geminiDuration * 0.1),
+    duration_ms: Math.round(llmDuration * 0.1),
     detail: `${knowledge.sources?.length || 0} sources`,
   });
   trace.push({
     step: "Generate Answer",
-    duration_ms: Math.round(geminiDuration * 0.5),
-    detail: "Gemini Flash",
+    duration_ms: Math.round(llmDuration * 0.5),
+    detail: "OpenRouter",
   });
 
   return {
@@ -400,7 +399,7 @@ function startServer() {
     { query: z.string() },
     async ({ query }) => {
       const [rawAnswer, evidenceResult] = await Promise.all([
-        rawGeminiAnswer(query),
+        rawLLMAnswer(query),
         answerPipeline(query),
       ]);
       const comparison = {

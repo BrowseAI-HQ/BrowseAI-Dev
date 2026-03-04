@@ -26,7 +26,7 @@ npx browse-ai setup
 
 This auto-configures Claude Desktop. You'll need:
 - [Tavily API key](https://tavily.com) (free tier available)
-- [Gemini API key](https://aistudio.google.com)
+- [OpenRouter API key](https://openrouter.ai)
 
 ## Manual Setup
 
@@ -42,7 +42,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "args": ["-y", "browse-ai"],
       "env": {
         "SERP_API_KEY": "tvly-your-key",
-        "GEMINI_API_KEY": "your-gemini-key"
+        "OPENROUTER_API_KEY": "your-openrouter-key"
       }
     }
   }
@@ -60,7 +60,7 @@ Add to your MCP settings:
     "args": ["-y", "browse-ai"],
     "env": {
       "SERP_API_KEY": "tvly-your-key",
-      "GEMINI_API_KEY": "your-gemini-key"
+      "OPENROUTER_API_KEY": "your-openrouter-key"
     }
   }
 }
@@ -116,7 +116,7 @@ Response:
 
 - **Search**: Tavily API
 - **Parsing**: @mozilla/readability + linkedom
-- **AI**: Google Gemini 2.5 Flash
+- **AI**: OpenRouter (100+ models)
 - **Protocol**: Model Context Protocol (MCP)
 
 ## License

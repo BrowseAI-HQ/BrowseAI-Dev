@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const allowedKeys = ["SERP_API_KEY", "GEMINI_API_KEY"];
+    const allowedKeys = ["SERP_API_KEY", "OPENROUTER_API_KEY"];
     const secrets: Record<string, string> = {};
 
     for (const key of keys) {

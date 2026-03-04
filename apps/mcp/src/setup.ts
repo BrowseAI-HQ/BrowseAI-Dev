@@ -43,12 +43,12 @@ export async function runSetup() {
     process.exit(1);
   }
 
-  const geminiKey = await ask(
-    "  Gemini API key (get one at https://aistudio.google.com): "
+  const openrouterKey = await ask(
+    "  OpenRouter API key (get one at https://openrouter.ai): "
   );
-  if (!geminiKey.trim()) {
+  if (!openrouterKey.trim()) {
     console.log(
-      "\n  Gemini API key is required. Get one at https://aistudio.google.com\n"
+      "\n  OpenRouter API key is required. Get one at https://openrouter.ai\n"
     );
     process.exit(1);
   }
@@ -60,7 +60,7 @@ export async function runSetup() {
     args: ["-y", "browse-ai"],
     env: {
       SERP_API_KEY: serpKey.trim(),
-      GEMINI_API_KEY: geminiKey.trim(),
+      OPENROUTER_API_KEY: openrouterKey.trim(),
     },
   };
 

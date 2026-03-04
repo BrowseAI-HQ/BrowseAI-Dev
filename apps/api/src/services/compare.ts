@@ -1,4 +1,4 @@
-import { GEMINI_ENDPOINT, GEMINI_MODEL } from "@browse/shared";
+import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
 import type { BrowseResult } from "@browse/shared";
 import { answerQuery } from "./answer.js";
 import type { CacheService } from "./cache.js";
@@ -21,15 +21,15 @@ export interface CompareResult {
   };
 }
 
-async function rawGeminiAnswer(query: string, apiKey: string): Promise<string> {
-  const res = await fetch(GEMINI_ENDPOINT, {
+async function rawLLMAnswer(query: string, apiKey: string): Promise<string> {
+  const res = await fetch(LLM_ENDPOINT, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: GEMINI_MODEL,
+      model: LLM_MODEL,
       messages: [
         { role: "system", content: "Answer the question clearly and concisely." },
         { role: "user", content: query },
@@ -37,7 +37,7 @@ async function rawGeminiAnswer(query: string, apiKey: string): Promise<string> {
     }),
   });
 
-  if (!res.ok) throw new Error(`Gemini failed: ${res.status}`);
+  if (!res.ok) throw new Error(`LLM failed: ${res.status}`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content || "No response";
 }
@@ -48,7 +48,7 @@ export async function compareAnswers(
   cache: CacheService
 ): Promise<CompareResult> {
   const [rawAnswer, evidenceResult] = await Promise.all([
-    rawGeminiAnswer(query, env.GEMINI_API_KEY),
+    rawLLMAnswer(query, env.OPENROUTER_API_KEY),
     answerQuery(query, env, cache),
   ]);
 

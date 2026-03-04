@@ -1,4 +1,4 @@
-import { GEMINI_ENDPOINT, GEMINI_MODEL } from "@browse/shared";
+import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
 import type { BrowseResult } from "@browse/shared";
 
 const SYSTEM_PROMPT = `You are a knowledge extraction engine. Given web page content, extract structured claims with source attribution and write a clear answer.
@@ -76,14 +76,14 @@ export async function extractKnowledge(
   pageContents: string,
   apiKey: string
 ): Promise<Omit<BrowseResult, "trace">> {
-  const res = await fetch(GEMINI_ENDPOINT, {
+  const res = await fetch(LLM_ENDPOINT, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: GEMINI_MODEL,
+      model: LLM_MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {
@@ -104,18 +104,18 @@ export async function extractKnowledge(
     if (res.status === 429)
       throw new Error("Rate limit exceeded. Please try again later.");
     if (res.status === 402) throw new Error("AI credits exhausted.");
-    throw new Error(`Gemini API failed (${res.status}): ${text}`);
+    throw new Error(`LLM API failed (${res.status}): ${text}`);
   }
 
   const data = await res.json();
   const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-  if (!toolCall) throw new Error("Gemini did not return structured output");
+  if (!toolCall) throw new Error("LLM did not return structured output");
 
   let knowledge;
   try {
     knowledge = JSON.parse(toolCall.function.arguments);
   } catch {
-    throw new Error("Failed to parse Gemini output");
+    throw new Error("Failed to parse LLM output");
   }
 
   return {

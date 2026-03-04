@@ -13,6 +13,7 @@ async function main() {
   await app.register(cors, {
     origin: env.CORS_ORIGIN,
     methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "X-Tavily-Key", "X-OpenRouter-Key"],
   });
 
   const cache = env.REDIS_URL

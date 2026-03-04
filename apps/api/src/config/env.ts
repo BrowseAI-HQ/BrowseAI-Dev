@@ -10,7 +10,7 @@ config();
 const EnvSchema = z.object({
   PORT: z.coerce.number().default(3001),
   SERP_API_KEY: z.string().min(1, "SERP_API_KEY (Tavily) is required"),
-  GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
+  OPENROUTER_API_KEY: z.string().min(1, "OPENROUTER_API_KEY is required"),
   REDIS_URL: z.string().optional(),
   CORS_ORIGIN: z.string().default("http://localhost:8080"),
   SUPABASE_URL: z.string().optional(),
@@ -32,7 +32,7 @@ async function fetchSupabaseSecrets(
           Authorization: `Bearer ${serviceRoleKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ keys: ["SERP_API_KEY", "GEMINI_API_KEY"] }),
+        body: JSON.stringify({ keys: ["SERP_API_KEY", "OPENROUTER_API_KEY"] }),
       }
     );
     if (!res.ok) {
@@ -54,13 +54,13 @@ export async function loadEnv(): Promise<Env> {
   if (
     supabaseUrl &&
     serviceRoleKey &&
-    (!process.env.SERP_API_KEY || !process.env.GEMINI_API_KEY)
+    (!process.env.SERP_API_KEY || !process.env.OPENROUTER_API_KEY)
   ) {
     console.log("Fetching API keys from Supabase secrets...");
     const secrets = await fetchSupabaseSecrets(supabaseUrl, serviceRoleKey);
     if (secrets.SERP_API_KEY) process.env.SERP_API_KEY = secrets.SERP_API_KEY;
-    if (secrets.GEMINI_API_KEY)
-      process.env.GEMINI_API_KEY = secrets.GEMINI_API_KEY;
+    if (secrets.OPENROUTER_API_KEY)
+      process.env.OPENROUTER_API_KEY = secrets.OPENROUTER_API_KEY;
   }
 
   const result = EnvSchema.safeParse(process.env);

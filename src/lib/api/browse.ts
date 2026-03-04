@@ -42,13 +42,22 @@ export type CompareResult = {
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
+function getUserKeyHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const tavily = localStorage.getItem("browse_tavily_key");
+  const openrouter = localStorage.getItem("browse_openrouter_key");
+  if (tavily) headers["X-Tavily-Key"] = tavily;
+  if (openrouter) headers["X-OpenRouter-Key"] = openrouter;
+  return headers;
+}
+
 async function apiCall<T>(
   path: string,
   body: Record<string, unknown>
 ): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getUserKeyHeaders() },
     body: JSON.stringify(body),
   });
 
@@ -56,6 +65,10 @@ async function apiCall<T>(
   if (!res.ok || !data.success) {
     throw new Error(data.error || `API call failed: ${res.status}`);
   }
+  (window as any).posthog?.capture("browse_query", {
+    tool: path,
+    byok: !!localStorage.getItem("browse_tavily_key"),
+  });
   return data.result;
 }
 
@@ -83,7 +96,9 @@ export async function browseCompare(query: string): Promise<CompareResult> {
 }
 
 export async function browseStats(): Promise<{ totalQueries: number }> {
-  const res = await fetch(`${API_BASE}/browse/stats`);
+  const res = await fetch(`${API_BASE}/browse/stats`, {
+    headers: getUserKeyHeaders(),
+  });
   const data = await res.json();
   if (!data.success) throw new Error(data.error);
   return data.result;

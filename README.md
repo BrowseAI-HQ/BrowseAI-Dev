@@ -5,7 +5,7 @@ Perfect Browsing Infrastructure for AI Agents — convert web pages into structu
 ## Architecture
 
 ```
-search (Tavily) → fetch pages (Readability) → extract claims (Gemini Flash) → build evidence graph → structured answer
+search (Tavily) → fetch pages (Readability) → extract claims (OpenRouter LLM) → build evidence graph → structured answer
 ```
 
 ## Project Structure
@@ -26,7 +26,7 @@ pnpm install
 
 # Set up environment variables
 cp .env.example .env
-# Fill in: SERP_API_KEY, GEMINI_API_KEY, REDIS_URL (optional)
+# Fill in: SERP_API_KEY, OPENROUTER_API_KEY, REDIS_URL (optional)
 
 # Start API + frontend together
 pnpm dev
@@ -64,7 +64,7 @@ pnpm demo "Explain wormholes with evidence"
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `SERP_API_KEY` | Yes | Tavily API key |
-| `GEMINI_API_KEY` | Yes | Google Gemini API key |
+| `OPENROUTER_API_KEY` | Yes | OpenRouter API key |
 | `REDIS_URL` | No | Redis connection URL (falls back to in-memory cache) |
 | `PORT` | No | API server port (default: 3001) |
 
@@ -73,7 +73,7 @@ pnpm demo "Explain wormholes with evidence"
 - **API**: Node.js, TypeScript, Fastify, Zod
 - **Search**: Tavily API
 - **Parsing**: @mozilla/readability + linkedom
-- **AI**: Google Gemini 2.5 Flash
+- **AI**: OpenRouter (100+ models)
 - **Caching**: Redis (optional) / in-memory
 - **Frontend**: React, Tailwind CSS, shadcn/ui
 - **MCP**: @modelcontextprotocol/sdk
