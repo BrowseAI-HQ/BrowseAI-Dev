@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "buildCommand": "pnpm -w run build:vercel",
+  "buildCommand": "cd packages/shared && pnpm build && cd ../.. && npx vite build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "rewrites": [
