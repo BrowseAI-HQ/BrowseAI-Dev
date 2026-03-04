@@ -67,7 +67,7 @@ export async function loadEnv(): Promise<Env> {
   if (!result.success) {
     console.error("Environment validation failed:");
     console.error(result.error.format());
-    process.exit(1);
+    throw new Error("Environment validation failed: " + JSON.stringify(result.error.format()));
   }
   return result.data;
 }
