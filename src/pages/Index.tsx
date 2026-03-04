@@ -1,18 +1,27 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, Zap, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
+import { useTypewriter } from "@/hooks/useTypewriter";
 
 const EXAMPLE_PROMPTS = [
   "What is a wormhole?",
   "Why is the sky blue?",
   "What causes inflation?",
+];
+
+const TYPEWRITER_QUERIES = [
+  "What is quantum computing?",
+  "How do black holes form?",
+  "Why is the ocean salty?",
+  "What causes northern lights?",
+  "How does mRNA vaccine work?",
 ];
 
 const TOOLS = [
@@ -24,9 +33,9 @@ const TOOLS = [
 ];
 
 const PIPELINE_STEPS = [
-  { label: "Search", detail: "Tavily API" },
-  { label: "Fetch", detail: "Readability" },
-  { label: "Extract", detail: "Gemini Flash" },
+  { label: "Search", detail: "Web search" },
+  { label: "Fetch", detail: "Page parsing" },
+  { label: "Extract", detail: "Claim extraction" },
   { label: "Graph", detail: "Evidence map" },
   { label: "Answer", detail: "Cited result" },
 ];
@@ -35,6 +44,7 @@ const Index = () => {
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
   const navigate = useNavigate();
+  const typedText = useTypewriter(TYPEWRITER_QUERIES);
 
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
@@ -102,14 +112,18 @@ const Index = () => {
           {/* Search */}
           <div className="relative max-w-2xl mx-auto">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors z-10" />
+              {!query && (
+                <div className="absolute left-12 top-1/2 -translate-y-1/2 text-muted-foreground text-base pointer-events-none select-none">
+                  {typedText}<span className="animate-pulse">|</span>
+                </div>
+              )}
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Try it: ask anything..."
-                className="w-full h-14 pl-12 pr-36 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base"
+                className="w-full h-14 pl-12 pr-36 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base"
               />
               <Button
                 onClick={() => handleSearch()}
@@ -147,6 +161,55 @@ const Index = () => {
         >
           <ArrowDown className="w-5 h-5 text-muted-foreground/40 animate-bounce" />
         </motion.div>
+      </section>
+
+      {/* ===== THE ANTI-HALLUCINATION STACK ===== */}
+      <section className="py-24 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <Badge variant="outline" className="text-xs font-normal mb-6">
+              The Problem
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">The Anti-Hallucination Stack</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              <span className="text-foreground font-semibold">$67.4 billion</span> — that's what AI hallucinations cost businesses in 2024.
+              Every developer using AI agents has felt it: research that sounds right but isn't, citations that don't exist, decisions built on fiction.
+            </p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-center mb-12">
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Browse AI was born from this problem. Every answer goes through a verification pipeline — real web search,
+              real source extraction, real citations. No hallucinations. Just evidence.
+            </p>
+            <p className="text-sm text-muted-foreground/60 mt-4 italic">
+              Built by a developer who got tired of AI making things up.
+            </p>
+          </motion.div>
+
+          {/* Direction */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <Rocket className="w-4 h-4 text-accent" />
+              <h3 className="text-sm font-semibold uppercase tracking-wider">Where we're going</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+              {[
+                { phase: "Today", text: "Evidence-backed research with real-time web search and structured citations" },
+                { phase: "Next", text: "Multi-source verification — cross-reference claims, consensus scoring, contradiction detection" },
+                { phase: "Then", text: "Broader knowledge — academic papers, code search, real-time data feeds" },
+                { phase: "Vision", text: "The trust layer for every AI agent — open source, community-driven" },
+              ].map((item, i) => (
+                <div key={item.phase} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
+                  <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
+                    {item.phase}
+                  </Badge>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
@@ -300,8 +363,8 @@ const Index = () => {
       "command": "npx",
       "args": ["-y", "browse-ai"],
       "env": {
-        "SERP_API_KEY": "your-tavily-key",
-        "OPENROUTER_API_KEY": "your-openrouter-key"
+        "SERP_API_KEY": "your-search-key",
+        "OPENROUTER_API_KEY": "your-llm-key"
       }
     }
   }
@@ -319,8 +382,8 @@ const Index = () => {
       "command": "npx",
       "args": ["-y", "browse-ai"],
       "env": {
-        "SERP_API_KEY": "your-tavily-key",
-        "OPENROUTER_API_KEY": "your-openrouter-key"
+        "SERP_API_KEY": "your-search-key",
+        "OPENROUTER_API_KEY": "your-llm-key"
       }
     }
   }
@@ -414,7 +477,7 @@ const Index = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-12">Tech Stack</h2>
             <div className="flex flex-wrap justify-center gap-4">
               {[
-                "Tavily Search", "Readability", "OpenRouter", "MCP Protocol",
+                "Web Search", "Readability", "LLM", "MCP Protocol",
                 "Fastify", "React", "Supabase", "TypeScript",
               ].map((tech) => (
                 <span key={tech} className="px-4 py-2 rounded-full bg-secondary border border-border text-sm text-muted-foreground">

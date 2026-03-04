@@ -1,22 +1,24 @@
-# AI Agent Browser
+# Browse AI
 
-Perfect Browsing Infrastructure for AI Agents — convert web pages into structured knowledge with claims, evidence, sources, and confidence scores.
+**The Anti-Hallucination Stack** — open-source deep research infrastructure for AI agents.
 
-## Architecture
+Turn any AI assistant into a research engine with real-time web search, evidence extraction, and structured citations.
+
+## Why Browse AI?
+
+AI agents hallucinate. They cite papers that don't exist, quote statistics they made up, and present fiction as fact. This costs businesses **$67.4B annually**.
+
+Browse AI is the anti-hallucination stack — an open-source research engine that gives AI agents the ability to search the real web, extract evidence from real sources, and cite their work. Every claim is backed by a URL. Every answer has a confidence score.
+
+Built by developers, for developers. Because better research means better products.
+
+## How It Works
 
 ```
-search (Tavily) → fetch pages (Readability) → extract claims (OpenRouter LLM) → build evidence graph → structured answer
+search → fetch pages → extract claims → build evidence graph → cited answer
 ```
 
-## Project Structure
-
-```
-/apps/api          Fastify API server (port 3001)
-/apps/mcp          MCP server (stdio transport)
-/packages/shared   Shared types, Zod schemas, constants
-/src               React frontend (Vite, port 8080)
-/scripts           Demo scripts
-```
+Every answer goes through a 5-step verification pipeline. No hallucination. Every claim is backed by a real source.
 
 ## Quick Start
 
@@ -26,54 +28,93 @@ pnpm install
 
 # Set up environment variables
 cp .env.example .env
-# Fill in: SERP_API_KEY, OPENROUTER_API_KEY, REDIS_URL (optional)
+# Fill in: SERP_API_KEY, OPENROUTER_API_KEY
 
 # Start API + frontend together
 pnpm dev
+```
 
-# Or start individually
-pnpm dev:api   # Fastify on :3001
-pnpm dev:web   # Vite on :8080
-pnpm dev:mcp   # MCP server (stdio)
+### MCP Server (for Claude Desktop, Cursor, Windsurf)
+
+```sh
+npx browse-ai setup
+```
+
+Or manually add to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "browse-ai": {
+      "command": "npx",
+      "args": ["-y", "browse-ai"],
+      "env": {
+        "SERP_API_KEY": "your-search-key",
+        "OPENROUTER_API_KEY": "your-llm-key"
+      }
+    }
+  }
+}
+```
+
+## Project Structure
+
+```
+/apps/api          Fastify API server (port 3001)
+/apps/mcp          MCP server (stdio transport, npm: browse-ai)
+/packages/shared   Shared types, Zod schemas, constants
+/src               React frontend (Vite, port 8080)
+/scripts           Build & demo scripts
 ```
 
 ## API Endpoints
 
 | Endpoint | Description |
 |----------|-------------|
-| `POST /browse/search` | Search the web via Tavily |
-| `POST /browse/open` | Fetch and parse a page via Readability |
-| `POST /browse/extract` | Extract structured knowledge from a page |
-| `POST /browse/answer` | Full pipeline: search → fetch → extract → answer |
+| `POST /browse/search` | Search the web |
+| `POST /browse/open` | Fetch and parse a page |
+| `POST /browse/extract` | Extract structured claims from a page |
+| `POST /browse/answer` | Full pipeline: search + extract + cite |
+| `POST /browse/compare` | Compare raw LLM vs evidence-backed answer |
+| `GET /browse/share/:id` | Get a shared result |
+| `GET /browse/stats` | Total queries answered |
 
 ## MCP Tools
 
-- `browse.search` — Search the web
-- `browse.open` — Fetch and parse a page
-- `browse.extract` — Extract knowledge from a page
-- `browse.answer` — Full pipeline with structured answer
-
-## Demo
-
-```sh
-pnpm demo "Explain wormholes with evidence"
-```
+| Tool | Description |
+|------|-------------|
+| `browse_search` | Search the web for information on any topic |
+| `browse_open` | Fetch and parse a web page into clean text |
+| `browse_extract` | Extract structured claims from a page |
+| `browse_answer` | Full pipeline: search + extract + cite |
+| `browse_compare` | Compare raw LLM vs evidence-backed answer |
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SERP_API_KEY` | Yes | Tavily API key |
-| `OPENROUTER_API_KEY` | Yes | OpenRouter API key |
+| `SERP_API_KEY` | Yes | Web search API key |
+| `OPENROUTER_API_KEY` | Yes | LLM API key |
 | `REDIS_URL` | No | Redis connection URL (falls back to in-memory cache) |
 | `PORT` | No | API server port (default: 3001) |
+
+## Where We're Going
+
+- **Today**: Evidence-backed research with real-time web search and structured citations
+- **Next**: Multi-source verification — cross-reference claims, consensus scoring
+- **Then**: Broader knowledge — academic papers, code search, real-time data
+- **Vision**: The trust layer for every AI agent — open source, community-driven
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding conventions, and PR process.
 
 ## Tech Stack
 
 - **API**: Node.js, TypeScript, Fastify, Zod
-- **Search**: Tavily API
+- **Search**: Web search API
 - **Parsing**: @mozilla/readability + linkedom
-- **AI**: OpenRouter (100+ models)
+- **AI**: LLM via API
 - **Caching**: Redis (optional) / in-memory
 - **Frontend**: React, Tailwind CSS, shadcn/ui
 - **MCP**: @modelcontextprotocol/sdk
