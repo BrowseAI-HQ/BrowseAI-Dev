@@ -1,5 +1,3 @@
 {
-  "buildCommand": "pnpm -w run build:vercel && mkdir -p .vercel/output/static && cp -r out/* .vercel/output/static/ && echo '{\"version\":3,\"routes\":[{\"handle\":\"filesystem\"},{\"src\":\"/(.*)\",\"dest\":\"/index.html\"}]}' > .vercel/output/config.json",
-  "installCommand": "pnpm install",
-  "framework": null
+  "framework": "vite"
 }
