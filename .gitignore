@@ -32,3 +32,4 @@ packages/*/dist
 *.njsproj
 *.sln
 *.sw?
+.vercel
