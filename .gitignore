@@ -12,6 +12,7 @@ dist-ssr
 *.local
 
 # Build output
+dist
 apps/*/dist
 packages/*/dist
 
