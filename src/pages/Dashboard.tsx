@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserMenu } from "@/components/UserMenu";
+import { ApiKeyManager } from "@/components/ApiKeyManager";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -93,6 +94,8 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          <ApiKeyManager />
 
           <Card className="border-amber-400/20">
             <CardHeader>

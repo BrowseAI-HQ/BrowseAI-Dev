@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Settings, ExternalLink, Key, Trash2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +28,8 @@ export function getUserKeys(): { tavily?: string; openrouter?: string } {
 }
 
 export function ApiKeySettings() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [tavily, setTavily] = useState("");
   const [openrouter, setOpenrouter] = useState("");
@@ -135,6 +139,21 @@ export function ApiKeySettings() {
           <p className="text-xs text-muted-foreground">
             Without your own keys, you get 5 demo queries per hour. With your own keys, usage is unlimited.
           </p>
+
+          {user && (
+            <div className="border-t pt-3">
+              <p className="text-xs text-muted-foreground">
+                Want to use your keys across devices, CLI, and MCP?{" "}
+                <button
+                  onClick={() => { setOpen(false); navigate("/dashboard"); }}
+                  className="text-accent underline hover:no-underline"
+                >
+                  Save to your account
+                </button>{" "}
+                and get a single BrowseAI API key.
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -37,20 +37,35 @@ export async function runSetup() {
   Configure browse-ai for Claude Desktop / Cursor / Windsurf
 `);
 
-  const serpKey = await ask("  Tavily API key (get one at https://tavily.com): ");
-  if (!serpKey.trim()) {
-    console.log("\n  Tavily API key is required. Get one at https://tavily.com\n");
-    process.exit(1);
-  }
-
-  const openrouterKey = await ask(
-    "  OpenRouter API key (get one at https://openrouter.ai): "
+  const browseKey = await ask(
+    "  BrowseAI API key (leave blank to use your own Tavily + OpenRouter keys): "
   );
-  if (!openrouterKey.trim()) {
-    console.log(
-      "\n  OpenRouter API key is required. Get one at https://openrouter.ai\n"
+
+  let mcpEnv: Record<string, string>;
+
+  if (browseKey.trim()) {
+    mcpEnv = { BROWSE_API_KEY: browseKey.trim() };
+  } else {
+    const serpKey = await ask("  Tavily API key (get one at https://tavily.com): ");
+    if (!serpKey.trim()) {
+      console.log("\n  Tavily API key is required. Get one at https://tavily.com\n");
+      process.exit(1);
+    }
+
+    const openrouterKey = await ask(
+      "  OpenRouter API key (get one at https://openrouter.ai): "
     );
-    process.exit(1);
+    if (!openrouterKey.trim()) {
+      console.log(
+        "\n  OpenRouter API key is required. Get one at https://openrouter.ai\n"
+      );
+      process.exit(1);
+    }
+
+    mcpEnv = {
+      SERP_API_KEY: serpKey.trim(),
+      OPENROUTER_API_KEY: openrouterKey.trim(),
+    };
   }
 
   rl.close();
@@ -58,10 +73,7 @@ export async function runSetup() {
   const mcpEntry = {
     command: "npx",
     args: ["-y", "browse-ai"],
-    env: {
-      SERP_API_KEY: serpKey.trim(),
-      OPENROUTER_API_KEY: openrouterKey.trim(),
-    },
+    env: mcpEnv,
   };
 
   const configPath = getConfigPath();

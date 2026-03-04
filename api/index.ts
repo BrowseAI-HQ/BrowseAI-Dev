@@ -44,8 +44,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
     // Set CORS headers
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Tavily-Key, X-OpenRouter-Key");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Tavily-Key, X-OpenRouter-Key, X-API-Key, Authorization");
 
     if (req.method === "OPTIONS") {
       res.statusCode = 200;

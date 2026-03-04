@@ -12,30 +12,91 @@ import { answerQuery } from "../services/answer.js";
 import { compareAnswers } from "../services/compare.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
+import type { ApiKeyService } from "../services/apiKeys.js";
 import type { Env } from "../config/env.js";
 
 const DEMO_LIMIT = 5;
 const DEMO_WINDOW_SECONDS = 3600;
 
-function getRequestEnv(request: FastifyRequest, env: Env): Env {
-  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
-  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
-  return {
-    ...env,
-    ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
-    ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
-  };
+/** Extract a bai_xxx key from X-API-Key header or Authorization: Bearer bai_xxx */
+function extractBrowseApiKey(request: FastifyRequest): string | null {
+  const xApiKey = request.headers["x-api-key"] as string | undefined;
+  if (xApiKey?.startsWith("bai_")) return xApiKey;
+
+  const authHeader = request.headers.authorization;
+  if (authHeader?.startsWith("Bearer bai_")) {
+    return authHeader.slice(7);
+  }
+  return null;
 }
 
-function isUsingOwnKeys(request: FastifyRequest): boolean {
-  return !!(request.headers["x-tavily-key"] || request.headers["x-openrouter-key"]);
+/**
+ * Resolve request environment. Priority:
+ * 1. BYOK headers (X-Tavily-Key, X-OpenRouter-Key)
+ * 2. BrowseAI API key (bai_xxx) → resolve to stored keys
+ * 3. Default env keys
+ */
+async function getRequestEnv(
+  request: FastifyRequest,
+  env: Env,
+  apiKeyService: ApiKeyService | null,
+  cache: CacheService
+): Promise<{ env: Env; isOwnKeys: boolean }> {
+  // Priority 1: BYOK headers
+  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
+  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
+
+  if (tavilyKey || openrouterKey) {
+    return {
+      env: {
+        ...env,
+        ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
+        ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
+      },
+      isOwnKeys: true,
+    };
+  }
+
+  // Priority 2: BrowseAI API key
+  if (apiKeyService) {
+    const browseKey = extractBrowseApiKey(request);
+    if (browseKey) {
+      const cacheKey = `bai_resolve:${browseKey.slice(0, 12)}`;
+      const cached = await cache.get(cacheKey);
+
+      let resolved: { userId: string; tavilyKey: string; openrouterKey: string } | null = null;
+      if (cached) {
+        resolved = JSON.parse(cached);
+      } else {
+        resolved = await apiKeyService.resolve(browseKey);
+        if (resolved) {
+          await cache.set(cacheKey, JSON.stringify(resolved), 60);
+        }
+      }
+
+      if (resolved) {
+        return {
+          env: {
+            ...env,
+            SERP_API_KEY: resolved.tavilyKey,
+            OPENROUTER_API_KEY: resolved.openrouterKey,
+          },
+          isOwnKeys: true,
+        };
+      }
+    }
+  }
+
+  // Priority 3: Default env
+  return { env, isOwnKeys: false };
 }
 
 async function checkDemoLimit(
   request: FastifyRequest,
-  cache: CacheService
+  cache: CacheService,
+  isOwnKeys: boolean
 ): Promise<string | null> {
-  if (isUsingOwnKeys(request)) return null;
+  if (isOwnKeys) return null;
   const ip = request.ip;
   const key = `demo:${ip}`;
   const current = await cache.get(key);
@@ -51,7 +112,8 @@ export function registerBrowseRoutes(
   app: FastifyInstance,
   env: Env,
   cache: CacheService,
-  store: ResultStore
+  store: ResultStore,
+  apiKeyService: ApiKeyService | null = null
 ) {
   app.post("/browse/search", async (request, reply) => {
     const parsed = SearchRequestSchema.safeParse(request.body);
@@ -60,10 +122,10 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const limitError = await checkDemoLimit(request, cache);
+    const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
     if (limitError) return reply.status(429).send({ success: false, error: limitError });
 
-    const reqEnv = getRequestEnv(request, env);
     try {
       const result = await search(
         parsed.data.query,
@@ -84,7 +146,8 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const limitError = await checkDemoLimit(request, cache);
+    const { isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
     if (limitError) return reply.status(429).send({ success: false, error: limitError });
 
     try {
@@ -102,10 +165,10 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const limitError = await checkDemoLimit(request, cache);
+    const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
     if (limitError) return reply.status(429).send({ success: false, error: limitError });
 
-    const reqEnv = getRequestEnv(request, env);
     try {
       const result = await extractFromPage(
         parsed.data.url,
@@ -126,10 +189,10 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const limitError = await checkDemoLimit(request, cache);
+    const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
     if (limitError) return reply.status(429).send({ success: false, error: limitError });
 
-    const reqEnv = getRequestEnv(request, env);
     try {
       const result = await answerQuery(parsed.data.query, reqEnv, cache);
       const shareId = await store.save(parsed.data.query, result);
@@ -152,10 +215,10 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const limitError = await checkDemoLimit(request, cache);
+    const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
     if (limitError) return reply.status(429).send({ success: false, error: limitError });
 
-    const reqEnv = getRequestEnv(request, env);
     try {
       const result = await compareAnswers(parsed.data.query, reqEnv, cache);
       return { success: true, result };

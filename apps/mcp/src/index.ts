@@ -28,8 +28,9 @@ if (args.includes("--help") || args.includes("-h")) {
     browse-ai --version    Show version
 
   Environment Variables:
-    SERP_API_KEY           Tavily API key (get one at https://tavily.com)
-    OPENROUTER_API_KEY     OpenRouter API key (get one at https://openrouter.ai)
+    BROWSE_API_KEY         BrowseAI Dev API key (get one at https://browseai.dev/dashboard)
+    SERP_API_KEY           Tavily API key (get one at https://tavily.com) — BYOK mode
+    OPENROUTER_API_KEY     OpenRouter API key (get one at https://openrouter.ai) — BYOK mode
 
   MCP Tools:
     browse.search          Search the web for information
@@ -39,9 +40,15 @@ if (args.includes("--help") || args.includes("-h")) {
     browse.compare         Compare raw LLM vs evidence-backed answer
 
   Quick Setup:
-    1. Get API keys: https://tavily.com + https://openrouter.ai
-    2. Run: npx browse-ai setup
-    3. Restart Claude Desktop
+    Option A: Use a BrowseAI API key (one key for everything)
+      1. Sign in at https://browseai.dev and generate an API key
+      2. Run: npx browse-ai setup
+      3. Restart Claude Desktop
+
+    Option B: Bring your own keys (BYOK)
+      1. Get API keys: https://tavily.com + https://openrouter.ai
+      2. Run: npx browse-ai setup
+      3. Restart Claude Desktop
 `);
   process.exit(0);
 }
@@ -58,8 +65,29 @@ if (args[0] === "setup") {
   startServer();
 }
 
+// --- API mode (BrowseAI Dev API key) ---
+const BROWSE_API_KEY = process.env.BROWSE_API_KEY;
+const BROWSE_API_URL = process.env.BROWSE_API_URL || "https://ai-agent-browser.vercel.app/api";
+const API_MODE = !!BROWSE_API_KEY;
+
+async function apiCall(path: string, body: Record<string, unknown>) {
+  const res = await fetch(`${BROWSE_API_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": BROWSE_API_KEY!,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) throw new Error(data.error || `API failed: ${res.status}`);
+  return data.result;
+}
+
 // --- Env validation ---
 function getEnvKeys() {
+  if (API_MODE) return { SERP_API_KEY: "", OPENROUTER_API_KEY: "" };
+
   const SERP_API_KEY = process.env.SERP_API_KEY;
   const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
@@ -71,6 +99,7 @@ function getEnvKeys() {
   ${!OPENROUTER_API_KEY ? "  OPENROUTER_API_KEY - Get one at https://openrouter.ai" : "  OPENROUTER_API_KEY - Set"}
 
   Quick fix: run 'npx browse-ai setup' to configure automatically.
+  Or use a BrowseAI API key: BROWSE_API_KEY=bai_xxx npx browse-ai
 `);
     process.exit(1);
   }
@@ -346,6 +375,10 @@ function startServer() {
     "Search the web for information on a topic. Returns URLs, titles, snippets, and relevance scores.",
     { query: z.string(), limit: z.number().optional() },
     async ({ query, limit }) => {
+      if (API_MODE) {
+        const result = await apiCall("/browse/search", { query, limit: limit ?? 5 });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
       const results = await tavilySearch(query, limit ?? 5);
       return {
         content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
@@ -358,6 +391,10 @@ function startServer() {
     "Fetch and parse a web page into clean text using Readability. Strips ads, nav, and boilerplate.",
     { url: z.string() },
     async ({ url }) => {
+      if (API_MODE) {
+        const result = await apiCall("/browse/open", { url });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
       const page = await fetchPage(url);
       return {
         content: [{ type: "text", text: JSON.stringify(page, null, 2) }],
@@ -370,6 +407,10 @@ function startServer() {
     "Extract structured knowledge (claims + sources + confidence) from a single web page using AI.",
     { url: z.string(), query: z.string().optional() },
     async ({ url, query }) => {
+      if (API_MODE) {
+        const result = await apiCall("/browse/extract", { url, query });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
       const page = await fetchPage(url);
       const domain = new URL(url).hostname;
       const pageContent = `[Source 1] URL: ${url}\nTitle: ${page.title}\n\n${page.content.slice(0, MAX_PAGE_CONTENT_LENGTH)}`;
@@ -386,6 +427,10 @@ function startServer() {
     "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score.",
     { query: z.string() },
     async ({ query }) => {
+      if (API_MODE) {
+        const result = await apiCall("/browse/answer", { query });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
       const result = await answerPipeline(query);
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
@@ -398,6 +443,10 @@ function startServer() {
     "Compare a raw LLM answer (no sources) vs an evidence-backed answer. Shows the difference between hallucination-prone and grounded responses.",
     { query: z.string() },
     async ({ query }) => {
+      if (API_MODE) {
+        const result = await apiCall("/browse/compare", { query });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
       const [rawAnswer, evidenceResult] = await Promise.all([
         rawLLMAnswer(query),
         answerPipeline(query),

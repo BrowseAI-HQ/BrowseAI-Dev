@@ -15,6 +15,7 @@ const EnvSchema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:8080"),
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  API_KEY_ENCRYPTION_KEY: z.string().length(64).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
