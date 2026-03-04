@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Zap, Shield, ShieldAlert, Globe, Quote, Bot, Clock, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Zap, Shield, ShieldAlert, Globe, Quote, Bot, Clock, CheckCircle2, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BrowseBadge } from "@/components/BrowseBadge";
+import { LoginModal } from "@/components/LoginModal";
+import { UserMenu } from "@/components/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 import { browseCompare, type CompareResult } from "@/lib/api/browse";
 
 const Compare = () => {
@@ -14,6 +17,8 @@ const Compare = () => {
   const [result, setResult] = useState<CompareResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showJson, setShowJson] = useState(false);
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!query) return;
@@ -37,9 +42,12 @@ const Compare = () => {
             <span className="font-semibold text-sm">BrowseAI.dev</span>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground truncate max-w-md font-mono">
-          "{query}"
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground truncate max-w-md font-mono">
+            "{query}"
+          </p>
+          {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
+        </div>
       </nav>
 
       <div className="max-w-6xl mx-auto px-6 py-10">
@@ -71,7 +79,7 @@ const Compare = () => {
               <span className="text-muted-foreground">vs</span>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Shield className="w-4 h-4 text-emerald-400" />
-                <span>Browse AI: <strong className="text-foreground">{result.evidence_backed.sources} sources, {result.evidence_backed.claims} claims</strong></span>
+                <span>BrowseAI Dev: <strong className="text-foreground">{result.evidence_backed.sources} sources, {result.evidence_backed.claims} claims</strong></span>
               </div>
             </div>
 
@@ -112,7 +120,7 @@ const Compare = () => {
               >
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-emerald-400" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-emerald-400">Browse AI</h2>
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-emerald-400">BrowseAI Dev</h2>
                   <Badge className="ml-auto bg-emerald-400/15 text-emerald-400 border-emerald-400/30 text-xs">
                     {Math.round(result.evidence_backed.confidence * 100)}% confidence
                   </Badge>
@@ -128,7 +136,7 @@ const Compare = () => {
                   <span className="text-emerald-400">{Math.round(result.evidence_backed.confidence * 100)}% confidence</span>
                 </div>
 
-                {/* Sources directly below Browse AI answer */}
+                {/* Sources directly below BrowseAI Dev answer */}
                 {result.evidence_backed.citations.length > 0 && (
                   <div className="space-y-2 pt-2">
                     <h4 className="text-xs font-semibold text-emerald-400/70 uppercase tracking-wider">Sources</h4>
@@ -158,16 +166,27 @@ const Compare = () => {
               </motion.div>
             </div>
 
-            {/* Agent View — How Browse AI sees it */}
+            {/* Agent View — How BrowseAI Dev sees it */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               className="space-y-6"
             >
-              <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-accent" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider">How the Agent Sees It</h3>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-accent" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider">How the Agent Sees It</h3>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs gap-1.5 text-muted-foreground"
+                  onClick={() => setShowJson(!showJson)}
+                >
+                  <Code className="w-3.5 h-3.5" />
+                  {showJson ? "Hide JSON" : "Show JSON"}
+                </Button>
               </div>
 
               {/* Pipeline trace */}
@@ -215,6 +234,15 @@ const Compare = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+              {/* Raw JSON */}
+              {showJson && (
+                <div className="p-4 rounded-xl bg-card border border-border">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Raw JSON Response</h4>
+                  <pre className="text-xs font-mono text-muted-foreground overflow-x-auto max-h-96 overflow-y-auto leading-relaxed">
+                    {JSON.stringify(result, null, 2)}
+                  </pre>
                 </div>
               )}
             </motion.div>

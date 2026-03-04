@@ -10,6 +10,9 @@ import { TracePipeline } from "@/components/results/TracePipeline";
 import { AgentJson } from "@/components/results/AgentJson";
 import { LoadingPipeline } from "@/components/results/LoadingPipeline";
 import { BrowseBadge } from "@/components/BrowseBadge";
+import { LoginModal } from "@/components/LoginModal";
+import { UserMenu } from "@/components/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Results = () => {
   const [searchParams] = useSearchParams();
@@ -19,6 +22,7 @@ const Results = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!query) return;
@@ -77,6 +81,7 @@ const Results = () => {
           <p className="text-sm text-muted-foreground truncate max-w-md font-mono ml-2">
             "{query}"
           </p>
+          {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </nav>
 

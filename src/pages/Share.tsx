@@ -7,6 +7,9 @@ import { FinalAnswer } from "@/components/results/FinalAnswer";
 import { EvidenceGraph } from "@/components/results/EvidenceGraph";
 import { TracePipeline } from "@/components/results/TracePipeline";
 import { BrowseBadge } from "@/components/BrowseBadge";
+import { LoginModal } from "@/components/LoginModal";
+import { UserMenu } from "@/components/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 import type { BrowseResult } from "@/lib/api/browse";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
@@ -14,6 +17,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "/api";
 const Share = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<{ query: string; result: BrowseResult } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +29,7 @@ const Share = () => {
       .then((d) => {
         if (d.success) {
           setData(d.result);
-          document.title = `Browse AI: ${d.result.query}`;
+          document.title = `BrowseAI Dev: ${d.result.query}`;
         } else {
           setError(d.error || "Result not found");
         }
@@ -46,11 +50,14 @@ const Share = () => {
             <span className="font-semibold text-sm">BrowseAI.dev</span>
           </div>
         </div>
-        {data && (
-          <p className="text-sm text-muted-foreground truncate max-w-md font-mono">
-            "{data.query}"
-          </p>
-        )}
+        <div className="flex items-center gap-2">
+          {data && (
+            <p className="text-sm text-muted-foreground truncate max-w-md font-mono">
+              "{data.query}"
+            </p>
+          )}
+          {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
+        </div>
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">

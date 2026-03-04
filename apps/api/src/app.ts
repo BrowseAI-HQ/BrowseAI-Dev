@@ -13,7 +13,7 @@ export async function buildApp() {
   await app.register(cors, {
     origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "X-Tavily-Key", "X-OpenRouter-Key"],
+    allowedHeaders: ["Content-Type", "X-Tavily-Key", "X-OpenRouter-Key", "Authorization"],
   });
 
   const cache = env.REDIS_URL

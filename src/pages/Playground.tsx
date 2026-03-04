@@ -5,9 +5,13 @@ import { ArrowLeft, Zap, Play, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { browseKnowledge, browseSearch, browseExtract } from "@/lib/api/browse";
+import { LoginModal } from "@/components/LoginModal";
+import { UserMenu } from "@/components/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Playground = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
@@ -51,6 +55,9 @@ const Playground = () => {
             <Zap className="w-4 h-4 text-accent" />
             <span className="font-semibold text-sm">Playground</span>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </nav>
 

@@ -8,6 +8,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
+import { LoginModal } from "@/components/LoginModal";
+import { UserMenu } from "@/components/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
 
 const EXAMPLE_PROMPTS = [
@@ -45,6 +48,7 @@ const Index = () => {
   const [copied, setCopied] = useState<string | null>(null);
   const navigate = useNavigate();
   const typedText = useTypewriter(TYPEWRITER_QUERIES);
+  const { user, loading: authLoading } = useAuth();
 
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
@@ -83,6 +87,7 @@ const Index = () => {
             <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">GitHub</a>
           </Button>
           <ApiKeySettings />
+          {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </motion.nav>
 
@@ -179,7 +184,7 @@ const Index = () => {
 
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-center mb-12">
             <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Browse AI was born from this problem. Every answer goes through a verification pipeline — real web search,
+              BrowseAI Dev was born from this problem. Every answer goes through a verification pipeline — real web search,
               real source extraction, real citations. No hallucinations. Just evidence.
             </p>
             <p className="text-sm text-muted-foreground/60 mt-4 italic">
@@ -279,7 +284,7 @@ const Index = () => {
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why browse-ai?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why BrowseAI Dev?</h2>
             <p className="text-muted-foreground">Side-by-side: what you get vs a raw LLM</p>
           </motion.div>
 
@@ -300,7 +305,7 @@ const Index = () => {
             <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-emerald-400/20">
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">Browse AI</span>
+                <span className="text-sm font-semibold text-emerald-400 uppercase tracking-wider">BrowseAI Dev</span>
               </div>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>

@@ -42,6 +42,8 @@ export type CompareResult = {
   };
 };
 
+import { supabase } from "@/integrations/supabase/client";
+
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 function getUserKeyHeaders(): Record<string, string> {
@@ -53,13 +55,22 @@ function getUserKeyHeaders(): Record<string, string> {
   return headers;
 }
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    return { Authorization: `Bearer ${session.access_token}` };
+  }
+  return {};
+}
+
 async function apiCall<T>(
   path: string,
   body: Record<string, unknown>
 ): Promise<T> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...getUserKeyHeaders() },
+    headers: { "Content-Type": "application/json", ...getUserKeyHeaders(), ...authHeaders },
     body: JSON.stringify(body),
   });
 
