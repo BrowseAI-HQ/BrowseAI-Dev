@@ -18,11 +18,18 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     // Strip /api prefix to match Fastify route definitions
     const url = (req.url || "").replace(/^\/api/, "") || "/";
 
+    // Re-serialize body and fix content-length (Vercel pre-parses the body)
+    const payload = req.body ? JSON.stringify(req.body) : undefined;
+    const headers = { ...req.headers } as Record<string, string>;
+    if (payload) {
+      headers["content-length"] = String(Buffer.byteLength(payload));
+    }
+
     const response = await fastify.inject({
       method: req.method as any,
       url,
-      headers: req.headers as Record<string, string>,
-      payload: req.body ? JSON.stringify(req.body) : undefined,
+      headers,
+      payload,
     });
 
     // Set CORS headers
