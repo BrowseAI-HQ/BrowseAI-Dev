@@ -35,7 +35,7 @@ const Dashboard = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <Zap className="w-4 h-4 text-accent" />
             <span className="font-semibold text-sm">BrowseAI.dev</span>
           </div>
