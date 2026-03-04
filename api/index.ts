@@ -18,12 +18,12 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     // Strip /api prefix to match Fastify route definitions
     const url = (req.url || "").replace(/^\/api/, "") || "/";
 
-    // Re-serialize body and fix content-length (Vercel pre-parses the body)
+    // Re-serialize body (Vercel pre-parses it) and remove content-length
+    // so Fastify recalculates it from the payload
     const payload = req.body ? JSON.stringify(req.body) : undefined;
     const headers = { ...req.headers } as Record<string, string>;
-    if (payload) {
-      headers["content-length"] = String(Buffer.byteLength(payload));
-    }
+    delete headers["content-length"];
+    delete headers["transfer-encoding"];
 
     const response = await fastify.inject({
       method: req.method as any,
