@@ -4,17 +4,18 @@ set -e
 echo "=== Building for Vercel (Build Output API v3) ==="
 
 # Clean previous output
-rm -rf .vercel/output
+rm -rf .vercel/output dist
 
 # 1. Build shared package
-echo "Building @browse/shared..."
+echo "Step 1: Building @browse/shared..."
 pnpm --filter @browse/shared build
 
 # 2. Build Vite frontend
-echo "Building frontend..."
-vite build
+echo "Step 2: Building frontend..."
+pnpm exec vite build
 
 # 3. Create output structure
+echo "Step 3: Creating Build Output structure..."
 mkdir -p .vercel/output/static
 mkdir -p .vercel/output/functions/api.func
 
@@ -22,8 +23,8 @@ mkdir -p .vercel/output/functions/api.func
 cp -r dist/* .vercel/output/static/
 
 # 5. Bundle API function with esbuild (all deps inlined)
-echo "Bundling API function..."
-npx esbuild api/index.ts \
+echo "Step 4: Bundling API function..."
+pnpm exec esbuild api/index.ts \
   --bundle \
   --platform=node \
   --target=node20 \
@@ -54,5 +55,7 @@ cat > .vercel/output/config.json << 'EOF'
 EOF
 
 echo "=== Build complete ==="
-ls -la .vercel/output/
+echo "Static files:"
+ls .vercel/output/static/
+echo "Function:"
 ls -la .vercel/output/functions/api.func/
