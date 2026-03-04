@@ -3,7 +3,8 @@
     "allow": [
       "Bash(test -d /Users/shreyassawant/ai-agent-browser/apps/mcp/dist)",
       "Bash(pnpm build)",
-      "Bash(node dist/index.js --help)"
+      "Bash(node dist/index.js --help)",
+      "Bash(gh api repos/EiffelHack/ai-agent-browser --jq '.name')"
     ]
   }
 }
