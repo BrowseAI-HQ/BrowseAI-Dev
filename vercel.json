@@ -1,8 +1,8 @@
 {
-  "framework": null,
-  "buildCommand": "pnpm -w run build:vercel",
+  "buildCommand": "vite build",
   "outputDirectory": "out",
   "installCommand": "pnpm install",
+  "framework": null,
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
