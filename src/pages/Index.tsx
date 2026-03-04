@@ -69,7 +69,7 @@ const Index = () => {
             Playground
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/user/browse-ai" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">GitHub</a>
           </Button>
         </div>
       </motion.nav>

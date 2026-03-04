@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @browse/shared build && vite build",
+  "outputDirectory": "dist",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

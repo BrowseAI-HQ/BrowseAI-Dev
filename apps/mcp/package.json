@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc && echo '#!/usr/bin/env node' | cat - dist/index.js > dist/tmp && mv dist/tmp dist/index.js",
+    "build": "tsc",
     "start": "node dist/index.js",
     "prepublishOnly": "pnpm build"
   },

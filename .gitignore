@@ -17,6 +17,7 @@ apps/*/dist
 packages/*/dist
 
 # Environment
+.env
 .env.local
 .env.*.local
 
