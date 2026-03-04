@@ -13,6 +13,7 @@ dist-ssr
 
 # Build output
 dist
+.vercel/output
 apps/*/dist
 packages/*/dist
 
