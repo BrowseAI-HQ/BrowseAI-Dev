@@ -1,4 +1,5 @@
 {
+  "framework": null,
   "buildCommand": "pnpm --filter @browse/shared build && vite build",
   "outputDirectory": "dist",
   "rewrites": [

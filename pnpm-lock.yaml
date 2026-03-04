@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@fastify/cors':
+        specifier: ^11.0.0
+        version: 11.2.0
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.71.2(react@18.3.1))
+      '@mozilla/readability':
+        specifier: ^0.5.0
+        version: 0.5.0
       '@radix-ui/react-accordion':
         specifier: ^1.2.11
         version: 1.2.12(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -110,15 +116,24 @@ importers:
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@18.3.1)
+      fastify:
+        specifier: ^5.3.0
+        version: 5.7.4
       framer-motion:
         specifier: ^12.34.5
         version: 12.34.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      linkedom:
+        specifier: ^0.18.0
+        version: 0.18.12
       lucide-react:
         specifier: ^0.462.0
         version: 0.462.0(react@18.3.1)

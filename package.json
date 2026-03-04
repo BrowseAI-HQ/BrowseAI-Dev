@@ -72,7 +72,12 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "fastify": "^5.3.0",
+    "@fastify/cors": "^11.0.0",
+    "@mozilla/readability": "^0.5.0",
+    "linkedom": "^0.18.0",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
