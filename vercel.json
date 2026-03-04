@@ -1,5 +1,5 @@
 {
   "framework": "vite",
-  "buildCommand": "npx vite build",
+  "buildCommand": "pnpm -w exec vite build",
   "outputDirectory": "dist"
 }
