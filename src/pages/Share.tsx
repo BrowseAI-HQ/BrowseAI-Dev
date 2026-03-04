@@ -43,7 +43,7 @@ const Share = () => {
           </Button>
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-accent" />
-            <span className="font-semibold text-sm">browse.ai</span>
+            <span className="font-semibold text-sm">BrowseAI.dev</span>
           </div>
         </div>
         {data && (

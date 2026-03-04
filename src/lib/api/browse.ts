@@ -37,6 +37,8 @@ export type CompareResult = {
     claims: number;
     confidence: number;
     citations: BrowseSource[];
+    claimDetails: BrowseClaim[];
+    trace: { step: string; duration_ms: number; detail?: string }[];
   };
 };
 

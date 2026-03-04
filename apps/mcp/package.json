@@ -1,6 +1,6 @@
 {
   "name": "browse-ai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Open-source deep research MCP server for AI agents. Search the web, extract claims, build evidence graphs, get structured answers with citations.",
   "keywords": [
@@ -13,7 +13,7 @@
     "cursor",
     "windsurf"
   ],
-  "license": "MIT",
+  "license": "UNLICENSED",
   "bin": {
     "browse-ai": "dist/index.js"
   },

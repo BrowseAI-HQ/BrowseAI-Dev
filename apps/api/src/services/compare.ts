@@ -18,6 +18,8 @@ export interface CompareResult {
     claims: number;
     confidence: number;
     citations: BrowseResult["sources"];
+    claimDetails: BrowseResult["claims"];
+    trace: BrowseResult["trace"];
   };
 }
 
@@ -66,6 +68,8 @@ export async function compareAnswers(
       claims: evidenceResult.claims.length,
       confidence: evidenceResult.confidence,
       citations: evidenceResult.sources,
+      claimDetails: evidenceResult.claims,
+      trace: evidenceResult.trace,
     },
   };
 }

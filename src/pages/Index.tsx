@@ -63,7 +63,7 @@ const Index = () => {
       >
         <div className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-accent" />
-          <span className="font-semibold text-sm tracking-tight">browse.ai</span>
+          <span className="font-semibold text-sm tracking-tight">BrowseAI.dev</span>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
@@ -431,11 +431,13 @@ const Index = () => {
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-accent" />
-            <span className="text-sm font-semibold">browse.ai</span>
-            <span className="text-xs text-muted-foreground">Open-source deep research for AI agents</span>
+            <span className="text-sm font-semibold">BrowseAI.dev</span>
+            <span className="text-xs text-muted-foreground">Built by Shreyas</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <span>MIT License</span>
+            <a href="mailto:shreyassaw@gmail.com" className="hover:text-foreground transition-colors">shreyassaw@gmail.com</a>
+            <a href="https://discord.com/users/shreyassaw" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+            <a href="https://www.linkedin.com/in/shreyas-sawant" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">LinkedIn</a>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
           </div>
         </div>

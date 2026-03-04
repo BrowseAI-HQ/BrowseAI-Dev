@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Zap, Shield, ShieldAlert, Globe, Quote } from "lucide-react";
+import { ArrowLeft, Zap, Shield, ShieldAlert, Globe, Quote, Bot, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BrowseBadge } from "@/components/BrowseBadge";
@@ -34,7 +34,7 @@ const Compare = () => {
           </Button>
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-accent" />
-            <span className="font-semibold text-sm">browse.ai</span>
+            <span className="font-semibold text-sm">BrowseAI.dev</span>
           </div>
         </div>
         <p className="text-sm text-muted-foreground truncate max-w-md font-mono">
@@ -127,38 +127,97 @@ const Compare = () => {
                   <span className="text-emerald-400">{result.evidence_backed.claims} claims</span>
                   <span className="text-emerald-400">{Math.round(result.evidence_backed.confidence * 100)}% confidence</span>
                 </div>
+
+                {/* Sources directly below Browse AI answer */}
+                {result.evidence_backed.citations.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <h4 className="text-xs font-semibold text-emerald-400/70 uppercase tracking-wider">Sources</h4>
+                    {result.evidence_backed.citations.map((src, i) => (
+                      <a
+                        key={i}
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block p-3 rounded-lg bg-emerald-400/5 border border-emerald-400/10 hover:border-emerald-400/30 transition-colors"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <Globe className="w-3 h-3 text-emerald-400/60" />
+                          <span className="text-xs text-emerald-400 font-mono">{src.domain}</span>
+                          <span className="text-xs text-muted-foreground truncate">- {src.title}</span>
+                        </div>
+                        {src.quote && (
+                          <div className="flex items-start gap-2 mt-1">
+                            <Quote className="w-3 h-3 text-muted-foreground mt-0.5 shrink-0" />
+                            <p className="text-xs text-muted-foreground italic leading-relaxed line-clamp-2">{src.quote}</p>
+                          </div>
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             </div>
 
-            {/* Citations */}
-            {result.evidence_backed.citations.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                  Sources (only available with Browse AI)
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {result.evidence_backed.citations.map((src, i) => (
-                    <div key={i} className="p-3 rounded-lg bg-card border border-border">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Globe className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-xs text-accent font-mono">{src.domain}</span>
-                        <span className="text-xs text-muted-foreground truncate">— {src.title}</span>
+            {/* Agent View — How Browse AI sees it */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-accent" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider">How the Agent Sees It</h3>
+              </div>
+
+              {/* Pipeline trace */}
+              {result.evidence_backed.trace && result.evidence_backed.trace.length > 0 && (
+                <div className="p-4 rounded-xl bg-card border border-border">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pipeline Trace</h4>
+                  <div className="space-y-2">
+                    {result.evidence_backed.trace.map((step, i) => (
+                      <div key={i} className="flex items-center gap-3 text-xs">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span className="font-medium text-foreground w-36">{step.step}</span>
+                        <span className="text-muted-foreground">{step.detail}</span>
+                        <span className="ml-auto flex items-center gap-1 text-muted-foreground font-mono">
+                          <Clock className="w-3 h-3" />
+                          {step.duration_ms}ms
+                        </span>
                       </div>
-                      {src.quote && (
-                        <div className="flex items-start gap-2 mt-1">
-                          <Quote className="w-3 h-3 text-muted-foreground mt-0.5 shrink-0" />
-                          <p className="text-xs text-muted-foreground italic leading-relaxed line-clamp-2">{src.quote}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </motion.div>
-            )}
+              )}
+
+              {/* Extracted claims */}
+              {result.evidence_backed.claimDetails && result.evidence_backed.claimDetails.length > 0 && (
+                <div className="p-4 rounded-xl bg-card border border-border">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Extracted Claims ({result.evidence_backed.claimDetails.length})
+                  </h4>
+                  <div className="space-y-3">
+                    {result.evidence_backed.claimDetails.map((claim, i) => (
+                      <div key={i} className="flex items-start gap-3 text-xs">
+                        <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
+                          {i + 1}
+                        </Badge>
+                        <div className="space-y-1">
+                          <p className="text-foreground leading-relaxed">{claim.claim}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {claim.sources.map((src, j) => (
+                              <span key={j} className="text-[10px] text-accent font-mono bg-accent/10 px-1.5 py-0.5 rounded">
+                                {src}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
 
             <div className="flex justify-center pt-4">
               <BrowseBadge />
