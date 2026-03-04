@@ -7,7 +7,8 @@
       "Bash(gh api repos/EiffelHack/ai-agent-browser --jq '.name')",
       "WebFetch(domain:posthog.com)",
       "Bash(npx pnpm@9.15.4 --filter @browse/shared build)",
-      "Bash(curl -s http://localhost:8080)"
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(curl -s https://browse-ai.vercel.app/api/browse/stats)"
     ]
   }
 }
