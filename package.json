@@ -9,7 +9,7 @@
     "dev:web": "vite",
     "dev:api": "pnpm --filter @browse/api dev",
     "dev:mcp": "pnpm --filter @browse/mcp dev",
-    "build": "vite build",
+    "build": "vite build && mkdir -p .vercel/output/static && cp -r dist/* .vercel/output/static/ && printf '{\"version\":3,\"routes\":[{\"handle\":\"filesystem\"},{\"src\":\"/(.*)\",\"dest\":\"/index.html\"}]}' > .vercel/output/config.json",
     "build:all": "pnpm --filter @browse/shared build && pnpm --filter @browse/api build && pnpm --filter browse-ai build && vite build",
     "build:web": "vite build",
     "build:vercel": "pnpm --filter @browse/shared build && vite build",
