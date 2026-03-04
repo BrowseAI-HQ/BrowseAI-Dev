@@ -428,12 +428,14 @@ const Index = () => {
 
       {/* ===== FOOTER ===== */}
       <footer className="py-12 px-6 border-t border-border">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-accent" />
             <span className="text-sm font-semibold">BrowseAI.dev</span>
-            <span className="text-xs text-muted-foreground">Built by Shreyas</span>
           </div>
+          <p className="text-sm text-muted-foreground">
+            Crafted with <span className="text-red-400">&#9829;</span> and a lot of <span className="text-amber-400">&#9889;</span> by <span className="text-foreground font-medium">Shreyas</span>
+          </p>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <a href="mailto:shreyassaw@gmail.com" className="hover:text-foreground transition-colors">shreyassaw@gmail.com</a>
             <a href="https://discord.com/users/shreyassaw" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
