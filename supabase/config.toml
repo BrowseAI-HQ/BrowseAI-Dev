@@ -1,1 +1,10 @@
 project_id = "mobaurkcqvfxhakwpnfw"
+
+[functions.firecrawl-search]
+verify_jwt = false
+
+[functions.firecrawl-scrape]
+verify_jwt = false
+
+[functions.browse-knowledge]
+verify_jwt = false
