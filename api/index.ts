@@ -11,16 +11,26 @@ async function getApp() {
   return app;
 }
 
-export default async function handler(req: IncomingMessage & { body?: any }, res: ServerResponse) {
+function readBody(req: IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => resolve(Buffer.concat(chunks).toString()));
+    req.on("error", reject);
+  });
+}
+
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
   try {
     const fastify = await getApp();
 
     // Strip /api prefix to match Fastify route definitions
     const url = (req.url || "").replace(/^\/api/, "") || "/";
 
-    // Re-serialize body (Vercel pre-parses it) and remove content-length
-    // so Fastify recalculates it from the payload
-    const payload = req.body ? JSON.stringify(req.body) : undefined;
+    // Read raw body from stream
+    const body = await readBody(req);
+
+    // Forward headers but remove content-length (Fastify recalculates)
     const headers = { ...req.headers } as Record<string, string>;
     delete headers["content-length"];
     delete headers["transfer-encoding"];
@@ -29,7 +39,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
       method: req.method as any,
       url,
       headers,
-      payload,
+      payload: body || undefined,
     });
 
     // Set CORS headers
