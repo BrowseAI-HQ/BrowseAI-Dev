@@ -7,7 +7,7 @@ import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.1.0";
+const VERSION = "0.1.1";
 const LLM_MODEL = "google/gemini-2.5-flash";
 const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
