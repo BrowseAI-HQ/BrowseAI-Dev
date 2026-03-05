@@ -1,8 +1,15 @@
+import { createHash } from "crypto";
 import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
 import type { BrowseResult } from "@browse/shared";
 import { answerQuery } from "./answer.js";
 import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
+
+function hashKey(s: string): string {
+  return createHash("sha256").update(s.toLowerCase().trim()).digest("hex").slice(0, 24);
+}
+
+const RAW_LLM_CACHE_TTL = 3600; // 1 hour
 
 export interface CompareResult {
   query: string;
@@ -23,7 +30,11 @@ export interface CompareResult {
   };
 }
 
-async function rawLLMAnswer(query: string, apiKey: string): Promise<string> {
+async function rawLLMAnswer(query: string, apiKey: string, cache: CacheService): Promise<string> {
+  const cacheKey = `raw_llm:${hashKey(query)}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) return cached;
+
   const res = await fetch(LLM_ENDPOINT, {
     method: "POST",
     headers: {
@@ -41,7 +52,9 @@ async function rawLLMAnswer(query: string, apiKey: string): Promise<string> {
 
   if (!res.ok) throw new Error(`LLM failed: ${res.status}`);
   const data = await res.json();
-  return data.choices?.[0]?.message?.content || "No response";
+  const answer = data.choices?.[0]?.message?.content || "No response";
+  await cache.set(cacheKey, answer, RAW_LLM_CACHE_TTL);
+  return answer;
 }
 
 export async function compareAnswers(
@@ -50,7 +63,7 @@ export async function compareAnswers(
   cache: CacheService
 ): Promise<CompareResult> {
   const [rawAnswer, evidenceResult] = await Promise.all([
-    rawLLMAnswer(query, env.OPENROUTER_API_KEY),
+    rawLLMAnswer(query, env.OPENROUTER_API_KEY, cache),
     answerQuery(query, env, cache),
   ]);
 

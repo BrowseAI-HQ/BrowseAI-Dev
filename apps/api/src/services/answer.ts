@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { search } from "./search.js";
 import { openPage } from "./scrape.js";
 import { extractKnowledge } from "../lib/gemini.js";
@@ -6,11 +7,31 @@ import type { BrowseResult, TraceStep } from "@browse/shared";
 import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
 
+function hashKey(s: string): string {
+  return createHash("sha256").update(s.toLowerCase().trim()).digest("hex").slice(0, 24);
+}
+
+// Time-sensitive keywords → short TTL, everything else → longer TTL
+const TIME_SENSITIVE = /\b(today|tonight|yesterday|latest|current|now|live|breaking|this week|this month|this year|price|stock|score|weather|202[4-9])\b/i;
+
+function getCacheTTL(query: string): number {
+  return TIME_SENSITIVE.test(query) ? 300 : 1800; // 5 min vs 30 min
+}
+
 export async function answerQuery(
   query: string,
   env: Env,
   cache: CacheService
 ): Promise<BrowseResult> {
+  // Check answer cache
+  const cacheKey = `answer:${hashKey(query)}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) {
+    const result = JSON.parse(cached) as BrowseResult;
+    result.trace = [{ step: "Cache Hit", duration_ms: 0, detail: "Served from cache" }, ...result.trace];
+    return result;
+  }
+
   const trace: TraceStep[] = [];
 
   // Step 1: Search
@@ -83,5 +104,7 @@ export async function answerQuery(
     detail: "OpenRouter",
   });
 
-  return { ...knowledge, trace };
+  const result = { ...knowledge, trace };
+  await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+  return result;
 }
