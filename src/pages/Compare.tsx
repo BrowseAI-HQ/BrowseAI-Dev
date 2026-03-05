@@ -39,7 +39,7 @@ const Compare = () => {
           </Button>
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
-            <span className="font-semibold text-sm">BrowseAI.dev</span>
+            <span className="font-semibold text-sm">BrowseAI Dev</span>
           </div>
         </div>
         <div className="flex items-center gap-2">

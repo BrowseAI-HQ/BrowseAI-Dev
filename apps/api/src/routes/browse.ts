@@ -153,7 +153,7 @@ export function registerBrowseRoutes(
     if (!parsed.success)
       return reply
         .status(400)
-        .send({ success: false, error: parsed.error.message });
+        .send({ success: false, error: "Please provide a valid URL (e.g. https://example.com)" });
 
     const { isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
     const limitError = await checkDemoLimit(request, cache, isOwnKeys);
@@ -174,7 +174,7 @@ export function registerBrowseRoutes(
     if (!parsed.success)
       return reply
         .status(400)
-        .send({ success: false, error: parsed.error.message });
+        .send({ success: false, error: "Please provide a valid URL (e.g. https://example.com)" });
 
     const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
     const limitError = await checkDemoLimit(request, cache, isOwnKeys);

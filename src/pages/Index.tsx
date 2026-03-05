@@ -77,7 +77,7 @@ const Index = () => {
       >
         <div className="flex items-center gap-2">
           <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
-          <span className="font-semibold text-sm tracking-tight">BrowseAI.dev</span>
+          <span className="font-semibold text-sm tracking-tight">BrowseAI Dev</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
@@ -508,7 +508,7 @@ const Index = () => {
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
             <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
-            <span className="text-sm font-semibold">BrowseAI.dev</span>
+            <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Crafted with <span className="text-red-400">&#9829;</span> and a lot of <span className="text-amber-400">&#9889;</span> by <a href="https://www.instagram.com/shreyassaw/?hl=en" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">Shreyas</a>
