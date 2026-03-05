@@ -85,12 +85,12 @@ const Developers = () => {
         className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
       >
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-          <Zap className="w-5 h-5 text-accent" />
-          <span className="font-semibold text-sm tracking-tight">BrowseAI.dev</span>
+          <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
+          <span className="font-semibold text-sm tracking-tight">BrowseAI Dev</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/")}>
-            <Zap className="w-4 h-4 sm:hidden" />
+            <img src="/logo.svg" alt="Home" className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Home</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
@@ -559,8 +559,8 @@ const Developers = () => {
       <footer className="py-12 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <Zap className="w-4 h-4 text-accent" />
-            <span className="text-sm font-semibold">BrowseAI.dev</span>
+            <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
+            <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>

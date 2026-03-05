@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <!-- Vertical stem -->
+  <line x1="13" y1="8" x2="13" y2="33" stroke="#F97316" stroke-width="2.8" stroke-linecap="round"/>
+  <!-- Top curve -->
+  <path d="M13 8 C22 8, 26 9.5, 26 14 C26 18.5, 22 20, 13 20"
+        stroke="#F97316" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Bottom curve (slightly wider) -->
+  <path d="M13 20 C23 20, 28 21.5, 28 27 C28 32, 23 33, 13 33"
+        stroke="#F97316" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -31,12 +31,16 @@ export const SearchRequestSchema = z.object({
   limit: z.number().int().min(1).max(20).optional().default(5),
 });
 
+const urlWithProtocol = z.string().transform((v) =>
+  v.match(/^https?:\/\//) ? v : `https://${v}`
+).pipe(z.string().url());
+
 export const OpenRequestSchema = z.object({
-  url: z.string().url(),
+  url: urlWithProtocol,
 });
 
 export const ExtractRequestSchema = z.object({
-  url: z.string().url(),
+  url: urlWithProtocol,
   query: z.string().optional(),
 });
 
