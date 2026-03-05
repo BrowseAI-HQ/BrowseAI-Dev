@@ -133,6 +133,129 @@ const Developers = () => {
         </motion.div>
       </section>
 
+      {/* Contributors Leaderboard — front and center */}
+      <section className="py-20 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Trophy className="w-5 h-5 text-amber-400" />
+              <h2 className="text-2xl md:text-3xl font-bold">Top Contributors</h2>
+            </div>
+            <p className="text-muted-foreground text-center max-w-xl mx-auto mb-10">
+              The people making AI more honest. Every merged PR earns your place here.
+            </p>
+
+            {contributorsLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent" />
+              </div>
+            ) : contributors.length > 0 ? (
+              <>
+                {/* Top 3 podium */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  {contributors.slice(0, 3).map((contributor, i) => {
+                    const totalCommits = contributors.reduce((sum, c) => sum + c.contributions, 0);
+                    const percentage = Math.round((contributor.contributions / totalCommits) * 100);
+                    const medals = ["text-amber-400 border-amber-400/40", "text-gray-400 border-gray-400/40", "text-amber-600 border-amber-600/40"];
+                    const medalLabels = ["1st", "2nd", "3rd"];
+                    const bgColors = ["bg-amber-400/5", "bg-gray-400/5", "bg-amber-600/5"];
+                    return (
+                      <motion.a
+                        key={contributor.login}
+                        href={contributor.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className={`flex flex-col items-center gap-3 p-6 rounded-xl border ${bgColors[i]} ${medals[i].split(" ")[1]} hover:border-accent/30 transition-colors group`}
+                      >
+                        <Badge variant="outline" className={`text-xs ${medals[i]}`}>
+                          {medalLabels[i]}
+                        </Badge>
+                        <img
+                          src={contributor.avatar_url}
+                          alt={contributor.login}
+                          className={`w-16 h-16 rounded-full border-2 ${medals[i].split(" ")[1]} group-hover:border-accent/30 transition-colors`}
+                        />
+                        <span className="font-semibold text-sm group-hover:text-accent transition-colors">
+                          {contributor.login}
+                        </span>
+                        <div className="w-full space-y-1.5">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span className="font-mono">{contributor.contributions} commits</span>
+                            <span>{percentage}%</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${percentage}%` }}
+                              transition={{ delay: 0.6 + i * 0.1, duration: 0.8 }}
+                              className={`h-full rounded-full ${i === 0 ? "bg-amber-400" : i === 1 ? "bg-gray-400" : "bg-amber-600"}`}
+                            />
+                          </div>
+                        </div>
+                      </motion.a>
+                    );
+                  })}
+                </div>
+
+                {/* Rest of contributors */}
+                {contributors.length > 3 && (
+                  <div className="space-y-2">
+                    {contributors.slice(3).map((contributor, i) => {
+                      const totalCommits = contributors.reduce((sum, c) => sum + c.contributions, 0);
+                      const percentage = Math.round((contributor.contributions / totalCommits) * 100);
+                      return (
+                        <motion.a
+                          key={contributor.login}
+                          href={contributor.html_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.03 }}
+                          className="flex items-center gap-4 p-3 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors group"
+                        >
+                          <span className="text-xs font-mono text-muted-foreground w-6 text-right">
+                            #{i + 4}
+                          </span>
+                          <img
+                            src={contributor.avatar_url}
+                            alt={contributor.login}
+                            className="w-8 h-8 rounded-full border border-border group-hover:border-accent/30 transition-colors"
+                          />
+                          <span className="font-medium text-sm group-hover:text-accent transition-colors flex-shrink-0">
+                            {contributor.login}
+                          </span>
+                          <div className="flex-1 mx-2 hidden sm:block">
+                            <div className="w-full h-1 rounded-full bg-secondary overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-accent/40"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
+                            <GitCommitHorizontal className="w-3 h-3" />
+                            <span className="font-mono">{contributor.contributions}</span>
+                          </div>
+                        </motion.a>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-center text-sm text-muted-foreground py-8">
+                Be the first contributor! Fork the repo and submit a PR.
+              </p>
+            )}
+          </motion.div>
+        </div>
+      </section>
+
       {/* The Story */}
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-3xl mx-auto">
@@ -335,69 +458,6 @@ const Developers = () => {
                 </div>
               ))}
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Contributors Leaderboard */}
-      <section className="py-24 px-6 border-t border-border">
-        <div className="max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <Trophy className="w-4 h-4 text-accent" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider">Contributors</h2>
-            </div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-4 text-center">Top Contributors</h3>
-            <p className="text-muted-foreground text-center max-w-xl mx-auto mb-10">
-              The people making AI more honest. Every merged PR earns your place here.
-            </p>
-
-            {contributorsLoading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent" />
-              </div>
-            ) : contributors.length > 0 ? (
-              <div className="space-y-3">
-                {contributors.map((contributor, i) => (
-                  <motion.a
-                    key={contributor.login}
-                    href={contributor.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors group"
-                  >
-                    <span className={`text-sm font-bold w-8 text-center ${
-                      i === 0 ? "text-amber-400" : i === 1 ? "text-gray-400" : i === 2 ? "text-amber-600" : "text-muted-foreground"
-                    }`}>
-                      #{i + 1}
-                    </span>
-                    <img
-                      src={contributor.avatar_url}
-                      alt={contributor.login}
-                      className="w-10 h-10 rounded-full border-2 border-border group-hover:border-accent/30 transition-colors"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span className="font-semibold text-sm group-hover:text-accent transition-colors">
-                        {contributor.login}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <GitCommitHorizontal className="w-3.5 h-3.5" />
-                      <span className="font-mono">{contributor.contributions}</span>
-                      <span className="hidden sm:inline">commits</span>
-                    </div>
-                  </motion.a>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-sm text-muted-foreground py-8">
-                Be the first contributor! Fork the repo and submit a PR.
-              </p>
-            )}
           </motion.div>
         </div>
       </section>
