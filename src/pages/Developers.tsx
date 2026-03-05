@@ -345,14 +345,17 @@ const Developers = () => {
               <BookOpen className="w-4 h-4 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">Getting Started</h2>
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-8">Set up in 2 minutes</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-8">How to contribute</h3>
 
             <div className="space-y-4">
               {[
-                { step: "1", cmd: "git clone https://github.com/EiffelHack/ai-agent-browser.git && cd ai-agent-browser", label: "Clone the repo" },
-                { step: "2", cmd: "pnpm install", label: "Install dependencies" },
-                { step: "3", cmd: "cp .env.example .env  # Add your Tavily + OpenRouter keys", label: "Configure environment" },
-                { step: "4", cmd: "pnpm dev", label: "Start development" },
+                { step: "1", cmd: "# Fork on GitHub, then:", label: "Fork the repo", isNote: true },
+                { step: "2", cmd: "git clone https://github.com/YOUR_USERNAME/ai-agent-browser.git && cd ai-agent-browser", label: "Clone your fork" },
+                { step: "3", cmd: "pnpm install && cp .env.example .env", label: "Install & configure" },
+                { step: "4", cmd: "git checkout -b feat/your-feature", label: "Create a branch" },
+                { step: "5", cmd: "pnpm dev", label: "Start development" },
+                { step: "6", cmd: "pnpm lint && pnpm test", label: "Run checks" },
+                { step: "7", cmd: "# Push your branch and open a PR against main", label: "Submit a Pull Request", isNote: true },
               ].map((item) => (
                 <div key={item.step} className="flex items-start gap-3">
                   <Badge variant="outline" className="shrink-0 mt-1 text-[10px] px-1.5">{item.step}</Badge>
@@ -366,15 +369,25 @@ const Developers = () => {
               ))}
             </div>
 
-            <div className="mt-8 p-5 rounded-xl bg-card border border-border">
+            <div className="mt-6 p-4 rounded-xl bg-accent/5 border border-accent/20">
+              <p className="text-sm text-muted-foreground">
+                <span className="text-foreground font-medium">Branch naming:</span>{" "}
+                <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">feat/...</code> for features,{" "}
+                <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">fix/...</code> for bugs,{" "}
+                <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">docs/...</code> for documentation.
+                One feature per PR — keep changes focused.
+              </p>
+            </div>
+
+            <div className="mt-4 p-5 rounded-xl bg-card border border-border">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-accent" />
-                <span className="font-semibold text-sm">CI/CD is handled</span>
+                <span className="font-semibold text-sm">CI/CD runs automatically</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Every PR runs lint, type-check, build, and tests automatically.
-                On merge to main: Vercel deploys the app, GitHub Actions handles Supabase migrations and npm publishing.
-                You just write code.
+                Every PR runs lint, type-check, build, and tests via GitHub Actions.
+                Once approved and merged, Vercel deploys the app, Supabase migrations run, and the MCP
+                package auto-publishes to npm. You just write code — we handle the rest.
               </p>
             </div>
           </motion.div>
