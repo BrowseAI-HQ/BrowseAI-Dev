@@ -89,7 +89,7 @@ const Developers = () => {
           <span className="font-semibold text-sm tracking-tight">BrowseAI.dev</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/playground")}>
             Playground
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
@@ -99,7 +99,7 @@ const Developers = () => {
       </motion.nav>
 
       {/* Hero */}
-      <section className="min-h-[70vh] flex flex-col items-center justify-center px-6 pt-20">
+      <section className="min-h-[50vh] sm:min-h-[70vh] flex flex-col items-center justify-center px-6 pt-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,12 +109,12 @@ const Developers = () => {
           <Badge variant="outline" className="text-xs font-normal">
             Open Source
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
             Build the trust layer
             <br />
             <span className="text-gradient">for AI agents</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             BrowseAI is an open-source research engine that gives AI agents the ability to search the web,
             extract evidence, and produce cited answers. No hallucinations. Just facts.
           </p>
@@ -450,8 +450,8 @@ const Developers = () => {
             </div>
             <div className="space-y-2">
               {GOOD_FIRST_ISSUES.map((issue) => (
-                <div key={issue} className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border">
-                  <Badge variant="outline" className="text-[10px] shrink-0 text-emerald-400 border-emerald-400/30">
+                <div key={issue} className="flex items-start sm:items-center gap-2 sm:gap-3 p-3 rounded-lg bg-card border border-border">
+                  <Badge variant="outline" className="text-[10px] shrink-0 mt-0.5 sm:mt-0 text-emerald-400 border-emerald-400/30">
                     good first issue
                   </Badge>
                   <span className="text-sm text-muted-foreground">{issue}</span>
@@ -486,8 +486,8 @@ const Developers = () => {
                   <Badge variant="outline" className="shrink-0 mt-1 text-[10px] px-1.5">{item.step}</Badge>
                   <div className="flex-1">
                     <span className="text-sm font-medium block mb-1">{item.label}</span>
-                    <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-secondary">
-                      <code className="text-xs font-mono text-muted-foreground">{item.cmd}</code>
+                    <div className="px-4 py-2.5 rounded-lg bg-secondary overflow-x-auto">
+                      <code className="text-xs font-mono text-muted-foreground whitespace-nowrap">{item.cmd}</code>
                     </div>
                   </div>
                 </div>
@@ -523,7 +523,7 @@ const Developers = () => {
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold">Let's build honest AI together</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Let's build honest AI together</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Every contribution — whether it's a bug fix, a new feature, or a better prompt — makes
               AI more trustworthy for everyone.
