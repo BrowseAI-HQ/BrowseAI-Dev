@@ -149,13 +149,21 @@ const Developers = () => {
                 It sounds right. It reads well. But it's fiction.
               </p>
               <p>
+                I use AI agents — Claude Code, Cursor, Codex — to build code and ship products every day.
+                Before writing code or building anything, I always want to research first: what's the best approach,
+                what libraries exist, what patterns work. So I tell my agents to research before they code.
+                But they hallucinate. They recommend packages that don't exist, reference APIs that were deprecated years ago,
+                and confidently describe solutions that simply don't work.
+              </p>
+              <p>
                 The cost of this isn't just wrong answers — it's eroded trust. When you can't tell if an AI response
                 is real or hallucinated, you end up manually verifying everything anyway. That defeats the purpose.
               </p>
               <p>
                 BrowseAI takes a different approach: <span className="text-foreground font-medium">every answer goes through a verification pipeline</span>.
                 It searches the real web, fetches real pages, extracts real quotes, and links every claim back to its source.
-                If it can't find evidence, it says so.
+                If it can't find evidence, it says so. Now when I tell my AI agents to research something,
+                they can use BrowseAI to actually verify their findings against real sources before writing a single line of code.
               </p>
               <p>
                 This is open source because the trust layer for AI shouldn't be owned by one company.
