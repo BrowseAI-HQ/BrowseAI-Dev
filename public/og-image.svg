@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0A0A0A"/>
+
+  <!-- Subtle grid -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a1a1a" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.5"/>
+
+  <!-- B Logo (matching favicon.svg — stem + two curves) -->
+  <g transform="translate(120, 160)">
+    <!-- Vertical stem -->
+    <line x1="0" y1="0" x2="0" y2="310" stroke="#F97316" stroke-width="20" stroke-linecap="round"/>
+    <!-- Top curve -->
+    <path d="M0 0 C60 0, 90 5, 90 75 C90 145, 60 155, 0 155"
+          stroke="#F97316" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Bottom curve (wider) -->
+    <path d="M0 155 C70 155, 110 170, 110 235 C110 300, 70 310, 0 310"
+          stroke="#F97316" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Text -->
+  <text x="340" y="310" font-family="system-ui, -apple-system, sans-serif" font-size="88" font-weight="700" fill="#FAFAFA">BrowseAI Dev</text>
+  <text x="340" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#A1A1AA">Reliable Research for AI Agents</text>
+  <text x="340" y="440" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#F97316">browseai.dev</text>
+
+  <!-- Bottom badges -->
+  <g transform="translate(340, 480)">
+    <rect width="140" height="36" rx="18" fill="none" stroke="#333" stroke-width="1.5"/>
+    <text x="70" y="24" font-family="system-ui, sans-serif" font-size="16" fill="#A1A1AA" text-anchor="middle">Open Source</text>
+    <rect x="160" width="100" height="36" rx="18" fill="none" stroke="#333" stroke-width="1.5"/>
+    <text x="210" y="24" font-family="system-ui, sans-serif" font-size="16" fill="#A1A1AA" text-anchor="middle">MCP</text>
+    <rect x="280" width="120" height="36" rx="18" fill="none" stroke="#333" stroke-width="1.5"/>
+    <text x="340" y="24" font-family="system-ui, sans-serif" font-size="16" fill="#A1A1AA" text-anchor="middle">REST API</text>
+  </g>
+</svg>
