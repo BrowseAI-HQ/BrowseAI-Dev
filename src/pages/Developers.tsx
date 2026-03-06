@@ -68,9 +68,15 @@ const ROADMAP_ITEMS = [
     done: false,
   },
   {
-    phase: "Vision",
-    title: "Reliable research infrastructure for every AI agent",
-    desc: "Open source, community-driven. The research layer agents trust.",
+    phase: "Next",
+    title: "Knowledge graph & entity extraction",
+    desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
+    done: false,
+  },
+  {
+    phase: "Later",
+    title: "Academic papers & broader sources",
+    desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
     done: false,
   },
 ];

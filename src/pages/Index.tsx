@@ -209,10 +209,10 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
               {[
-                { phase: "Today", text: "Reliable research infrastructure for AI agents — real-time web search with structured citations" },
-                { phase: "Next", text: "Multi-source verification — cross-reference claims, consensus scoring, contradiction detection" },
-                { phase: "Then", text: "Broader knowledge — academic papers, code search, real-time data feeds" },
-                { phase: "Vision", text: "The reliable research infrastructure for every AI agent — open source, community-driven" },
+                { phase: "Today", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
+                { phase: "Next", text: "Multi-source verification — cross-reference claims across sources, consensus scoring, contradiction detection" },
+                { phase: "Then", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
+                { phase: "Later", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
               ].map((item, i) => (
                 <div key={item.phase} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
                   <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
