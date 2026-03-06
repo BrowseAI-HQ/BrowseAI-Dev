@@ -1,16 +1,8 @@
-# Browse AI
+# BrowseAI Dev
 
-**The Anti-Hallucination Stack** — open-source deep research infrastructure for AI agents.
+**Reliable research infrastructure for AI agents** — open-source research engine with real-time web search, evidence extraction, and structured citations.
 
-Turn any AI assistant into a research engine with real-time web search, evidence extraction, and structured citations.
-
-## Why Browse AI?
-
-AI agents hallucinate. They cite papers that don't exist, quote statistics they made up, and present fiction as fact. This costs businesses **$67.4B annually**.
-
-Browse AI is the anti-hallucination stack — an open-source research engine that gives AI agents the ability to search the real web, extract evidence from real sources, and cite their work. Every claim is backed by a URL. Every answer has a confidence score.
-
-Built by developers, for developers. Because better research means better products.
+Turn any AI assistant into a research engine. Every claim is backed by a URL. Every answer has a confidence score.
 
 ## How It Works
 
@@ -22,19 +14,43 @@ Every answer goes through a 5-step verification pipeline. No hallucination. Ever
 
 ## Quick Start
 
-```sh
-# Install dependencies
-pnpm install
+### Python SDK
 
-# Set up environment variables
-cp .env.example .env
-# Fill in: SERP_API_KEY, OPENROUTER_API_KEY
-
-# Start API + frontend together
-pnpm dev
+```bash
+pip install browseai
 ```
 
-### MCP Server (for Claude Desktop, Cursor, Windsurf)
+```python
+from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+
+# Research with citations
+result = client.ask("What is quantum computing?")
+print(result.answer)
+print(f"Confidence: {result.confidence:.0%}")
+for source in result.sources:
+    print(f"  - {source.title}: {source.url}")
+```
+
+**Framework integrations:**
+
+```bash
+pip install browseai[langchain]   # LangChain tools
+pip install browseai[crewai]      # CrewAI integration
+```
+
+```python
+# LangChain
+from browseai.integrations.langchain import BrowseAIAskTool
+tools = [BrowseAIAskTool(api_key="bai_xxx")]
+
+# CrewAI
+from browseai.integrations.crewai import BrowseAITool
+researcher = Agent(tools=[BrowseAITool(api_key="bai_xxx")])
+```
+
+### MCP Server (Claude Desktop, Cursor, Windsurf)
 
 ```sh
 npx browse-ai setup
@@ -57,14 +73,24 @@ Or manually add to your MCP config:
 }
 ```
 
+### Self-Host
+
+```sh
+pnpm install
+cp .env.example .env
+# Fill in: SERP_API_KEY, OPENROUTER_API_KEY
+pnpm dev
+```
+
 ## Project Structure
 
 ```
-/apps/api          Fastify API server (port 3001)
-/apps/mcp          MCP server (stdio transport, npm: browse-ai)
-/packages/shared   Shared types, Zod schemas, constants
-/src               React frontend (Vite, port 8080)
-/scripts           Build & demo scripts
+/apps/api              Fastify API server (port 3001)
+/apps/mcp              MCP server (stdio transport, npm: browse-ai)
+/packages/shared       Shared types, Zod schemas, constants
+/packages/python-sdk   Python SDK (PyPI: browseai)
+/src                   React frontend (Vite, port 8080)
+/supabase              Database migrations
 ```
 
 ## API Endpoints
@@ -78,6 +104,8 @@ Or manually add to your MCP config:
 | `POST /browse/compare` | Compare raw LLM vs evidence-backed answer |
 | `GET /browse/share/:id` | Get a shared result |
 | `GET /browse/stats` | Total queries answered |
+| `GET /browse/sources/top` | Top cited source domains |
+| `GET /browse/analytics/summary` | Usage analytics (authenticated) |
 
 ## MCP Tools
 
@@ -89,21 +117,28 @@ Or manually add to your MCP config:
 | `browse_answer` | Full pipeline: search + extract + cite |
 | `browse_compare` | Compare raw LLM vs evidence-backed answer |
 
+## Python SDK
+
+| Method | Description |
+|--------|-------------|
+| `client.search(query)` | Search the web |
+| `client.open(url)` | Fetch and parse a page |
+| `client.extract(url, query=)` | Extract claims from a page |
+| `client.ask(query)` | Full pipeline with citations |
+| `client.compare(query)` | Raw LLM vs evidence-backed |
+
+Async support: `AsyncBrowseAI` with the same API.
+
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SERP_API_KEY` | Yes | Web search API key |
-| `OPENROUTER_API_KEY` | Yes | LLM API key |
-| `REDIS_URL` | No | Redis connection URL (falls back to in-memory cache) |
+| `SERP_API_KEY` | Yes | Web search API key (Tavily) |
+| `OPENROUTER_API_KEY` | Yes | LLM API key (OpenRouter) |
+| `REDIS_URL` | No | Redis URL (falls back to in-memory cache) |
+| `SUPABASE_URL` | No | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
 | `PORT` | No | API server port (default: 3001) |
-
-## Where We're Going
-
-- **Today**: Evidence-backed research with real-time web search and structured citations
-- **Next**: Multi-source verification — cross-reference claims, consensus scoring
-- **Then**: Broader knowledge — academic papers, code search, real-time data
-- **Vision**: The trust layer for every AI agent — open source, community-driven
 
 ## Contributing
 
@@ -112,9 +147,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding convention
 ## Tech Stack
 
 - **API**: Node.js, TypeScript, Fastify, Zod
-- **Search**: Web search API
+- **Search**: Tavily API
 - **Parsing**: @mozilla/readability + linkedom
-- **AI**: LLM via API
-- **Caching**: Redis (optional) / in-memory
+- **AI**: Gemini 2.5 Flash via OpenRouter
+- **Caching**: Redis (optional) / in-memory with intelligent TTL
 - **Frontend**: React, Tailwind CSS, shadcn/ui
 - **MCP**: @modelcontextprotocol/sdk
+- **Python SDK**: httpx, Pydantic
+- **Database**: Supabase (PostgreSQL)

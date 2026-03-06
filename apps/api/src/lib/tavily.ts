@@ -31,6 +31,9 @@ export async function tavilySearch(
 
   if (!res.ok) {
     const text = await res.text();
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Invalid search API key. Check your Tavily key in Settings.");
+    }
     throw new Error(`Tavily search failed (${res.status}): ${text}`);
   }
 

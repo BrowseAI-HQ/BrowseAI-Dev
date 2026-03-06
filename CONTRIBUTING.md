@@ -1,12 +1,12 @@
-# Contributing to BrowseAI
+# Contributing to BrowseAI Dev
 
-Thanks for your interest in contributing! BrowseAI is a deep research engine for AI agents.
+Thanks for your interest in contributing! BrowseAI Dev is reliable research infrastructure for AI agents.
 
 ## Quick Setup
 
 ```bash
-git clone https://github.com/EiffelHack/ai-agent-browser.git
-cd ai-agent-browser
+git clone https://github.com/EiffelHack/BrowserAI-Dev.git
+cd BrowserAI-Dev
 pnpm install
 cp .env.example .env
 # Add your own API keys to .env
@@ -20,7 +20,7 @@ pnpm dev
 ## Project Structure
 
 ```
-ai-agent-browser/
+BrowserAI-Dev/
   src/                    # Frontend (React + Vite + shadcn/ui)
     components/           # UI components
     pages/                # Route pages
@@ -33,6 +33,7 @@ ai-agent-browser/
     mcp/                  # MCP server (npm: browse-ai)
   packages/
     shared/               # Shared types, schemas, constants
+    python-sdk/           # Python SDK (PyPI: browseai)
   supabase/
     migrations/           # Database migrations (timestamp format)
     functions/            # Supabase Edge Functions
@@ -113,6 +114,12 @@ ai-agent-browser/
 - Tool implementations in `apps/mcp/src/`
 - Published to npm as `browse-ai`
 - Works with Claude Desktop, Cursor, Windsurf
+
+### Python SDK
+- Client and models in `packages/python-sdk/browseai/`
+- LangChain integration in `packages/python-sdk/browseai/integrations/langchain.py`
+- CrewAI integration in `packages/python-sdk/browseai/integrations/crewai.py`
+- Published to PyPI as `browseai`
 
 ### Research & Prompts
 - Improve LLM prompts for better extraction

@@ -34,13 +34,31 @@ const CONTRIBUTION_AREAS = [
     desc: "Improve how we extract knowledge, verify claims, and score confidence.",
     examples: ["Multi-source verification", "Contradiction detection", "Better prompts"],
   },
+  {
+    icon: Code2,
+    title: "Python SDK & Integrations",
+    desc: "The browseai Python package, LangChain tools, and CrewAI integration.",
+    examples: ["Async improvements", "New framework integrations", "SDK documentation"],
+  },
 ];
 
 const ROADMAP_ITEMS = [
   {
-    phase: "Now",
+    phase: "Done",
     title: "Evidence-backed research",
     desc: "Real-time web search, claim extraction, structured citations with confidence scores.",
+    done: true,
+  },
+  {
+    phase: "Done",
+    title: "Python SDK & framework integrations",
+    desc: "pip install browseai — works with LangChain and CrewAI out of the box.",
+    done: true,
+  },
+  {
+    phase: "Done",
+    title: "Intelligent caching & source tracking",
+    desc: "Smart TTL for time-sensitive queries, automatic domain tracking for every search.",
     done: true,
   },
   {
@@ -50,15 +68,9 @@ const ROADMAP_ITEMS = [
     done: false,
   },
   {
-    phase: "Soon",
-    title: "Broader knowledge sources",
-    desc: "Academic papers (arXiv, PubMed), code search (GitHub), real-time data feeds.",
-    done: false,
-  },
-  {
     phase: "Vision",
-    title: "The trust layer for AI",
-    desc: "An open-source verification layer that any AI agent can plug into. Community-driven, transparent.",
+    title: "Reliable research infrastructure for every AI agent",
+    desc: "Open source, community-driven. The research layer agents trust.",
     done: false,
   },
 ];
@@ -98,7 +110,7 @@ const Developers = () => {
             <span className="hidden sm:inline">Playground</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">
+            <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4 sm:hidden" />
               <span className="hidden sm:inline">GitHub</span>
             </a>
@@ -128,7 +140,7 @@ const Developers = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button className="gap-2" asChild>
-              <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">
+              <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
                 <GitBranch className="w-4 h-4" />
                 View on GitHub
               </a>
@@ -320,7 +332,7 @@ const Developers = () => {
               <Code2 className="w-4 h-4 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">How to Use It</h2>
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-8">Three ways to get started</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-8">Four ways to get started</h3>
 
             <div className="space-y-6">
               <div className="p-5 rounded-xl bg-card border border-border">
@@ -355,11 +367,30 @@ const Developers = () => {
               <div className="p-5 rounded-xl bg-card border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="text-[10px]">3</Badge>
-                  <span className="font-semibold">REST API — For your own agents</span>
+                  <span className="font-semibold">Python SDK — For agents & scripts</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Use the REST API from LangChain, CrewAI, AutoGen, or any HTTP client.
-                  Self-host or use the hosted version.
+                  Install the Python SDK for LangChain, CrewAI, or any Python agent.
+                  Sync and async support built in.
+                </p>
+                <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary mb-3">
+                  <Terminal className="w-4 h-4 text-accent" />
+                  <code className="text-sm font-mono">pip install browseai</code>
+                </div>
+                <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+result = client.ask("What causes aurora borealis?")
+print(result.answer, result.confidence)`}</pre>
+              </div>
+
+              <div className="p-5 rounded-xl bg-card border border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="text-[10px]">4</Badge>
+                  <span className="font-semibold">REST API — For any language</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Use the REST API from any HTTP client. Self-host or use the hosted version.
                 </p>
                 <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
@@ -483,7 +514,7 @@ const Developers = () => {
             <div className="space-y-4">
               {[
                 { step: "1", cmd: "# Fork on GitHub, then:", label: "Fork the repo", isNote: true },
-                { step: "2", cmd: "git clone https://github.com/YOUR_USERNAME/ai-agent-browser.git && cd ai-agent-browser", label: "Clone your fork" },
+                { step: "2", cmd: "git clone https://github.com/YOUR_USERNAME/BrowserAI-Dev.git && cd BrowserAI-Dev", label: "Clone your fork" },
                 { step: "3", cmd: "pnpm install && cp .env.example .env", label: "Install & configure" },
                 { step: "4", cmd: "git checkout -b feat/your-feature", label: "Create a branch" },
                 { step: "5", cmd: "pnpm dev", label: "Start development" },
@@ -538,13 +569,13 @@ const Developers = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button className="gap-2" asChild>
-                <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">
+                <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
                   <GitBranch className="w-4 h-4" />
                   Start Contributing
                 </a>
               </Button>
               <Button variant="outline" className="gap-2" asChild>
-                <a href="https://github.com/EiffelHack/ai-agent-browser/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">
+                <a href="https://github.com/EiffelHack/BrowserAI-Dev/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">
                   <BookOpen className="w-4 h-4" />
                   Read the Guide
                   <ExternalLink className="w-3 h-3" />
@@ -563,7 +594,7 @@ const Developers = () => {
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
           </div>

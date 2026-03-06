@@ -50,7 +50,12 @@ async function rawLLMAnswer(query: string, apiKey: string, cache: CacheService):
     }),
   });
 
-  if (!res.ok) throw new Error(`LLM failed: ${res.status}`);
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Invalid LLM API key. Check your OpenRouter key in Settings.");
+    }
+    throw new Error(`LLM failed: ${res.status}`);
+  }
   const data = await res.json();
   const answer = data.choices?.[0]?.message?.content || "No response";
   await cache.set(cacheKey, answer, RAW_LLM_CACHE_TTL);

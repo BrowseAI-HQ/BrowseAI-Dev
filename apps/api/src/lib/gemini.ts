@@ -101,6 +101,9 @@ export async function extractKnowledge(
 
   if (!res.ok) {
     const text = await res.text();
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("Invalid LLM API key. Check your OpenRouter key in Settings.");
+    }
     if (res.status === 429)
       throw new Error("Rate limit exceeded. Please try again later.");
     if (res.status === 402) throw new Error("AI credits exhausted.");

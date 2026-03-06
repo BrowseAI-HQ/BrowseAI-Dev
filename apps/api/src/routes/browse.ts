@@ -91,6 +91,9 @@ async function getRequestEnv(
           userId,
         };
       }
+
+      // Key was provided but could not be resolved — don't silently fall back
+      throw { statusCode: 401, message: "Invalid BrowseAI API key. Check your key or generate a new one in Settings." };
     }
   }
 
@@ -115,6 +118,18 @@ async function checkDemoLimit(
   return null;
 }
 
+function isKeyError(e: any): boolean {
+  return e.message?.includes("Invalid") && e.message?.includes("key");
+}
+
+function errorResponse(e: any, fallbackMsg: string): { status: number; error: string } {
+  if (e.statusCode && e.message) return { status: e.statusCode, error: e.message };
+  if (isKeyError(e)) return { status: 401, error: e.message };
+  if (e.message?.includes("Rate limit")) return { status: 429, error: "Rate limit exceeded. Please try again later." };
+  if (e.message?.includes("credits")) return { status: 402, error: "Insufficient credits. Top up your OpenRouter account." };
+  return { status: 500, error: fallbackMsg };
+}
+
 export function registerBrowseRoutes(
   app: FastifyInstance,
   env: Env,
@@ -129,11 +144,11 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
-    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
-    if (limitError) return reply.status(429).send({ success: false, error: limitError });
-
     try {
+      const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      const limitError = await checkDemoLimit(request, cache, isOwnKeys);
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
+
       const result = await search(
         parsed.data.query,
         reqEnv.SERP_API_KEY,
@@ -144,7 +159,8 @@ export function registerBrowseRoutes(
       return { success: true, result };
     } catch (e: any) {
       request.log.error(e);
-      return reply.status(500).send({ success: false, error: "Search failed" });
+      const { status, error } = errorResponse(e, "Search failed");
+      return reply.status(status).send({ success: false, error });
     }
   });
 
@@ -155,17 +171,18 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: "Please provide a valid URL (e.g. https://example.com)" });
 
-    const { isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
-    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
-    if (limitError) return reply.status(429).send({ success: false, error: limitError });
-
     try {
+      const { isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+      const limitError = await checkDemoLimit(request, cache, isOwnKeys);
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
+
       const result = await openPage(parsed.data.url, cache);
       return { success: true, result: result.page };
     } catch (e: any) {
       request.log.error(e);
       const msg = e.message?.includes("not allowed") ? e.message : "Failed to open page";
-      return reply.status(500).send({ success: false, error: msg });
+      const { status, error } = e.statusCode ? { status: e.statusCode, error: e.message } : { status: 500, error: msg };
+      return reply.status(status).send({ success: false, error });
     }
   });
 
@@ -176,11 +193,10 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: "Please provide a valid URL (e.g. https://example.com)" });
 
-    const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
-    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
-    if (limitError) return reply.status(429).send({ success: false, error: limitError });
-
     try {
+      const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+      const limitError = await checkDemoLimit(request, cache, isOwnKeys);
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
       const result = await extractFromPage(
         parsed.data.url,
         parsed.data.query,
@@ -190,7 +206,8 @@ export function registerBrowseRoutes(
       return { success: true, result };
     } catch (e: any) {
       request.log.error(e);
-      return reply.status(500).send({ success: false, error: "Extraction failed" });
+      const { status, error } = errorResponse(e, "Extraction failed");
+      return reply.status(status).send({ success: false, error });
     }
   });
 
@@ -201,21 +218,17 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
-    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
-    if (limitError) return reply.status(429).send({ success: false, error: limitError });
-
     try {
+      const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      const limitError = await checkDemoLimit(request, cache, isOwnKeys);
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
       const result = await answerQuery(parsed.data.query, reqEnv, cache);
       const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer");
       return { success: true, result: { ...result, shareId } };
     } catch (e: any) {
       request.log.error(e);
-      const isRateLimit = e.message?.includes("Rate limit");
-      const isCredits = e.message?.includes("credits");
-      const status = isRateLimit ? 429 : isCredits ? 402 : 500;
-      const msg = isRateLimit ? "Rate limit exceeded" : isCredits ? "Insufficient credits" : "Answer generation failed";
-      return reply.status(status).send({ success: false, error: msg });
+      const { status, error } = errorResponse(e, "Answer generation failed");
+      return reply.status(status).send({ success: false, error });
     }
   });
 
@@ -227,16 +240,16 @@ export function registerBrowseRoutes(
         .status(400)
         .send({ success: false, error: parsed.error.message });
 
-    const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
-    const limitError = await checkDemoLimit(request, cache, isOwnKeys);
-    if (limitError) return reply.status(429).send({ success: false, error: limitError });
-
     try {
+      const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
+      const limitError = await checkDemoLimit(request, cache, isOwnKeys);
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
       const result = await compareAnswers(parsed.data.query, reqEnv, cache);
       return { success: true, result };
     } catch (e: any) {
       request.log.error(e);
-      return reply.status(500).send({ success: false, error: "Comparison failed" });
+      const { status, error } = errorResponse(e, "Comparison failed");
+      return reply.status(status).send({ success: false, error });
     }
   });
 
@@ -275,5 +288,20 @@ export function registerBrowseRoutes(
     if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
     const history = await store.getUserHistory(userId);
     return { success: true, result: history };
+  });
+
+  // Top sources (public — great for marketing)
+  app.get("/browse/sources/top", async (request) => {
+    const { limit } = request.query as { limit?: string };
+    const topSources = await store.getTopSources(limit ? parseInt(limit) : 20);
+    return { success: true, result: topSources };
+  });
+
+  // Analytics summary (auth required)
+  app.get("/browse/analytics/summary", async (request, reply) => {
+    const userId = getUserIdFromRequest(request);
+    if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
+    const summary = await store.getAnalyticsSummary();
+    return { success: true, result: summary };
   });
 }

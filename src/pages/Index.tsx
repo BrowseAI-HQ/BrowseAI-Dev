@@ -89,7 +89,7 @@ const Index = () => {
             <span className="hidden sm:inline">Developers</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/EiffelHack/ai-agent-browser" target="_blank" rel="noopener">
+            <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4 sm:hidden" />
               <span className="hidden sm:inline">GitHub</span>
             </a>
@@ -404,13 +404,40 @@ const Index = () => {
 }`}</pre>
             </div>
 
+            {/* Python SDK */}
+            <div className="p-5 rounded-xl bg-card border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Python SDK</span>
+                <button
+                  onClick={() => copyText("pip install browseai", "pip")}
+                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  {copied === "pip" ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copied === "pip" ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary mb-3">
+                <Terminal className="w-4 h-4 text-accent" />
+                <code className="text-sm font-mono">pip install browseai</code>
+              </div>
+              <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+result = client.ask("What causes aurora borealis?")
+print(result.answer, result.confidence)`}</pre>
+              <p className="text-xs text-muted-foreground mt-3">
+                Works with LangChain and CrewAI — <code className="bg-secondary px-1 rounded">pip install browseai[langchain]</code>
+              </p>
+            </div>
+
             {/* REST API */}
             <div className="p-5 rounded-xl bg-card border border-border">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">REST API (any agent framework)</span>
                 <button
-                  onClick={() => copyText(`curl -X POST http://localhost:3001/browse/answer \\
+                  onClick={() => copyText(`curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
+  -H "X-API-Key: bai_your_key" \\
   -d '{"query": "What causes aurora borealis?"}'`, "api")}
                   className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                 >
@@ -418,8 +445,9 @@ const Index = () => {
                   {copied === "api" ? "Copied" : "Copy"}
                 </button>
               </div>
-              <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`curl -X POST http://localhost:3001/browse/answer \\
+              <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
+  -H "X-API-Key: bai_your_key" \\
   -d '{"query": "What causes aurora borealis?"}'`}</pre>
             </div>
           </motion.div>
@@ -471,6 +499,8 @@ const Index = () => {
               { method: "POST", path: "/browse/compare", desc: "Raw LLM vs evidence-backed" },
               { method: "GET", path: "/browse/share/:id", desc: "Get a shared result" },
               { method: "GET", path: "/browse/stats", desc: "Total queries answered" },
+              { method: "GET", path: "/browse/sources/top", desc: "Top cited sources" },
+              { method: "GET", path: "/browse/analytics/summary", desc: "Usage analytics" },
             ].map((ep) => (
               <div key={ep.path} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
                 <Badge variant="outline" className={`text-xs font-mono ${ep.method === "GET" ? "text-blue-400 border-blue-400/30" : "text-emerald-400 border-emerald-400/30"}`}>
@@ -492,7 +522,7 @@ const Index = () => {
             <div className="flex flex-wrap justify-center gap-4">
               {[
                 "Web Search", "Readability", "LLM", "MCP Protocol",
-                "Fastify", "React", "Supabase", "TypeScript",
+                "Fastify", "React", "Supabase", "TypeScript", "Python SDK",
               ].map((tech) => (
                 <span key={tech} className="px-4 py-2 rounded-full bg-secondary border border-border text-sm text-muted-foreground">
                   {tech}
