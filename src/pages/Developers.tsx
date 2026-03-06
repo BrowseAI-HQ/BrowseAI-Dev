@@ -79,6 +79,12 @@ const ROADMAP_ITEMS = [
     desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
     done: false,
   },
+  {
+    phase: "Later",
+    title: "Streaming API & response formats",
+    desc: "Low-latency streaming for voice agents. Brief and detailed response modes. Built for real-time pipelines.",
+    done: false,
+  },
 ];
 
 const GOOD_FIRST_ISSUES = [

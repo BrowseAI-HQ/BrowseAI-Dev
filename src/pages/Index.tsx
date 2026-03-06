@@ -213,6 +213,7 @@ const Index = () => {
                 { phase: "Next", text: "Multi-source verification — cross-reference claims across sources, consensus scoring, contradiction detection" },
                 { phase: "Then", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Later", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
+                { phase: "Later", text: "Streaming API & response formats — low-latency streaming for voice agents, brief/detailed modes" },
               ].map((item, i) => (
                 <div key={item.phase} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
                   <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
