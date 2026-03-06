@@ -119,6 +119,11 @@ Response:
 - **AI**: OpenRouter (100+ models)
 - **Protocol**: Model Context Protocol (MCP)
 
+## Community
+
+- [Discord](https://discord.gg/b5SPaGk2)
+- [GitHub](https://github.com/EiffelHack/BrowserAI-Dev)
+
 ## License
 
 MIT

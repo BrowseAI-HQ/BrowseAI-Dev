@@ -140,6 +140,11 @@ Async support: `AsyncBrowseAI` with the same API.
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
 | `PORT` | No | API server port (default: 3001) |
 
+## Community
+
+- [Discord](https://discord.gg/b5SPaGk2) — questions, feedback, showcase
+- [GitHub Issues](https://github.com/EiffelHack/BrowserAI-Dev/issues) — bugs, feature requests
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding conventions, and PR process.
