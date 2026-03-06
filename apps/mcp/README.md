@@ -1,8 +1,8 @@
 # browse-ai
 
-Open-source deep research MCP server for AI agents.
+Reliable research infrastructure for AI agents.
 
-Turn any AI assistant into a research engine with real-time web search, evidence extraction, and structured citations.
+MCP server with real-time web search, evidence extraction, and structured citations. Turn any AI assistant into a research engine.
 
 ## What it does
 

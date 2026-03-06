@@ -27,6 +27,9 @@ dependencies = [
     "pydantic>=2.0.0",
 ]
 
+[project.scripts]
+browseai = "browseai.cli:main"
+
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.2.0"]
 crewai = ["crewai>=0.41.0"]

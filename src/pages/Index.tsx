@@ -112,13 +112,13 @@ const Index = () => {
               Open Source &middot; For Agents &amp; Humans &middot; MCP &amp; REST API
             </Badge>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.05]">
-              Reliable Research
+              Research Infra
               <br />
               <span className="text-gradient">for AI Agents</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">
-              The browse &amp; research platform that gives AI agents real-time web search
-              with evidence-backed citations. Or just search it yourself.
+              The research infrastructure that gives AI agents real-time web search
+              with evidence-backed citations. Python SDK, MCP &amp; REST API.
             </p>
           </div>
 
@@ -209,10 +209,10 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
               {[
-                { phase: "Today", text: "Reliable research for agents and humans — real-time web search with structured citations" },
+                { phase: "Today", text: "Reliable research infrastructure for AI agents — real-time web search with structured citations" },
                 { phase: "Next", text: "Multi-source verification — cross-reference claims, consensus scoring, contradiction detection" },
                 { phase: "Then", text: "Broader knowledge — academic papers, code search, real-time data feeds" },
-                { phase: "Vision", text: "The reliable research platform for every AI agent and developer — open source, community-driven" },
+                { phase: "Vision", text: "The reliable research infrastructure for every AI agent — open source, community-driven" },
               ].map((item, i) => (
                 <div key={item.phase} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
                   <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">

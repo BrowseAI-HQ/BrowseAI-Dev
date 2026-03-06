@@ -130,7 +130,7 @@ const Developers = () => {
             Open Source
           </Badge>
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-            Build the trust layer
+            Build the research infra
             <br />
             <span className="text-gradient">for AI agents</span>
           </h1>
@@ -313,7 +313,7 @@ const Developers = () => {
                 they can use BrowseAI to actually verify their findings against real sources before writing a single line of code.
               </p>
               <p>
-                This is open source because the trust layer for AI shouldn't be owned by one company.
+                This is open source because research infrastructure for AI shouldn't be owned by one company.
                 It should be transparent, auditable, and community-driven.
               </p>
               <p className="text-foreground font-medium">

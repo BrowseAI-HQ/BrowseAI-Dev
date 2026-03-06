@@ -24,7 +24,7 @@
 
   <!-- Text -->
   <text x="340" y="310" font-family="system-ui, -apple-system, sans-serif" font-size="88" font-weight="700" fill="#FAFAFA">BrowseAI Dev</text>
-  <text x="340" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#A1A1AA">Reliable Research for AI Agents</text>
+  <text x="340" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#A1A1AA">Reliable Research Infrastructure for AI Agents</text>
   <text x="340" y="440" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#F97316">browseai.dev</text>
 
   <!-- Bottom badges -->

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 from typing import Any
 
 import httpx
@@ -93,6 +95,23 @@ class BrowseAI:
             base_url=base_url,
             headers=self._headers,
             timeout=timeout,
+        )
+
+    @classmethod
+    def from_config(cls, config_path: str | None = None, **kwargs: Any) -> "BrowseAI":
+        """Create a client from ~/.browseai.json (written by ``browseai setup``)."""
+        path = config_path or os.path.expanduser("~/.browseai.json")
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                f"No config found at {path}. Run 'browseai setup' first."
+            )
+        with open(path) as f:
+            config = json.load(f)
+        return cls(
+            api_key=config.get("api_key"),
+            tavily_key=config.get("tavily_key"),
+            openrouter_key=config.get("openrouter_key"),
+            **kwargs,
         )
 
     def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
@@ -190,6 +209,23 @@ class AsyncBrowseAI:
             base_url=base_url,
             headers=self._headers,
             timeout=timeout,
+        )
+
+    @classmethod
+    def from_config(cls, config_path: str | None = None, **kwargs: Any) -> "AsyncBrowseAI":
+        """Create an async client from ~/.browseai.json (written by ``browseai setup``)."""
+        path = config_path or os.path.expanduser("~/.browseai.json")
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                f"No config found at {path}. Run 'browseai setup' first."
+            )
+        with open(path) as f:
+            config = json.load(f)
+        return cls(
+            api_key=config.get("api_key"),
+            tavily_key=config.get("tavily_key"),
+            openrouter_key=config.get("openrouter_key"),
+            **kwargs,
         )
 
     async def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
