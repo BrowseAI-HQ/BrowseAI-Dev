@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Key, Plus, Trash2, Copy, Check, AlertTriangle } from "lucide-react";
+import { Key, Plus, Trash2, Copy, Check, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,8 +133,11 @@ export function ApiKeyManager() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="tavily" className="text-xs">
+                <Label htmlFor="tavily" className="text-xs flex items-center justify-between">
                   Tavily API Key
+                  <a href="https://app.tavily.com" target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    Get free key <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
                 </Label>
                 <Input
                   id="tavily"
@@ -146,8 +149,11 @@ export function ApiKeyManager() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="openrouter" className="text-xs">
+                <Label htmlFor="openrouter" className="text-xs flex items-center justify-between">
                   OpenRouter API Key
+                  <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    Get free key <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
                 </Label>
                 <Input
                   id="openrouter"
