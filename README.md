@@ -2,7 +2,11 @@
 
 **Reliable research infrastructure for AI agents** — open-source research engine with real-time web search, evidence extraction, and structured citations.
 
-Turn any AI assistant into a research engine. Every claim is backed by a URL. Every answer has a confidence score.
+Turn any AI agent into a research engine. Every claim is backed by a URL. Every answer has a confidence score. Drop it into LangChain, CrewAI, or any agent pipeline.
+
+```
+Agent → BrowseAI → Internet → Verified answers + sources
+```
 
 ## How It Works
 
@@ -139,6 +143,18 @@ Async support: `AsyncBrowseAI` with the same API.
 | `SUPABASE_URL` | No | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
 | `PORT` | No | API server port (default: 3001) |
+
+## Examples
+
+See the [examples/](examples/) directory for ready-to-run agent recipes:
+
+| Example | Description |
+|---------|-------------|
+| [research-agent.py](examples/research-agent.py) | Simple research agent with citations |
+| [code-research-agent.py](examples/code-research-agent.py) | Research libraries/docs before writing code |
+| [hallucination-detector.py](examples/hallucination-detector.py) | Compare raw LLM vs evidence-backed answers |
+| [langchain-agent.py](examples/langchain-agent.py) | BrowseAI as a LangChain tool |
+| [crewai-research-team.py](examples/crewai-research-team.py) | Multi-agent research team with CrewAI |
 
 ## Community
 

@@ -23,7 +23,7 @@ jobs:
         working-directory: packages/python-sdk
         run: |
           CURRENT=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          PUBLISHED=$(pip index versions browseai 2>/dev/null | grep -oP '^\S+ \(\K[^)]+' || echo "0.0.0")
+          PUBLISHED=$(python -c "import urllib.request, json; data=json.loads(urllib.request.urlopen('https://pypi.org/pypi/browseai/json').read()); print(data['info']['version'])" 2>/dev/null || echo "0.0.0")
           if [ "$CURRENT" = "$PUBLISHED" ]; then
             echo "Version unchanged ($CURRENT), skipping publish"
             echo "skip=true" >> $GITHUB_OUTPUT

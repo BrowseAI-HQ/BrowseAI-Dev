@@ -88,6 +88,10 @@ const Index = () => {
             <Rocket className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Developers</span>
           </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/recipes")}>
+            <Zap className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Recipes</span>
+          </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
             <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4 sm:hidden" />

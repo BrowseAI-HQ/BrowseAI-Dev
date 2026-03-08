@@ -2,7 +2,7 @@
   "name": "browse-ai",
   "version": "0.1.5",
   "type": "module",
-  "description": "Reliable research infrastructure for AI agents. MCP server with real-time web search, evidence extraction, and structured citations.",
+  "description": "Reliable research infrastructure for AI agents. MCP server with real-time web search, evidence extraction, and structured citations. The research layer for LangChain, CrewAI, and custom agents.",
   "keywords": [
     "mcp",
     "claude",
@@ -11,7 +11,22 @@
     "deep-research",
     "model-context-protocol",
     "cursor",
-    "windsurf"
+    "windsurf",
+    "langchain",
+    "crewai",
+    "openai",
+    "deep-search",
+    "rag",
+    "agent-tools",
+    "research-agent",
+    "web-browsing",
+    "citations",
+    "ai-search",
+    "llm-tools",
+    "autogpt",
+    "llamaindex",
+    "evidence",
+    "fact-checking"
   ],
   "license": "MIT",
   "bin": {
