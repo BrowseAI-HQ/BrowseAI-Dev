@@ -9,14 +9,10 @@ on:
 
 jobs:
   publish:
-    name: Version & Publish to npm
+    name: Build & Publish to npm
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -26,33 +22,21 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build MCP package
         run: pnpm --filter browse-ai build
-      - name: Auto-bump patch version if unchanged
+      - name: Check version against npm
         id: version
         working-directory: apps/mcp
         run: |
           CURRENT=$(node -p "require('./package.json').version")
           PUBLISHED=$(npm view browse-ai version 2>/dev/null || echo "0.0.0")
           if [ "$CURRENT" = "$PUBLISHED" ]; then
-            echo "Version unchanged ($CURRENT), auto-bumping patch..."
-            npm version patch --no-git-tag-version
-            NEW=$(node -p "require('./package.json').version")
-            echo "Bumped to $NEW"
-            echo "bumped=true" >> $GITHUB_OUTPUT
-            echo "new_version=$NEW" >> $GITHUB_OUTPUT
+            echo "Version unchanged ($CURRENT), skipping publish"
+            echo "skip=true" >> $GITHUB_OUTPUT
           else
-            echo "Version already changed: $PUBLISHED -> $CURRENT"
-            echo "bumped=false" >> $GITHUB_OUTPUT
+            echo "Publishing: $PUBLISHED -> $CURRENT"
+            echo "skip=false" >> $GITHUB_OUTPUT
           fi
-      - name: Commit version bump
-        if: steps.version.outputs.bumped == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add apps/mcp/package.json
-          git commit -m "chore: bump browse-ai to v${{ steps.version.outputs.new_version }}"
-          git pull --rebase origin main
-          git push
       - name: Publish to npm
+        if: steps.version.outputs.skip != 'true'
         working-directory: apps/mcp
         run: npm publish --access public
         env:
