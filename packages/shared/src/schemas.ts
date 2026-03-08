@@ -27,7 +27,7 @@ export const BrowseResultSchema = z.object({
 });
 
 export const SearchRequestSchema = z.object({
-  query: z.string().min(1),
+  query: z.string().min(1).max(500),
   limit: z.number().int().min(1).max(20).optional().default(5),
 });
 
@@ -41,9 +41,9 @@ export const OpenRequestSchema = z.object({
 
 export const ExtractRequestSchema = z.object({
   url: urlWithProtocol,
-  query: z.string().optional(),
+  query: z.string().max(500).optional(),
 });
 
 export const AnswerRequestSchema = z.object({
-  query: z.string().min(1),
+  query: z.string().min(1).max(500),
 });

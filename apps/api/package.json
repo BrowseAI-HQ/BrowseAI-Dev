@@ -16,17 +16,17 @@
   },
   "dependencies": {
     "@browse/shared": "workspace:*",
-    "fastify": "^5.3.0",
     "@fastify/cors": "^11.0.0",
     "@mozilla/readability": "^0.5.0",
-    "linkedom": "^0.18.0",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.3.0",
     "ioredis": "^5.6.0",
-    "zod": "^3.25.76",
-    "dotenv": "^16.4.7"
+    "linkedom": "^0.18.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/node": "^22.16.5",
     "tsx": "^4.19.0",
-    "typescript": "^5.8.3",
-    "@types/node": "^22.16.5"
+    "typescript": "^5.8.3"
   }
 }

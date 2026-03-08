@@ -1,6 +1,6 @@
 # browseai
 
-Python SDK for [BrowseAI Dev](https://browseai.dev) — reliable research infrastructure for AI agents.
+**Reliable research infrastructure for AI agents.** Python SDK for [BrowseAI Dev](https://browseai.dev) — the research layer for LangChain, CrewAI, and custom agent pipelines.
 
 ## Install
 

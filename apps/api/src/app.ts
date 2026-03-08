@@ -14,8 +14,9 @@ export async function buildApp() {
 
   const allowedOrigins = [
     env.CORS_ORIGIN,
-    "http://localhost:8080",
-    "http://localhost:5173",
+    ...(process.env.NODE_ENV !== "production"
+      ? ["http://localhost:8080", "http://localhost:5173"]
+      : []),
   ].filter(Boolean);
 
   await app.register(cors, {

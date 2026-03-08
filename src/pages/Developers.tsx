@@ -40,13 +40,19 @@ const CONTRIBUTION_AREAS = [
     desc: "The browseai Python package, LangChain tools, and CrewAI integration.",
     examples: ["Async improvements", "New framework integrations", "SDK documentation"],
   },
+  {
+    icon: BookOpen,
+    title: "Examples & Recipes",
+    desc: "Agent recipes, tutorials, and demo projects that help developers get started fast.",
+    examples: ["New agent recipes", "Video walkthroughs", "Framework-specific demos"],
+  },
 ];
 
 const ROADMAP_ITEMS = [
   {
-    phase: "Done",
-    title: "Evidence-backed research",
-    desc: "Real-time web search, claim extraction, structured citations with confidence scores.",
+    phase: "Today",
+    title: "Reliable research infrastructure",
+    desc: "Web search, evidence extraction, structured citations, Python SDK, MCP server, agent recipes, intelligent caching.",
     done: true,
   },
   {
@@ -68,7 +74,7 @@ const ROADMAP_ITEMS = [
     done: false,
   },
   {
-    phase: "Next",
+    phase: "Then",
     title: "Knowledge graph & entity extraction",
     desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
     done: false,
@@ -120,6 +126,14 @@ const Developers = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
             <Terminal className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Playground</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="text-foreground text-xs font-medium" onClick={() => navigate("/developers")}>
+            <Rocket className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Developers</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/recipes")}>
+            <Zap className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Recipes</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
             <a href="https://github.com/EiffelHack/BrowserAI-Dev" target="_blank" rel="noopener">
@@ -411,6 +425,29 @@ print(result.answer, result.confidence)`}</pre>
   -d '{"query": "What causes aurora borealis?"}'`}</pre>
               </div>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Agent Recipes CTA */}
+      <section className="py-16 px-6 border-t border-border">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="p-8 rounded-xl bg-accent/5 border border-accent/20 text-center"
+          >
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Zap className="w-5 h-5 text-accent" />
+              <h3 className="text-xl font-bold">Agent Recipes</h3>
+            </div>
+            <p className="text-muted-foreground mb-5 max-w-lg mx-auto">
+              Ready-to-run examples for research agents, LangChain, CrewAI, hallucination detection, and more.
+            </p>
+            <Button className="gap-2" onClick={() => navigate("/recipes")}>
+              Browse Recipes <ArrowRight className="w-4 h-4" />
+            </Button>
           </motion.div>
         </div>
       </section>

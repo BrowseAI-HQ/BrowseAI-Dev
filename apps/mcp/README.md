@@ -1,8 +1,8 @@
 # browse-ai
 
-Reliable research infrastructure for AI agents.
+**Reliable research infrastructure for AI agents.** The research layer your agents are missing.
 
-MCP server with real-time web search, evidence extraction, and structured citations. Turn any AI assistant into a research engine.
+MCP server with real-time web search, evidence extraction, and structured citations. Drop into Claude Desktop, Cursor, Windsurf, LangChain, CrewAI, or any agent pipeline.
 
 ## What it does
 
