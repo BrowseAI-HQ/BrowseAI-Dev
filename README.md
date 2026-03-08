@@ -1,12 +1,19 @@
 # BrowseAI Dev
 
-**Reliable research infrastructure for AI agents** — open-source research engine with real-time web search, evidence extraction, and structured citations.
+[![npm](https://img.shields.io/npm/v/browse-ai)](https://www.npmjs.com/package/browse-ai)
+[![PyPI](https://img.shields.io/pypi/v/browseai)](https://pypi.org/project/browseai/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Discord](https://img.shields.io/discord/1348034005498675220?label=Discord)](https://discord.gg/b5SPaGk2)
 
-Turn any AI agent into a research engine. Every claim is backed by a URL. Every answer has a confidence score. Drop it into LangChain, CrewAI, or any agent pipeline.
+**Reliable research infrastructure for AI agents** — real-time web search, evidence extraction, and structured citations. Every claim is backed by a URL. Every answer has a confidence score.
 
 ```
 Agent → BrowseAI → Internet → Verified answers + sources
 ```
+
+[Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Discord](https://discord.gg/b5SPaGk2)
+
+---
 
 ## How It Works
 
@@ -14,7 +21,7 @@ Agent → BrowseAI → Internet → Verified answers + sources
 search → fetch pages → extract claims → build evidence graph → cited answer
 ```
 
-Every answer goes through a 5-step verification pipeline. No hallucination. Every claim is backed by a real source.
+Every answer goes through a 5-step verification pipeline. No hallucination. Every claim is backed by a real source. Confidence scores are evidence-based — computed from source count, domain diversity, claim grounding, and citation depth.
 
 ## Quick Start
 
@@ -77,14 +84,45 @@ Or manually add to your MCP config:
 }
 ```
 
+### REST API
+
+```bash
+# With your own keys (BYOK — free, no limits)
+curl -X POST https://browseai.dev/api/browse/answer \
+  -H "Content-Type: application/json" \
+  -H "X-Tavily-Key: tvly-xxx" \
+  -H "X-OpenRouter-Key: sk-or-xxx" \
+  -d '{"query": "What is quantum computing?"}'
+
+# With a BrowseAI API key
+curl -X POST https://browseai.dev/api/browse/answer \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer bai_xxx" \
+  -d '{"query": "What is quantum computing?"}'
+```
+
 ### Self-Host
 
 ```sh
+git clone https://github.com/BrowseAI-HQ/BrowserAI-Dev.git
+cd BrowserAI-Dev
 pnpm install
 cp .env.example .env
 # Fill in: SERP_API_KEY, OPENROUTER_API_KEY
 pnpm dev
 ```
+
+## API Keys
+
+Three ways to authenticate:
+
+| Method | How | Limits |
+|--------|-----|--------|
+| **BYOK** (recommended) | Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers | Unlimited, free |
+| **BrowseAI API Key** | Pass `Authorization: Bearer bai_xxx` | Unlimited (uses your stored keys) |
+| **Demo** | No auth needed | 5 queries/hour per IP |
+
+Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — it bundles your Tavily + OpenRouter keys into one key for CLI, MCP, and API use.
 
 ## Project Structure
 
@@ -133,17 +171,6 @@ pnpm dev
 
 Async support: `AsyncBrowseAI` with the same API.
 
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SERP_API_KEY` | Yes | Web search API key (Tavily) |
-| `OPENROUTER_API_KEY` | Yes | LLM API key (OpenRouter) |
-| `REDIS_URL` | No | Redis URL (falls back to in-memory cache) |
-| `SUPABASE_URL` | No | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
-| `PORT` | No | API server port (default: 3001) |
-
 ## Examples
 
 See the [examples/](examples/) directory for ready-to-run agent recipes:
@@ -156,6 +183,29 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 | [langchain-agent.py](examples/langchain-agent.py) | BrowseAI as a LangChain tool |
 | [crewai-research-team.py](examples/crewai-research-team.py) | Multi-agent research team with CrewAI |
 
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SERP_API_KEY` | Yes | Web search API key ([Tavily](https://app.tavily.com)) |
+| `OPENROUTER_API_KEY` | Yes | LLM API key ([OpenRouter](https://openrouter.ai/keys)) |
+| `REDIS_URL` | No | Redis URL (falls back to in-memory cache) |
+| `SUPABASE_URL` | No | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
+| `PORT` | No | API server port (default: 3001) |
+
+## Tech Stack
+
+- **API**: Node.js, TypeScript, Fastify, Zod
+- **Search**: Tavily API
+- **Parsing**: @mozilla/readability + linkedom
+- **AI**: Gemini 2.5 Flash via OpenRouter
+- **Caching**: In-memory with intelligent TTL (time-sensitive queries get shorter TTL)
+- **Frontend**: React, Tailwind CSS, shadcn/ui, Framer Motion
+- **MCP**: @modelcontextprotocol/sdk
+- **Python SDK**: httpx, Pydantic
+- **Database**: Supabase (PostgreSQL)
+
 ## Community
 
 - [Discord](https://discord.gg/b5SPaGk2) — questions, feedback, showcase
@@ -165,14 +215,6 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding conventions, and PR process.
 
-## Tech Stack
+## License
 
-- **API**: Node.js, TypeScript, Fastify, Zod
-- **Search**: Tavily API
-- **Parsing**: @mozilla/readability + linkedom
-- **AI**: Gemini 2.5 Flash via OpenRouter
-- **Caching**: Redis (optional) / in-memory with intelligent TTL
-- **Frontend**: React, Tailwind CSS, shadcn/ui
-- **MCP**: @modelcontextprotocol/sdk
-- **Python SDK**: httpx, Pydantic
-- **Database**: Supabase (PostgreSQL)
+[MIT](LICENSE)

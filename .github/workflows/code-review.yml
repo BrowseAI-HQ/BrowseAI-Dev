@@ -26,9 +26,30 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            Review this PR for BrowseAI Dev (TypeScript/React/Fastify monorepo).
-            Focus on: security issues, bugs, breaking API changes, performance.
-            Skip style nitpicks. Be concise.
+            You are reviewing a PR for BrowseAI Dev — an open-source research infrastructure
+            monorepo (TypeScript/React/Fastify) with an MCP server, REST API, and Python SDK.
+
+            Structure: apps/api/ (Fastify), apps/mcp/ (MCP server), packages/shared/ (types),
+            packages/python-sdk/, src/ (React frontend with Tailwind + shadcn/ui).
+
+            Review checklist:
+            1. **Bugs & logic errors** — off-by-one, null handling, race conditions, async/await misuse
+            2. **Breaking API changes** — changes to response shapes in apps/api/src/routes/browse.ts,
+               shared types in packages/shared/src/types.ts, or MCP tool schemas in apps/mcp/
+            3. **Performance** — unnecessary re-renders in React, N+1 queries, missing caching opportunities
+            4. **Type safety** — any type usage, missing null checks, unsafe casts
+            5. **Confidence algorithm** — changes to apps/api/src/lib/gemini.ts must preserve evidence-based
+               scoring (source count, domain diversity, claim grounding, citation depth). Never allow
+               LLM self-assessed confidence to replace this.
+            6. **API key handling** — keys in apps/api/src/lib/crypto.ts use AES-256-GCM. Ensure BYOK
+               headers (X-Tavily-Key, X-OpenRouter-Key) are never logged or persisted.
+            7. **Rate limiting** — demo limit is 5/hour per IP. Changes must not bypass this for
+               unauthenticated users.
+            8. **Cross-package consistency** — changes to shared types must be reflected in API, MCP,
+               and Python SDK.
+
+            Skip style nitpicks and minor formatting. Focus on things that would break production,
+            compromise security, or confuse users. Post inline comments on specific lines. Be concise.
 
   security-review:
     name: Claude Security Review
@@ -43,8 +64,35 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            Perform a security-focused review of this PR.
-            Check for: OWASP top 10 vulnerabilities, injection risks (XSS, SQL, command),
-            exposed secrets or credentials, insecure API patterns, missing input validation,
-            authentication/authorization issues, and unsafe dependency changes.
-            Only report actual security concerns. Be concise.
+            Perform a security-focused review of this PR for BrowseAI Dev.
+            This is an open-source project handling user API keys and making requests
+            to third-party services (Tavily, OpenRouter via LLM).
+
+            Security checklist:
+            1. **Injection** — XSS in React components (dangerouslySetInnerHTML, unsanitized user input
+               in JSX), SQL injection in Supabase queries, command injection in any exec/spawn calls
+            2. **Secrets exposure** — API keys logged to console, included in error responses, committed
+               in code, or leaked via stack traces. Check for hardcoded keys matching patterns:
+               tvly-*, sk-or-*, sk-ant-*, bai_*, supabase service role keys
+            3. **Authentication bypass** — changes to apps/api/src/lib/auth.ts or rate limiting logic
+               that could let unauthenticated users bypass the 5/hour demo limit
+            4. **Cryptography** — changes to apps/api/src/lib/crypto.ts must maintain AES-256-GCM.
+               Check for weak algorithms, hardcoded IVs, or key material in logs
+            5. **SSRF** — any new URL fetching that takes user-controlled URLs without validation
+            6. **Dependency risks** — new dependencies with known CVEs, typosquatting risk, or
+               excessive permissions. Flag post-install scripts in new packages.
+            7. **CI/CD tampering** — changes to .github/workflows/ that add new secret access,
+               modify permissions, or alter publish pipelines
+            8. **Access control** — changes to .github/CODEOWNERS that modify who can approve PRs,
+               or any changes that weaken branch protection
+
+            CRITICAL files to flag if modified:
+            - .github/CODEOWNERS → warn: "This changes who can approve PRs"
+            - .github/workflows/*.yml → warn: "This modifies CI/CD pipelines with secrets access"
+            - apps/api/src/lib/crypto.ts → warn: "This modifies API key encryption"
+            - apps/api/src/lib/auth.ts → warn: "This modifies authentication logic"
+            - package.json scripts → warn: "Supply chain risk — review scripts carefully"
+            - Any .env* file → warn: "Possible secrets exposure"
+
+            Only report actual security concerns with severity (Critical/High/Medium/Low).
+            No false positives. Be concise but thorough.
