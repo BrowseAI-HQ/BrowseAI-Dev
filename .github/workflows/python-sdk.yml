@@ -1,0 +1,32 @@
+name: Python SDK
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/python-sdk/**'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/python-sdk/**'
+
+jobs:
+  test:
+    name: Test Python SDK
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        working-directory: packages/python-sdk
+        run: |
+          pip install -e ".[langchain,crewai]"
+          pip install pytest
+      - name: Run tests
+        working-directory: packages/python-sdk
+        run: pytest tests/ -v
