@@ -1,81 +1,30 @@
-name: Code Review
+name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
-  review:
-    name: AI Code Review
+  claude-review:
+    name: Claude Code Review
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
     steps:
-      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
         with:
-          fetch-depth: 0
-
-      - name: Get PR diff
-        id: diff
-        run: |
-          git fetch origin ${{ github.base_ref }}
-          DIFF=$(git diff origin/${{ github.base_ref }}...HEAD -- '*.ts' '*.tsx' '*.js' '*.py' ':!pnpm-lock.yaml' ':!dist/' | head -c 30000)
-          # Write to file to avoid shell escaping issues
-          echo "$DIFF" > /tmp/pr_diff.txt
-
-      - name: Review with Claude
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          DIFF=$(cat /tmp/pr_diff.txt)
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
-
-          # Build prompt
-          PROMPT="You are a senior code reviewer for BrowseAI Dev, an open-source research infrastructure project for AI agents (TypeScript/React/Fastify monorepo).
-
-          Review this PR diff. Focus on:
-          1. Security issues (XSS, injection, leaked secrets)
-          2. Bugs or logic errors
-          3. Breaking changes to API or SDK
-          4. Performance concerns
-
-          Skip style nitpicks. If the code looks good, say so briefly.
-
-          PR: ${PR_TITLE}
-
-          Diff:
-          ${DIFF}"
-
-          # Call Claude API
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-            -H "content-type: application/json" \
-            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
-            -H "anthropic-version: 2023-06-01" \
-            -d "$(jq -n --arg prompt "$PROMPT" '{
-              "model": "claude-sonnet-4-20250514",
-              "max_tokens": 1500,
-              "messages": [{"role": "user", "content": $prompt}]
-            }')")
-
-          # Extract text from response
-          REVIEW=$(echo "$RESPONSE" | jq -r '.content[0].text // "Review failed — check ANTHROPIC_API_KEY secret."')
-          echo "$REVIEW" > /tmp/review.txt
-
-      - name: Post review comment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const review = fs.readFileSync('/tmp/review.txt', 'utf8').trim();
-            if (review && review !== 'Review failed — check ANTHROPIC_API_KEY secret.') {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: `## Claude Code Review\n\n${review}\n\n---\n*Automated review by Claude Sonnet*`
-              });
-            }
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-20250514
+          direct_prompt: |
+            Review this PR for BrowseAI Dev (TypeScript/React/Fastify monorepo).
+            Focus on: security issues, bugs, breaking API changes, performance.
+            Skip style nitpicks. Be concise.
+          timeout_minutes: 5
