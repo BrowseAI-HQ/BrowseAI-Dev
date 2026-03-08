@@ -13,6 +13,8 @@ import Playground from "./pages/Playground";
 import Dashboard from "./pages/Dashboard";
 import Developers from "./pages/Developers";
 import Recipes from "./pages/Recipes";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -35,6 +37,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/developers" element={<Developers />} />
             <Route path="/recipes" element={<Recipes />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

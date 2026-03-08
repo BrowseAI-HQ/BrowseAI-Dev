@@ -648,6 +648,8 @@ print(result.answer, result.confidence)`}</pre>
             <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
+            <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>
+            <button onClick={() => navigate("/terms")} className="hover:text-foreground transition-colors">Terms</button>
           </div>
         </div>
       </footer>

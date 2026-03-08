@@ -331,6 +331,8 @@ const Recipes = () => {
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>
             <button onClick={() => navigate("/developers")} className="hover:text-foreground transition-colors">Developers</button>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
+            <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>
+            <button onClick={() => navigate("/terms")} className="hover:text-foreground transition-colors">Terms</button>
           </div>
         </div>
       </footer>
