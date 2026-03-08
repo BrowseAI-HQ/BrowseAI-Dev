@@ -10,7 +10,7 @@ on:
 
 jobs:
   claude-code:
-    name: Claude Code Action
+    name: Claude Code Review
     if: |
       (github.event_name == 'pull_request') ||
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -29,3 +29,22 @@ jobs:
             Review this PR for BrowseAI Dev (TypeScript/React/Fastify monorepo).
             Focus on: security issues, bugs, breaking API changes, performance.
             Skip style nitpicks. Be concise.
+
+  security-review:
+    name: Claude Security Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Perform a security-focused review of this PR.
+            Check for: OWASP top 10 vulnerabilities, injection risks (XSS, SQL, command),
+            exposed secrets or credentials, insecure API patterns, missing input validation,
+            authentication/authorization issues, and unsafe dependency changes.
+            Only report actual security concerns. Be concise.
