@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { buildApp } from "../apps/api/src/app";
+import { buildApp } from "../apps/api/src/app.js";
 
 let app: Awaited<ReturnType<typeof buildApp>> | null = null;
 

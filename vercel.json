@@ -1,1 +1,7 @@
-{}
+{
+  "git": {
+    "deploymentEnabled": {
+      "shreyas": false
+    }
+  }
+}
