@@ -19,5 +19,6 @@ COPY --from=builder --chown=appuser:appuser /app/package.json .
 
 USER appuser
 ENV NODE_ENV=production
+EXPOSE 3100
 
-ENTRYPOINT ["node", "dist/index.js"]
+ENTRYPOINT ["node", "dist/index.js", "--http"]

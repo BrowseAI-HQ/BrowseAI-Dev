@@ -66,6 +66,29 @@ Add to your MCP settings:
 }
 ```
 
+### HTTP Transport
+
+Run as an HTTP server for browser-based clients, Smithery, or any HTTP-capable agent:
+
+```bash
+# Start with HTTP transport
+npx browse-ai --http
+
+# Or set the port via environment variable
+MCP_HTTP_PORT=3100 npx browse-ai --http
+```
+
+The server exposes:
+- `POST /mcp` — MCP Streamable HTTP endpoint
+- `GET /health` — Health check
+
+### Docker
+
+```bash
+docker build -t browse-ai ./apps/mcp
+docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
+```
+
 ## MCP Tools
 
 | Tool | Description |

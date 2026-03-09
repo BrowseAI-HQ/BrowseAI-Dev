@@ -39,7 +39,7 @@ const RECIPES = [
   },
   {
     title: "LangChain Agent",
-    desc: "Drop BrowseAI tools into any LangChain agent. Search, ask, and extract with evidence.",
+    desc: "Drop BrowseAI Dev tools into any LangChain agent. Search, ask, and extract with evidence.",
     file: "langchain-agent.py",
     cmd: "pip install browseai[langchain] && python examples/langchain-agent.py",
     tags: ["LangChain", "Agent Framework", "Tools"],
@@ -48,7 +48,7 @@ const RECIPES = [
   },
   {
     title: "CrewAI Research Team",
-    desc: "Multi-agent team: one agent researches with BrowseAI, another analyzes and writes a report.",
+    desc: "Multi-agent team: one agent researches with BrowseAI Dev, another analyzes and writes a report.",
     file: "crewai-research-team.py",
     cmd: "pip install browseai[crewai] && python examples/crewai-research-team.py",
     tags: ["CrewAI", "Multi-Agent", "Reports"],
@@ -124,7 +124,7 @@ const Recipes = () => {
             <span className="text-gradient">agent examples</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Clone, install, and run. Each recipe shows a different way to use BrowseAI
+            Clone, install, and run. Each recipe shows a different way to use BrowseAI Dev
             as the research layer in your agent pipeline.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
@@ -152,7 +152,7 @@ const Recipes = () => {
           >
             <span className="px-3 py-1.5 rounded-lg bg-card border border-border font-medium text-foreground">Agent</span>
             <ArrowRight className="w-4 h-4 shrink-0" />
-            <span className="px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 font-medium text-accent">BrowseAI</span>
+            <span className="px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 font-medium text-accent">BrowseAI Dev</span>
             <ArrowRight className="w-4 h-4 shrink-0" />
             <span className="px-3 py-1.5 rounded-lg bg-card border border-border font-medium text-foreground">Internet</span>
             <ArrowRight className="w-4 h-4 shrink-0" />
@@ -299,7 +299,7 @@ const Recipes = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="space-y-6">
             <h2 className="text-2xl sm:text-3xl font-bold">Build your own agent recipe</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              BrowseAI gives your agents reliable web research. Build something cool and share it with the community.
+              BrowseAI Dev gives your agents reliable web research. Build something cool and share it with the community.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button className="gap-2" asChild>
