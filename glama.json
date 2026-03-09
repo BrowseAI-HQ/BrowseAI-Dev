@@ -2,5 +2,9 @@
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "maintainers": [
     "shreyassaw5394"
+  ],
+  "related_servers": [
+    "punkpeye/tavily-mcp-server",
+    "anthropics/mcp-server-fetch"
   ]
 }
