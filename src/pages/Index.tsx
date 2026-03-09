@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, Zap, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,14 +46,42 @@ const PIPELINE_STEPS = [
 const Index = () => {
   const [query, setQuery] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistStatus, setWaitlistStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [waitlistMessage, setWaitlistMessage] = useState("");
   const navigate = useNavigate();
   const typedText = useTypewriter(TYPEWRITER_QUERIES);
   const { user, loading: authLoading } = useAuth();
+  const [loginOpen, setLoginOpen] = useState(false);
 
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
     if (!searchQuery.trim()) return;
     navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
+  const handleWaitlist = async () => {
+    if (!waitlistEmail.trim() || !/\S+@\S+\.\S+/.test(waitlistEmail)) return;
+    setWaitlistStatus("loading");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: waitlistEmail.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWaitlistStatus("success");
+        setWaitlistMessage(data.message);
+        setWaitlistEmail("");
+      } else {
+        setWaitlistStatus("error");
+        setWaitlistMessage(data.error || "Something went wrong");
+      }
+    } catch {
+      setWaitlistStatus("error");
+      setWaitlistMessage("Network error. Try again.");
+    }
   };
 
   const handleCompare = () => {
@@ -98,6 +126,13 @@ const Index = () => {
               <span className="hidden sm:inline">GitHub</span>
             </a>
           </Button>
+          <a
+            href="#waitlist"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
+          >
+            <Sparkles className="w-3 h-3" />
+            Pro Waitlist
+          </a>
           <ApiKeySettings />
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
@@ -445,7 +480,8 @@ print(result.answer, result.confidence)`}</pre>
                 <button
                   onClick={() => copyText(`curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: bai_your_key" \\
+  -H "X-Tavily-Key: tvly-xxx" \\
+  -H "X-OpenRouter-Key: sk-or-xxx" \\
   -d '{"query": "What causes aurora borealis?"}'`, "api")}
                   className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                 >
@@ -453,7 +489,15 @@ print(result.answer, result.confidence)`}</pre>
                   {copied === "api" ? "Copied" : "Copy"}
                 </button>
               </div>
-              <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`curl -X POST https://browseai.dev/api/browse/answer \\
+              <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`# BYOK — free, no limits
+curl -X POST https://browseai.dev/api/browse/answer \\
+  -H "Content-Type: application/json" \\
+  -H "X-Tavily-Key: tvly-xxx" \\
+  -H "X-OpenRouter-Key: sk-or-xxx" \\
+  -d '{"query": "What causes aurora borealis?"}'
+
+# Or with a BrowseAI API key
+curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: bai_your_key" \\
   -d '{"query": "What causes aurora borealis?"}'`}</pre>
@@ -537,6 +581,107 @@ print(result.answer, result.confidence)`}</pre>
                 </span>
               ))}
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== FREE vs PRO ===== */}
+      <section id="waitlist" className="py-24 px-6 border-t border-border scroll-mt-20">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Use it your way</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Everything works without an account. Sign in to unlock more — or just use BYOK and go.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+            {/* No account */}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account</h3>
+              <ul className="space-y-2.5 text-sm">
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> 5 free queries/hour</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BYOK for unlimited access</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> MCP + REST API + Python SDK</li>
+              </ul>
+            </motion.div>
+
+            {/* Free login */}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-card border border-accent/30">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-accent">Free Account</h3>
+                <Badge variant="outline" className="text-[10px] text-accent border-accent/30">Recommended</Badge>
+              </div>
+              <ul className="space-y-2.5 text-sm">
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI API key (one key for everything)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Usage analytics</li>
+              </ul>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 w-full text-xs border-accent/30 text-accent hover:bg-accent/10"
+                onClick={() => user ? navigate("/dashboard") : setLoginOpen(true)}
+              >
+                {user ? "Go to Dashboard" : "Sign in — it\u2019s free"}
+              </Button>
+              <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+            </motion.div>
+
+            {/* Pro */}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-card border border-border relative overflow-hidden">
+              <div className="absolute top-3 right-3">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20">
+                  <Sparkles className="w-3 h-3 text-accent" />
+                  <span className="text-[10px] font-semibold text-accent">Coming Soon</span>
+                </div>
+              </div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Pro</h3>
+              <ul className="space-y-2.5 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Managed keys — no BYOK needed</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> 15+ sources per query</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Multi-model verification</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Priority queue &amp; webhooks</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-accent mt-0.5 shrink-0" /> Team seats &amp; shared access</li>
+              </ul>
+            </motion.div>
+          </div>
+
+          {/* Pro waitlist */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="max-w-md mx-auto text-center space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Want Pro? Join the waitlist — we&apos;ll let you know when it&apos;s ready.
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  placeholder="you@company.com"
+                  value={waitlistEmail}
+                  onChange={(e) => { setWaitlistEmail(e.target.value); setWaitlistStatus("idle"); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleWaitlist()}
+                  className="w-full h-11 pl-10 pr-4 rounded-lg bg-secondary border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all"
+                />
+              </div>
+              <Button
+                onClick={handleWaitlist}
+                disabled={waitlistStatus === "loading" || !waitlistEmail.trim()}
+                className="bg-accent text-accent-foreground hover:bg-accent/90 h-11 px-5 text-sm font-semibold"
+              >
+                {waitlistStatus === "loading" ? "Joining..." : "Join Waitlist"}
+              </Button>
+            </div>
+            {waitlistStatus === "success" && (
+              <p className="text-sm text-emerald-400 flex items-center justify-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" /> {waitlistMessage}
+              </p>
+            )}
+            {waitlistStatus === "error" && (
+              <p className="text-sm text-destructive">{waitlistMessage}</p>
+            )}
           </motion.div>
         </div>
       </section>

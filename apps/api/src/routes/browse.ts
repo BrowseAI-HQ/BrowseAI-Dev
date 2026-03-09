@@ -118,6 +118,19 @@ async function checkDemoLimit(
   return null;
 }
 
+/** Detect client type from User-Agent and headers */
+function detectClient(request: FastifyRequest): string {
+  const ua = (request.headers["user-agent"] || "").toLowerCase();
+  if (ua.includes("browseai-python")) return "python-sdk";
+  if (ua.includes("browse-ai-mcp") || ua.includes("mcp")) return "mcp";
+  if (request.headers["x-browse-client"]) return String(request.headers["x-browse-client"]);
+  if (request.headers.origin || request.headers.referer) return "web";
+  if (ua.includes("curl")) return "curl";
+  if (ua.includes("python")) return "python";
+  if (ua.includes("node") || ua.includes("axios")) return "node";
+  return "api";
+}
+
 function isKeyError(e: any): boolean {
   return e.message?.includes("Invalid") && e.message?.includes("key");
 }
@@ -155,7 +168,8 @@ export function registerBrowseRoutes(
         cache,
         parsed.data.limit
       );
-      if (userId) store.save(parsed.data.query, { answer: "", claims: [], sources: [], confidence: 0, trace: [] }, userId, "search");
+      const client = detectClient(request);
+      if (userId) store.save(parsed.data.query, { answer: "", claims: [], sources: [], confidence: 0, trace: [] }, userId, "search", { client });
       return { success: true, result };
     } catch (e: any) {
       request.log.error(e);
@@ -223,7 +237,8 @@ export function registerBrowseRoutes(
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
       const result = await answerQuery(parsed.data.query, reqEnv, cache);
-      const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer");
+      const client = detectClient(request);
+      const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client });
       return { success: true, result: { ...result, shareId } };
     } catch (e: any) {
       request.log.error(e);

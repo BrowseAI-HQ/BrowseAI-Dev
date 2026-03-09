@@ -11,8 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 
-export function LoginModal() {
-  const [open, setOpen] = useState(false);
+interface LoginModalProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function LoginModal({ open: controlledOpen, onOpenChange }: LoginModalProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const { signInWithGoogle, signInWithGitHub } = useAuth();
 
   return (

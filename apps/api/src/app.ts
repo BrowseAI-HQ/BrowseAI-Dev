@@ -6,6 +6,7 @@ import { createSupabaseStore, createNoopStore } from "./services/store.js";
 import { createApiKeyService } from "./services/apiKeys.js";
 import { registerBrowseRoutes } from "./routes/browse.js";
 import { registerApiKeyRoutes } from "./routes/apiKeys.js";
+import { registerWaitlistRoutes } from "./routes/waitlist.js";
 
 export async function buildApp() {
   const env = await loadEnv();
@@ -49,6 +50,10 @@ export async function buildApp() {
 
   if (apiKeyService) {
     registerApiKeyRoutes(app, apiKeyService);
+  }
+
+  if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+    registerWaitlistRoutes(app, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
   }
 
   app.get("/health", async () => ({

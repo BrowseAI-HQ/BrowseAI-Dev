@@ -2,6 +2,7 @@ import type { BrowseResult } from "@browse/shared";
 
 export interface SaveOptions {
   cacheHit?: boolean;
+  client?: string;
 }
 
 export interface ResultStore {
@@ -51,6 +52,9 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
       }
       if (options?.cacheHit !== undefined) {
         body.cache_hit = options.cacheHit;
+      }
+      if (options?.client) {
+        body.client = options.client;
       }
 
       const res = await supabaseFetch("/browse_results", {
