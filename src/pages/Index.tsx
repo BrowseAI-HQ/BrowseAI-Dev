@@ -698,7 +698,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
           </p>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <a href="mailto:shreyassaw@gmail.com" className="hover:text-foreground transition-colors">shreyassaw@gmail.com</a>
-            <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+            <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <a href="https://www.linkedin.com/in/shreyas-sawant" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">LinkedIn</a>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
             <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>

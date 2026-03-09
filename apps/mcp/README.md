@@ -121,7 +121,7 @@ Response:
 
 ## Community
 
-- [Discord](https://discord.gg/b5SPaGk2)
+- [Discord](https://discord.gg/ubAuT4YQsT)
 - [GitHub](https://github.com/BrowseAI-HQ/BrowserAI-Dev)
 
 ## License

@@ -327,7 +327,7 @@ const Recipes = () => {
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
             <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
-            <a href="https://discord.gg/b5SPaGk2" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+            <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>
             <button onClick={() => navigate("/developers")} className="hover:text-foreground transition-colors">Developers</button>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>

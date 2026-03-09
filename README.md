@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/browse-ai)](https://www.npmjs.com/package/browse-ai)
 [![PyPI](https://img.shields.io/pypi/v/browseai)](https://pypi.org/project/browseai/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Discord](https://img.shields.io/discord/1348034005498675220?label=Discord)](https://discord.gg/b5SPaGk2)
+[![Discord](https://img.shields.io/discord/1348034005498675220?label=Discord)](https://discord.gg/ubAuT4YQsT)
 
 **Reliable research infrastructure for AI agents** — real-time web search, evidence extraction, and structured citations. Every claim is backed by a URL. Every answer has a confidence score.
 
@@ -11,7 +11,7 @@
 Agent → BrowseAI → Internet → Verified answers + sources
 ```
 
-[Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Discord](https://discord.gg/b5SPaGk2)
+[Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Discord](https://discord.gg/ubAuT4YQsT)
 
 ---
 
@@ -208,7 +208,7 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 
 ## Community
 
-- [Discord](https://discord.gg/b5SPaGk2) — questions, feedback, showcase
+- [Discord](https://discord.gg/ubAuT4YQsT) — questions, feedback, showcase
 - [GitHub Issues](https://github.com/BrowseAI-HQ/BrowserAI-Dev/issues) — bugs, feature requests
 
 ## Contributing
