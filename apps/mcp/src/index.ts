@@ -2,9 +2,12 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
+import { createServer } from "node:http";
+import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
 const VERSION = "0.1.6";
@@ -28,6 +31,7 @@ if (args.includes("--help") || args.includes("-h")) {
 
   Usage:
     browse-ai              Start the MCP server (stdio transport)
+    browse-ai --http       Start the MCP server (HTTP transport)
     browse-ai setup        Auto-configure Claude Desktop
     browse-ai --help       Show this help
     browse-ai --version    Show version
@@ -36,6 +40,7 @@ if (args.includes("--help") || args.includes("-h")) {
     BROWSE_API_KEY         BrowseAI Dev API key (get one at https://browseai.dev/dashboard)
     SERP_API_KEY           Tavily API key (get one at https://tavily.com) — BYOK mode
     OPENROUTER_API_KEY     OpenRouter API key (get one at https://openrouter.ai) — BYOK mode
+    MCP_HTTP_PORT          Port for HTTP transport (default: 3100)
 
   MCP Tools:
     browse.search          Search the web for information
@@ -360,16 +365,8 @@ async function answerPipeline(query: string): Promise<BrowseResult> {
   };
 }
 
-// --- MCP Server ---
-function startServer() {
-  // Validate env before starting
-  getEnvKeys();
-
-  const server = new McpServer({
-    name: "browse-ai",
-    version: VERSION,
-  });
-
+// --- Tool registration (shared between stdio and http) ---
+function registerTools(server: McpServer) {
   server.tool(
     "browse_search",
     "Search the web for information on a topic. Returns URLs, titles, snippets, and relevance scores.",
@@ -474,15 +471,87 @@ function startServer() {
       };
     }
   );
+}
 
-  async function run() {
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    console.error(`browse-ai v${VERSION} MCP server running on stdio`);
+// --- MCP Server ---
+function startServer() {
+  // Validate env before starting
+  getEnvKeys();
+
+  const useHttp = args.includes("--http") || !!process.env.MCP_HTTP_PORT;
+  const port = parseInt(process.env.MCP_HTTP_PORT || process.env.PORT || "3100", 10);
+
+  if (useHttp) {
+    const transports = new Map<string, StreamableHTTPServerTransport>();
+
+    const httpServer = createServer(async (req, res) => {
+      const url = new URL(req.url || "/", `http://localhost:${port}`);
+
+      // Health check
+      if (url.pathname === "/health") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ status: "ok", version: VERSION }));
+        return;
+      }
+
+      if (url.pathname === "/mcp") {
+        const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+        if (sessionId && transports.has(sessionId)) {
+          const transport = transports.get(sessionId)!;
+          await transport.handleRequest(req, res);
+          return;
+        }
+
+        // New session
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+        });
+
+        transport.onclose = () => {
+          if (transport.sessionId) {
+            transports.delete(transport.sessionId);
+          }
+        };
+
+        const server = new McpServer({
+          name: "browse-ai",
+          version: VERSION,
+        });
+        registerTools(server);
+        await server.connect(transport);
+
+        if (transport.sessionId) {
+          transports.set(transport.sessionId, transport);
+        }
+
+        await transport.handleRequest(req, res);
+        return;
+      }
+
+      res.writeHead(404);
+      res.end("Not found");
+    });
+
+    httpServer.listen(port, () => {
+      console.error(`browse-ai v${VERSION} MCP server running on http://localhost:${port}/mcp`);
+    });
+  } else {
+    const server = new McpServer({
+      name: "browse-ai",
+      version: VERSION,
+    });
+    registerTools(server);
+
+    async function run() {
+      const transport = new StdioServerTransport();
+      await server.connect(transport);
+      console.error(`browse-ai v${VERSION} MCP server running on stdio`);
+    }
+
+    run().catch((err) => {
+      console.error("Failed to start browse-ai:", err);
+      process.exit(1);
+    });
   }
-
-  run().catch((err) => {
-    console.error("Failed to start browse-ai:", err);
-    process.exit(1);
-  });
 }

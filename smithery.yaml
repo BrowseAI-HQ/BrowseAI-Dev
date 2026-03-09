@@ -1,0 +1,21 @@
+# Smithery configuration file: https://smithery.ai/docs/deployments
+
+build:
+  dockerBuildPath: ./apps/mcp
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      browseApiKey:
+        type: string
+        description: BrowseAI Dev API key (replaces serpApiKey and openRouterApiKey)
+      serpApiKey:
+        type: string
+        description: Tavily API key for web search (not needed if using browseApiKey)
+      openRouterApiKey:
+        type: string
+        description: OpenRouter API key for LLM (not needed if using browseApiKey)
+  commandFunction:
+    |-
+    (config) => ({ command: 'node', args: ['dist/index.js'], env: { BROWSE_API_KEY: config.browseApiKey || '', SERP_API_KEY: config.serpApiKey || '', OPENROUTER_API_KEY: config.openRouterApiKey || '' } })
