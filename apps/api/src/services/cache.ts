@@ -6,7 +6,7 @@ export interface CacheService {
 }
 
 export function createRedisCache(url: string): CacheService {
-  const redis = new Redis(url);
+  const redis = new (Redis as unknown as new (url: string) => Redis)(url);
   return {
     async get(key) {
       return redis.get(key);
