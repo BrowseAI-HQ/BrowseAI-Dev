@@ -106,6 +106,11 @@ export interface AdminMetrics {
   waitlistCount: number;
   admins: { id: string; email: string; created_at: string }[];
   clientBreakdown: { client: string; count: number }[];
+  packageStats: {
+    npm: { weeklyDownloads: number; totalDownloads: number } | null;
+    pypi: { weeklyDownloads: number; totalDownloads: number } | null;
+    github: { stars: number; forks: number; openIssues: number } | null;
+  };
 }
 
 export async function fetchAdminMetrics(): Promise<AdminMetrics> {

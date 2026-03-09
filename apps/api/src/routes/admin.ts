@@ -18,12 +18,13 @@ export function registerAdminRoutes(
     const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
     if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
 
-    // Fetch in parallel: analytics, waitlist count, admin list, client breakdown
-    const [analytics, waitlistData, adminList, clientBreakdown] = await Promise.all([
+    // Fetch in parallel: analytics, waitlist count, admin list, client breakdown, package stats
+    const [analytics, waitlistData, adminList, clientBreakdown, packageStats] = await Promise.all([
       store.getAnalyticsSummary(),
       fetchWaitlistCount(supabaseUrl, serviceRoleKey),
       fetchAdminList(supabaseUrl, serviceRoleKey),
       fetchClientBreakdown(supabaseUrl, serviceRoleKey),
+      fetchPackageStats(),
     ]);
 
     return reply.send({
@@ -33,6 +34,7 @@ export function registerAdminRoutes(
         waitlistCount: waitlistData.count,
         admins: adminList,
         clientBreakdown,
+        packageStats,
       },
     });
   });
@@ -133,6 +135,58 @@ async function fetchAdminList(supabaseUrl: string, serviceRoleKey: string) {
   );
   if (!res.ok) return [];
   return res.json();
+}
+
+async function fetchPackageStats(): Promise<{
+  npm: { weeklyDownloads: number; totalDownloads: number } | null;
+  pypi: { weeklyDownloads: number; totalDownloads: number } | null;
+  github: { stars: number; forks: number; openIssues: number } | null;
+}> {
+  const [npm, pypi, github] = await Promise.all([
+    // npm weekly downloads
+    fetch("https://api.npmjs.org/downloads/point/last-week/browse-ai")
+      .then(async (r) => {
+        if (!r.ok) return null;
+        const data = await r.json();
+        // Also get total (all-time) — npm only gives ranges, use last-year as proxy
+        const totalRes = await fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browse-ai");
+        const totalData = totalRes.ok ? await totalRes.json() : null;
+        return {
+          weeklyDownloads: data.downloads || 0,
+          totalDownloads: totalData?.downloads || 0,
+        };
+      })
+      .catch(() => null),
+    // PyPI downloads (use pypistats API)
+    fetch("https://pypistats.org/api/packages/browseai/recent?period=week")
+      .then(async (r) => {
+        if (!r.ok) return null;
+        const data = await r.json();
+        // Get overall stats
+        const overallRes = await fetch("https://pypistats.org/api/packages/browseai/overall?mirrors=false");
+        const overallData = overallRes.ok ? await overallRes.json() : null;
+        const totalDownloads = overallData?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
+        return {
+          weeklyDownloads: data.data?.last_week || 0,
+          totalDownloads,
+        };
+      })
+      .catch(() => null),
+    // GitHub stats
+    fetch("https://api.github.com/repos/BrowseAI-HQ/BrowserAI-Dev")
+      .then(async (r) => {
+        if (!r.ok) return null;
+        const data = await r.json();
+        return {
+          stars: data.stargazers_count || 0,
+          forks: data.forks_count || 0,
+          openIssues: data.open_issues_count || 0,
+        };
+      })
+      .catch(() => null),
+  ]);
+
+  return { npm, pypi, github };
 }
 
 async function fetchClientBreakdown(supabaseUrl: string, serviceRoleKey: string) {

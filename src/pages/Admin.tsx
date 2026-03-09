@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Shield, Activity, Users, Mail, BarChart3, Clock,
-  Zap, Plus, Trash2, CheckCircle2, Sparkles,
+  Zap, Plus, Trash2, CheckCircle2, Sparkles, Download, Star, GitFork, Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -176,7 +176,80 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Second row */}
+          {/* Package Downloads & GitHub */}
+          {metrics && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Package className="w-4 h-4 text-accent" />
+                  Package Installs &amp; GitHub
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {/* npm */}
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <Download className="w-4 h-4" />
+                      npm (browse-ai)
+                    </div>
+                    {metrics.packageStats.npm ? (
+                      <>
+                        <p className="text-2xl font-bold">{metrics.packageStats.npm.totalDownloads.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">{metrics.packageStats.npm.weeklyDownloads.toLocaleString()}/week</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">unavailable</p>
+                    )}
+                  </div>
+                  {/* PyPI */}
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <Download className="w-4 h-4" />
+                      PyPI (browseai)
+                    </div>
+                    {metrics.packageStats.pypi ? (
+                      <>
+                        <p className="text-2xl font-bold">{metrics.packageStats.pypi.totalDownloads.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">{metrics.packageStats.pypi.weeklyDownloads.toLocaleString()}/week</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">unavailable</p>
+                    )}
+                  </div>
+                  {/* GitHub */}
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <Star className="w-4 h-4" />
+                      GitHub
+                    </div>
+                    {metrics.packageStats.github ? (
+                      <>
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <p className="text-2xl font-bold">{metrics.packageStats.github.stars}</p>
+                            <p className="text-xs text-muted-foreground">stars</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold">{metrics.packageStats.github.forks}</p>
+                            <p className="text-xs text-muted-foreground">forks</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold">{metrics.packageStats.github.openIssues}</p>
+                            <p className="text-xs text-muted-foreground">issues</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">unavailable</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Performance */}
           {metrics && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <Card>
