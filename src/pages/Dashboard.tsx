@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink } from "lucide-react";
+import { Zap, ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, Users, Mail, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +11,15 @@ import { ApiKeyManager } from "@/components/ApiKeyManager";
 import {
   fetchUserStats,
   fetchUserHistory,
+  fetchWaitlist,
+  checkWaitlistStatus,
+  joinWaitlist,
   type UserStats,
   type QueryHistoryItem,
+  type WaitlistEntry,
 } from "@/lib/api/apiKeys";
+
+const ADMIN_EMAIL = "shreyassaw@gmail.com";
 
 const TOOL_ICONS: Record<string, typeof Search> = {
   search: Search,
@@ -41,6 +47,11 @@ const Dashboard = () => {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [history, setHistory] = useState<QueryHistoryItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
+  const [waitlistTotal, setWaitlistTotal] = useState(0);
+  const [onWaitlist, setOnWaitlist] = useState(false);
+  const [joiningWaitlist, setJoiningWaitlist] = useState(false);
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const loadData = useCallback(async () => {
     try {
@@ -54,6 +65,38 @@ const Dashboard = () => {
     }
   }, []);
 
+  const loadWaitlist = useCallback(async () => {
+    try {
+      const data = await fetchWaitlist();
+      setWaitlist(data.entries);
+      setWaitlistTotal(data.total);
+    } catch {
+      // Not admin or fetch failed
+    }
+  }, []);
+
+  const checkWaitlist = useCallback(async () => {
+    try {
+      const data = await checkWaitlistStatus();
+      setOnWaitlist(data.onWaitlist);
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  const handleJoinWaitlist = async () => {
+    if (!user?.email) return;
+    setJoiningWaitlist(true);
+    try {
+      await joinWaitlist(user.email, "dashboard");
+      setOnWaitlist(true);
+    } catch {
+      // Silently fail
+    } finally {
+      setJoiningWaitlist(false);
+    }
+  };
+
   useEffect(() => {
     if (!loading && !user) {
       navigate("/");
@@ -61,8 +104,12 @@ const Dashboard = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (user) loadData();
-  }, [user, loadData]);
+    if (user) {
+      loadData();
+      checkWaitlist();
+      if (user.email === ADMIN_EMAIL) loadWaitlist();
+    }
+  }, [user, loadData, checkWaitlist, loadWaitlist]);
 
   if (loading) {
     return (
@@ -184,25 +231,67 @@ const Dashboard = () => {
 
           <ApiKeyManager />
 
+          {isAdmin && (
+            <Card className="border-accent/30">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="w-4 h-4 text-accent" />
+                  Pro Waitlist
+                  <Badge variant="outline" className="text-xs ml-auto">{waitlistTotal} signups</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {waitlist.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No signups yet.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {waitlist.map((entry) => (
+                      <div key={entry.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
+                        <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-sm truncate flex-1">{entry.email}</span>
+                        <Badge variant="outline" className="text-[10px] shrink-0">{entry.source}</Badge>
+                        <span className="text-[10px] text-muted-foreground shrink-0 w-16 text-right">
+                          {timeAgo(entry.created_at)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="border-amber-400/20">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <span className="text-amber-400">&#9733;</span>
+                <Sparkles className="w-4 h-4 text-amber-400" />
                 BrowseAI Dev Pro
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">Coming soon — unlock advanced features for power users and teams.</p>
               <ul className="text-sm space-y-2 text-muted-foreground mb-4">
-                <li>Higher rate limits and priority processing</li>
-                <li>Team API keys and shared usage dashboards</li>
-                <li>Advanced analytics and query insights</li>
-                <li>Webhook notifications and API callbacks</li>
-                <li>Priority support</li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Managed keys — no BYOK needed</li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> 15+ sources per query</li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Multi-model verification</li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Priority queue &amp; webhooks</li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Team seats &amp; shared access</li>
               </ul>
-              <Button disabled className="w-full">
-                Coming Soon
-              </Button>
+              {onWaitlist ? (
+                <div className="flex items-center justify-center gap-2 py-2 text-sm text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  You're on the waitlist — we'll notify you when it's ready
+                </div>
+              ) : (
+                <Button
+                  onClick={handleJoinWaitlist}
+                  disabled={joiningWaitlist}
+                  className="w-full"
+                  variant="outline"
+                >
+                  {joiningWaitlist ? "Joining..." : "Join the Pro Waitlist"}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </motion.div>

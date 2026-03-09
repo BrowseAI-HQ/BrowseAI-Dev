@@ -24,12 +24,14 @@ export function LoginModal({ open: controlledOpen, onOpenChange }: LoginModalPro
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
-          <LogIn className="w-4 h-4" />
-          <span className="hidden sm:inline">Sign in</span>
-        </Button>
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5">
+            <LogIn className="w-4 h-4" />
+            <span className="hidden sm:inline">Sign in</span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Sign in to BrowseAI Dev</DialogTitle>

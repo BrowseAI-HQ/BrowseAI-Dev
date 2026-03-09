@@ -77,3 +77,32 @@ export async function fetchUserStats(): Promise<UserStats> {
 export async function fetchUserHistory(): Promise<QueryHistoryItem[]> {
   return authFetch("/user/history");
 }
+
+// Admin: waitlist
+
+export interface WaitlistEntry {
+  id: string;
+  email: string;
+  source: string;
+  created_at: string;
+}
+
+export async function fetchWaitlist(): Promise<{ entries: WaitlistEntry[]; total: number }> {
+  return authFetch("/waitlist");
+}
+
+export async function checkWaitlistStatus(): Promise<{ onWaitlist: boolean }> {
+  return authFetch("/waitlist/status");
+}
+
+export async function joinWaitlist(email: string, source = "dashboard"): Promise<{ message: string }> {
+  const API_BASE = import.meta.env.VITE_API_URL || "/api";
+  const res = await fetch(`${API_BASE}/waitlist`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, source }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to join waitlist");
+  return data;
+}
