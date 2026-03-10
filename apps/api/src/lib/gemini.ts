@@ -1,5 +1,6 @@
 import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
 import type { BrowseResult, BrowseClaim, BrowseSource } from "@browse/shared";
+import { verifyEvidence } from "./verify.js";
 
 const SYSTEM_PROMPT = `You are a knowledge extraction engine. Given web page content, extract structured claims with source attribution and write a clear answer.
 
@@ -71,28 +72,32 @@ const TOOL_SCHEMA = {
  * Compute confidence from real evidence signals instead of LLM self-assessment.
  *
  * Factors (each contributes a weighted portion):
- *   1. Source count    (30%) — more sources = more corroboration
- *   2. Domain diversity(25%) — claims backed by different domains are stronger
- *   3. Claim grounding (25%) — % of claims that cite at least one source
- *   4. Citation depth  (20%) — avg citations per claim (multi-source claims are stronger)
+ *   1. Source count       (20%) — more sources = more corroboration
+ *   2. Domain diversity   (15%) — claims backed by different domains are stronger
+ *   3. Claim grounding    (10%) — % of claims that cite at least one source
+ *   4. Citation depth     (10%) — avg citations per claim
+ *   5. Verification rate  (25%) — % of claims verified in actual source text (NEW)
+ *   6. Domain authority   (20%) — quality/trustworthiness of source domains (NEW)
  *
- * Range: 0.15 (single unsourced claim) → 0.97 (many claims, diverse domains, deep citations)
+ * Range: 0.10 (unverified, unknown sources) → 0.97 (verified claims, authoritative sources)
  */
-function computeConfidence(
+export function computeConfidence(
   claims: BrowseClaim[],
   sources: BrowseSource[],
+  verificationRate: number = 0,
+  avgAuthority: number = 0.5,
 ): number {
-  if (sources.length === 0) return 0.15;
-  if (claims.length === 0) return 0.3;
+  if (sources.length === 0) return 0.10;
+  if (claims.length === 0) return 0.25;
 
-  // 1. Source count score — diminishing returns via log curve, caps at ~6 sources
+  // 1. Source count score — diminishing returns via log curve
   const sourceScore = Math.min(1, Math.log2(sources.length + 1) / 3);
 
-  // 2. Domain diversity — unique domains / total sources (1.0 = every source is a different domain)
+  // 2. Domain diversity — unique domains / total sources
   const uniqueDomains = new Set(sources.map((s) => s.domain)).size;
   const domainScore = Math.min(1, uniqueDomains / Math.max(sources.length, 1));
 
-  // 3. Claim grounding — fraction of claims that have at least one source URL
+  // 3. Claim grounding — fraction of claims that cite at least one source
   const groundedClaims = claims.filter(
     (c) => c.sources && c.sources.length > 0,
   ).length;
@@ -106,21 +111,30 @@ function computeConfidence(
   const avgCitations = totalCitations / claims.length;
   const depthScore = Math.min(1, avgCitations / 3);
 
+  // 5. Verification — % of claims whose text was found in cited source pages
+  const verificationScore = verificationRate;
+
+  // 6. Domain authority — avg trustworthiness of source domains
+  const authorityScore = avgAuthority;
+
   // Weighted combination
   const raw =
-    sourceScore * 0.3 +
-    domainScore * 0.25 +
-    groundingScore * 0.25 +
-    depthScore * 0.2;
+    sourceScore * 0.20 +
+    domainScore * 0.15 +
+    groundingScore * 0.10 +
+    depthScore * 0.10 +
+    verificationScore * 0.25 +
+    authorityScore * 0.20;
 
-  // Scale to 0.15–0.97 range and round to 2 decimals
-  return Math.round((0.15 + raw * 0.82) * 100) / 100;
+  // Scale to 0.10–0.97 range and round to 2 decimals
+  return Math.round((0.10 + raw * 0.87) * 100) / 100;
 }
 
 export async function extractKnowledge(
   query: string,
   pageContents: string,
-  apiKey: string
+  apiKey: string,
+  pageTexts?: Map<string, string>,
 ): Promise<Omit<BrowseResult, "trace">> {
   const res = await fetch(LLM_ENDPOINT, {
     method: "POST",
@@ -167,8 +181,24 @@ export async function extractKnowledge(
     throw new Error("Failed to parse LLM output");
   }
 
-  const claims = knowledge.claims || [];
-  const sources = knowledge.sources || [];
+  const claims: BrowseClaim[] = knowledge.claims || [];
+  const sources: BrowseSource[] = knowledge.sources || [];
+
+  // Run post-extraction verification if page texts are available
+  if (pageTexts && pageTexts.size > 0) {
+    const verification = verifyEvidence(claims, sources, pageTexts);
+    return {
+      answer: knowledge.answer,
+      claims: verification.claims,
+      sources: verification.sources,
+      confidence: computeConfidence(
+        claims,
+        sources,
+        verification.verificationRate,
+        verification.avgAuthority,
+      ),
+    };
+  }
 
   return {
     answer: knowledge.answer,

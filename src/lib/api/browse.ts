@@ -3,11 +3,15 @@ export type BrowseSource = {
   title: string;
   domain: string;
   quote: string;
+  verified?: boolean;
+  authority?: number;
 };
 
 export type BrowseClaim = {
   claim: string;
   sources: string[];
+  verified?: boolean;
+  verificationScore?: number;
 };
 
 export type BrowseResult = {

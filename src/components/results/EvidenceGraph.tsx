@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Globe, Quote, LinkIcon } from "lucide-react";
+import { Globe, Quote, LinkIcon, CheckCircle2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { BrowseClaim, BrowseSource } from "@/lib/api/browse";
 
@@ -34,9 +34,20 @@ export function EvidenceGraph({ claims, sources }: { claims: BrowseClaim[]; sour
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">{claim.claim}</p>
-                <div className="flex items-center gap-1 mt-1.5">
+                <div className="flex items-center gap-1.5 mt-1.5">
                   <LinkIcon className="w-3 h-3 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">{claim.sources.length} source{claim.sources.length !== 1 ? "s" : ""}</span>
+                  {claim.verified !== undefined && (
+                    claim.verified ? (
+                      <span className="flex items-center gap-0.5 text-xs text-emerald-500">
+                        <CheckCircle2 className="w-3 h-3" /> verified
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-0.5 text-xs text-amber-500">
+                        <AlertCircle className="w-3 h-3" /> unverified
+                      </span>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -51,6 +62,7 @@ export function EvidenceGraph({ claims, sources }: { claims: BrowseClaim[]; sour
                     <div className="flex items-center gap-2 mb-1">
                       <Globe className="w-3 h-3 text-muted-foreground" />
                       <span className="text-xs text-accent font-mono">{src.domain}</span>
+                      {src.verified && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
                       <span className="text-xs text-muted-foreground truncate">— {src.title}</span>
                     </div>
                     {src.quote && (

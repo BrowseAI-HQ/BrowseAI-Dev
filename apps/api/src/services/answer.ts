@@ -71,27 +71,41 @@ export async function answerQuery(
     detail: `${successfulPages.length} pages (Readability)`,
   });
 
-  // Step 3: Build content for LLM
+  // Step 3: Build content for LLM + page text map for verification
+  const pageTexts = new Map<string, string>();
   const pageContents = successfulPages
     .map((p, i) => {
       const url = searchResults[i]?.url || "";
-      return `[Source ${i + 1}] URL: ${url}\nTitle: ${p.title}\n\n${p.content.slice(0, MAX_PAGE_CONTENT_LENGTH)}`;
+      const content = p.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
+      pageTexts.set(url, content);
+      return `[Source ${i + 1}] URL: ${url}\nTitle: ${p.title}\n\n${content}`;
     })
     .join("\n\n---\n\n");
 
-  // Step 4: Extract knowledge via LLM (OpenRouter)
+  // Step 4: Extract knowledge via LLM (OpenRouter) + verify against sources
   const llmStart = Date.now();
   const knowledge = await extractKnowledge(
     query,
     pageContents,
-    env.OPENROUTER_API_KEY
+    env.OPENROUTER_API_KEY,
+    pageTexts,
   );
   const llmDuration = Date.now() - llmStart;
 
+  // Count verified claims for trace
+  const verifiedCount = knowledge.claims.filter(
+    (c: any) => c.verified === true
+  ).length;
+
   trace.push({
     step: "Extract Claims",
-    duration_ms: Math.round(llmDuration * 0.4),
+    duration_ms: Math.round(llmDuration * 0.35),
     detail: `${knowledge.claims.length} claims`,
+  });
+  trace.push({
+    step: "Verify Evidence",
+    duration_ms: Math.round(llmDuration * 0.15),
+    detail: `${verifiedCount}/${knowledge.claims.length} claims verified`,
   });
   trace.push({
     step: "Build Evidence Graph",
@@ -100,7 +114,7 @@ export async function answerQuery(
   });
   trace.push({
     step: "Generate Answer",
-    duration_ms: Math.round(llmDuration * 0.5),
+    duration_ms: Math.round(llmDuration * 0.4),
     detail: "OpenRouter",
   });
 

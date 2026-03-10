@@ -23,8 +23,10 @@ export async function extractFromPage(
   if (cached) return JSON.parse(cached);
 
   const { page } = await openPage(url, cache);
-  const pageContent = `[Source 1] URL: ${url}\nTitle: ${page.title}\n\n${page.content.slice(0, MAX_PAGE_CONTENT_LENGTH)}`;
-  const result = await extractKnowledge(q, pageContent, apiKey);
+  const content = page.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
+  const pageContent = `[Source 1] URL: ${url}\nTitle: ${page.title}\n\n${content}`;
+  const pageTexts = new Map<string, string>([[url, content]]);
+  const result = await extractKnowledge(q, pageContent, apiKey, pageTexts);
   await cache.set(cacheKey, JSON.stringify(result), EXTRACT_CACHE_TTL);
   return result;
 }
