@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Shield, Activity, Users, Mail, BarChart3, Clock,
-  Zap, Plus, Trash2, CheckCircle2, Sparkles, Download, Star, GitFork, Package,
+  Plus, Trash2, CheckCircle2, Sparkles, Download, Star, GitFork, Package,
 } from "lucide-react";
+import { BrowseLogo } from "@/components/BrowseLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -156,7 +157,7 @@ const Admin = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Zap className="w-4 h-4" />
+                    <BrowseLogo className="w-4 h-4" />
                     Today
                   </div>
                   <p className="text-3xl font-bold">{metrics.queriesToday}</p>

@@ -1,4 +1,5 @@
 import { tavilySearch } from "../lib/tavily.js";
+import { sanitizeText } from "../lib/sanitize.js";
 import type { CacheService } from "./cache.js";
 
 export type SearchResult = {
@@ -21,8 +22,8 @@ export async function search(
   const response = await tavilySearch(query, apiKey, limit);
   const results: SearchResult[] = response.results.map((r) => ({
     url: r.url,
-    title: r.title,
-    snippet: r.content,
+    title: sanitizeText(r.title),
+    snippet: sanitizeText(r.content),
     score: r.score,
   }));
 

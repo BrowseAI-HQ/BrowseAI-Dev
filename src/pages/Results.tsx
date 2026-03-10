@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Zap, Share2, GitCompare, Check } from "lucide-react";
+import { ArrowLeft, Share2, GitCompare, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { browseKnowledge, type BrowseResult } from "@/lib/api/browse";
 import { FinalAnswer } from "@/components/results/FinalAnswer";

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, CheckCircle2, Sparkles, Shield } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, CheckCircle2, Sparkles, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,7 @@ import {
 
 const TOOL_ICONS: Record<string, typeof Search> = {
   search: Search,
-  answer: Zap,
+  answer: Sparkles,
   extract: FileText,
   compare: GitCompare,
   open: ExternalLink,
@@ -202,11 +202,12 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-1 max-h-96 overflow-y-auto">
                   {history.map((item) => {
-                    const Icon = TOOL_ICONS[item.tool] || Zap;
+                    const Icon = TOOL_ICONS[item.tool] || Sparkles;
                     return (
-                      <div
+                      <button
                         key={item.id}
-                        className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors"
+                        onClick={() => navigate(`/share/${item.id}`)}
+                        className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors w-full text-left cursor-pointer"
                       >
                         <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                         <span className="text-sm truncate flex-1">{item.query}</span>
@@ -216,7 +217,7 @@ const Dashboard = () => {
                         <span className="text-[10px] text-muted-foreground shrink-0 w-16 text-right">
                           {timeAgo(item.created_at)}
                         </span>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

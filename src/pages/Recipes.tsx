@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Zap, Code2, Terminal, ArrowRight, ExternalLink, Github,
+  Code2, Terminal, ArrowRight, ExternalLink, Github,
   BookOpen, Layers, Brain, Search, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BrowseLogo } from "@/components/BrowseLogo";
 
 const GITHUB_EXAMPLES = "https://github.com/BrowseAI-HQ/BrowserAI-Dev/blob/main/examples";
 
@@ -95,7 +96,7 @@ const Recipes = () => {
             <span className="hidden sm:inline">Developers</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-foreground text-xs font-medium" onClick={() => navigate("/recipes")}>
-            <Zap className="w-4 h-4 sm:hidden" />
+            <BrowseLogo className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Recipes</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
@@ -216,7 +217,7 @@ const Recipes = () => {
               className="p-6 rounded-xl border border-dashed border-border/60 flex flex-col items-center justify-center text-center gap-3"
             >
               <div className="p-2 rounded-lg bg-secondary">
-                <Zap className="w-4 h-4 text-muted-foreground" />
+                <BrowseLogo className="w-4 h-4 text-muted-foreground" />
               </div>
               <span className="font-semibold text-muted-foreground">More coming soon</span>
               <p className="text-sm text-muted-foreground">

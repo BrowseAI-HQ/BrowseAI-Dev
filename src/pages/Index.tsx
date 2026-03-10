@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Search, ArrowRight, Zap, GitCompare, Terminal, Globe, Quote,
+  Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
   Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BrowseLogo } from "@/components/BrowseLogo";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
@@ -117,7 +118,7 @@ const Index = () => {
             <span className="hidden sm:inline">Developers</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/recipes")}>
-            <Zap className="w-4 h-4 sm:hidden" />
+            <BrowseLogo className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Recipes</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>

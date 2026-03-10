@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Zap, ArrowRight, GitBranch, Code2, Users, Lightbulb,
+  ArrowRight, GitBranch, Code2, Users, Lightbulb,
   Terminal, Globe, BookOpen, CheckCircle2, Rocket, Heart,
   ExternalLink, Shield, Brain, Layers, Trophy, GitCommitHorizontal, Github,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BrowseLogo } from "@/components/BrowseLogo";
 import { useContributors } from "@/hooks/useContributors";
 
 const CONTRIBUTION_AREAS = [
@@ -132,7 +133,7 @@ const Developers = () => {
             <span className="hidden sm:inline">Developers</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/recipes")}>
-            <Zap className="w-4 h-4 sm:hidden" />
+            <BrowseLogo className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Recipes</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
@@ -439,7 +440,7 @@ print(result.answer, result.confidence)`}</pre>
             className="p-8 rounded-xl bg-accent/5 border border-accent/20 text-center"
           >
             <div className="flex items-center justify-center gap-2 mb-3">
-              <Zap className="w-5 h-5 text-accent" />
+              <BrowseLogo className="w-5 h-5 text-accent" />
               <h3 className="text-xl font-bold">Agent Recipes</h3>
             </div>
             <p className="text-muted-foreground mb-5 max-w-lg mx-auto">

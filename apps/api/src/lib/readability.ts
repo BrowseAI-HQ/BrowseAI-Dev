@@ -1,5 +1,6 @@
 import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
+import { sanitizeText } from "./sanitize.js";
 
 export type ParsedPage = {
   title: string;
@@ -57,10 +58,10 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
   }
 
   return {
-    title: article.title,
-    content: article.textContent,
-    excerpt: article.excerpt || "",
-    siteName: article.siteName,
-    byline: article.byline,
+    title: sanitizeText(article.title),
+    content: sanitizeText(article.textContent),
+    excerpt: sanitizeText(article.excerpt || ""),
+    siteName: article.siteName ? sanitizeText(article.siteName) : null,
+    byline: article.byline ? sanitizeText(article.byline) : null,
   };
 }
