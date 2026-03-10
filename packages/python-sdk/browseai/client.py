@@ -148,9 +148,15 @@ class BrowseAI:
         data = self._post("/browse/extract", body)
         return BrowseResult(**data)
 
-    def ask(self, query: str) -> BrowseResult:
-        """Full research pipeline: search, fetch, extract, and answer with citations."""
-        data = self._post("/browse/answer", {"query": query})
+    def ask(self, query: str, *, depth: str = "fast") -> BrowseResult:
+        """Full research pipeline: search, fetch, extract, and answer with citations.
+
+        Args:
+            query: The research question.
+            depth: 'fast' (default) or 'thorough'. Thorough mode auto-retries
+                   with a rephrased query when confidence is below 60%.
+        """
+        data = self._post("/browse/answer", {"query": query, "depth": depth})
         return BrowseResult(**data)
 
     def compare(self, query: str) -> CompareResult:
@@ -259,8 +265,14 @@ class AsyncBrowseAI:
         data = await self._post("/browse/extract", body)
         return BrowseResult(**data)
 
-    async def ask(self, query: str) -> BrowseResult:
-        data = await self._post("/browse/answer", {"query": query})
+    async def ask(self, query: str, *, depth: str = "fast") -> BrowseResult:
+        """Full research pipeline with optional thorough mode.
+
+        Args:
+            query: The research question.
+            depth: 'fast' (default) or 'thorough'.
+        """
+        data = await self._post("/browse/answer", {"query": query, "depth": depth})
         return BrowseResult(**data)
 
     async def compare(self, query: str) -> CompareResult:

@@ -421,11 +421,11 @@ function registerTools(server: McpServer) {
 
   server.tool(
     "browse_answer",
-    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score.",
-    { query: z.string() },
-    async ({ query }) => {
+    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score. Use depth='thorough' for auto-retry with rephrased queries when confidence is low.",
+    { query: z.string(), depth: z.enum(["fast", "thorough"]).optional().describe("Research depth: 'fast' (default) or 'thorough' (auto-retries with rephrased query if confidence < 60%)") },
+    async ({ query, depth }) => {
       if (API_MODE) {
-        const result = await apiCall("/browse/answer", { query });
+        const result = await apiCall("/browse/answer", { query, depth: depth || "fast" });
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       }
       const result = await answerPipeline(query);
