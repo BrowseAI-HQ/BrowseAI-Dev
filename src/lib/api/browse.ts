@@ -12,6 +12,14 @@ export type BrowseClaim = {
   sources: string[];
   verified?: boolean;
   verificationScore?: number;
+  consensusCount?: number;
+  consensusLevel?: "strong" | "moderate" | "weak" | "none";
+};
+
+export type Contradiction = {
+  claimA: string;
+  claimB: string;
+  topic: string;
 };
 
 export type BrowseResult = {
@@ -25,6 +33,7 @@ export type BrowseResult = {
     detail?: string;
   }[];
   shareId?: string;
+  contradictions?: Contradiction[];
 };
 
 export type CompareResult = {

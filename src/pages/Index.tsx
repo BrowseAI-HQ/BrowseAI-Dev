@@ -40,7 +40,8 @@ const PIPELINE_STEPS = [
   { label: "Search", detail: "Web search" },
   { label: "Fetch", detail: "Page parsing" },
   { label: "Extract", detail: "Claim extraction" },
-  { label: "Graph", detail: "Evidence map" },
+  { label: "Verify", detail: "BM25 matching" },
+  { label: "Consensus", detail: "Cross-source" },
   { label: "Answer", detail: "Cited result" },
 ];
 
@@ -251,7 +252,7 @@ const Index = () => {
               {[
                 { phase: "Today", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
                 { phase: "Today", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
-                { phase: "In Progress", text: "Multi-source verification — cross-reference claims across sources, consensus scoring, contradiction detection" },
+                { phase: "Done", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 150+ domain authority tiers" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Later", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Later", text: "Streaming API & response formats — low-latency streaming for voice agents, brief/detailed modes" },
@@ -276,7 +277,7 @@ const Index = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">How it works</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Every answer — whether from your agent or your own search — goes through a 5-step verification pipeline. Every claim is backed by a real source.
+              Every answer — whether from your agent or your own search — goes through a 6-step verification pipeline. Every claim is backed by a real source.
             </p>
           </motion.div>
 
@@ -318,15 +319,17 @@ const Index = () => {
             <pre className="text-xs text-muted-foreground overflow-x-auto font-mono leading-relaxed">{`{
   "answer": "Aurora borealis occurs when charged particles from the Sun...",
   "claims": [
-    { "claim": "Caused by solar wind particles...", "sources": ["https://..."] }
+    { "claim": "Caused by solar wind particles...", "sources": ["https://..."],
+      "verified": true, "verificationScore": 0.82 }
   ],
   "sources": [
-    { "url": "https://...", "domain": "wikipedia.org", "quote": "An aurora is..." }
+    { "url": "https://...", "domain": "nasa.gov", "quote": "An aurora is...",
+      "verified": true, "authority": 0.95 }
   ],
   "confidence": 0.92,
   "trace": [
     { "step": "Search Web", "duration_ms": 340, "detail": "5 results" },
-    { "step": "Fetch Pages", "duration_ms": 1200, "detail": "4 pages" }
+    { "step": "Verify Evidence", "duration_ms": 45, "detail": "3/3 claims verified" }
   ]
 }`}</pre>
           </motion.div>
@@ -362,9 +365,9 @@ const Index = () => {
               </div>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> 0-1 confidence score per answer</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Real-time web search, always current</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Structured claims linked to sources</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BM25-verified claims against source text</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (150+ domains)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (6-factor score)</li>
               </ul>
             </motion.div>
           </div>

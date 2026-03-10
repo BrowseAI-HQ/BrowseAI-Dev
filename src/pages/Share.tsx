@@ -80,7 +80,7 @@ const Share = () => {
         {data && (
           <>
             <FinalAnswer answer={data.result.answer} confidence={data.result.confidence} />
-            <EvidenceGraph claims={data.result.claims} sources={data.result.sources} />
+            <EvidenceGraph claims={data.result.claims} sources={data.result.sources} contradictions={data.result.contradictions} />
             {data.result.trace && <TracePipeline trace={data.result.trace} />}
 
             <motion.div

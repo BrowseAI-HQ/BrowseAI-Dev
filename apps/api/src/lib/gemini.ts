@@ -71,21 +71,27 @@ const TOOL_SCHEMA = {
 /**
  * Compute confidence from real evidence signals instead of LLM self-assessment.
  *
- * Factors (each contributes a weighted portion):
- *   1. Source count       (20%) — more sources = more corroboration
- *   2. Domain diversity   (15%) — claims backed by different domains are stronger
+ * 7-factor model (each contributes a weighted portion):
+ *   1. Source count       (15%) — more sources = more corroboration
+ *   2. Domain diversity   (10%) — claims backed by different domains are stronger
  *   3. Claim grounding    (10%) — % of claims that cite at least one source
- *   4. Citation depth     (10%) — avg citations per claim
- *   5. Verification rate  (25%) — % of claims verified in actual source text (NEW)
- *   6. Domain authority   (20%) — quality/trustworthiness of source domains (NEW)
+ *   4. Citation depth     (5%)  — avg citations per claim
+ *   5. Verification rate  (25%) — % of claims verified in actual source text
+ *   6. Domain authority   (20%) — quality/trustworthiness of source domains
+ *   7. Consensus score    (15%) — cross-source agreement across independent domains
  *
- * Range: 0.10 (unverified, unknown sources) → 0.97 (verified claims, authoritative sources)
+ * Penalty: contradictions reduce confidence (each detected contradiction
+ * subtracts 0.05 from the raw score before scaling).
+ *
+ * Range: 0.10 (unverified, unknown sources) → 0.97 (verified, multi-source consensus)
  */
 export function computeConfidence(
   claims: BrowseClaim[],
   sources: BrowseSource[],
   verificationRate: number = 0,
   avgAuthority: number = 0.5,
+  consensusScore: number = 0,
+  contradictionCount: number = 0,
 ): number {
   if (sources.length === 0) return 0.10;
   if (claims.length === 0) return 0.25;
@@ -112,19 +118,28 @@ export function computeConfidence(
   const depthScore = Math.min(1, avgCitations / 3);
 
   // 5. Verification — % of claims whose text was found in cited source pages
-  const verificationScore = verificationRate;
+  const verificationScoreVal = verificationRate;
 
   // 6. Domain authority — avg trustworthiness of source domains
   const authorityScore = avgAuthority;
 
+  // 7. Consensus — cross-source agreement
+  const consensusVal = consensusScore;
+
   // Weighted combination
-  const raw =
-    sourceScore * 0.20 +
-    domainScore * 0.15 +
+  let raw =
+    sourceScore * 0.15 +
+    domainScore * 0.10 +
     groundingScore * 0.10 +
-    depthScore * 0.10 +
-    verificationScore * 0.25 +
-    authorityScore * 0.20;
+    depthScore * 0.05 +
+    verificationScoreVal * 0.25 +
+    authorityScore * 0.20 +
+    consensusVal * 0.15;
+
+  // Contradiction penalty: each contradiction reduces confidence
+  if (contradictionCount > 0) {
+    raw = Math.max(0, raw - contradictionCount * 0.05);
+  }
 
   // Scale to 0.10–0.97 range and round to 2 decimals
   return Math.round((0.10 + raw * 0.87) * 100) / 100;
@@ -196,7 +211,12 @@ export async function extractKnowledge(
         sources,
         verification.verificationRate,
         verification.avgAuthority,
+        verification.consensusScore,
+        verification.contradictions.length,
       ),
+      contradictions: verification.contradictions.length > 0
+        ? verification.contradictions
+        : undefined,
     };
   }
 

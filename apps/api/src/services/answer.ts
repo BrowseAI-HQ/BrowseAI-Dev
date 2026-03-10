@@ -92,14 +92,18 @@ export async function answerQuery(
   );
   const llmDuration = Date.now() - llmStart;
 
-  // Count verified claims for trace
+  // Count verified and consensus claims for trace
   const verifiedCount = knowledge.claims.filter(
     (c: any) => c.verified === true
   ).length;
+  const strongConsensus = knowledge.claims.filter(
+    (c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
+  ).length;
+  const contradictionCount = knowledge.contradictions?.length || 0;
 
   trace.push({
     step: "Extract Claims",
-    duration_ms: Math.round(llmDuration * 0.35),
+    duration_ms: Math.round(llmDuration * 0.30),
     detail: `${knowledge.claims.length} claims`,
   });
   trace.push({
@@ -108,13 +112,18 @@ export async function answerQuery(
     detail: `${verifiedCount}/${knowledge.claims.length} claims verified`,
   });
   trace.push({
+    step: "Cross-Source Consensus",
+    duration_ms: Math.round(llmDuration * 0.10),
+    detail: `${strongConsensus}/${knowledge.claims.length} multi-source agreement${contradictionCount > 0 ? `, ${contradictionCount} contradiction${contradictionCount > 1 ? "s" : ""}` : ""}`,
+  });
+  trace.push({
     step: "Build Evidence Graph",
-    duration_ms: Math.round(llmDuration * 0.1),
+    duration_ms: Math.round(llmDuration * 0.10),
     detail: `${knowledge.sources.length} sources`,
   });
   trace.push({
     step: "Generate Answer",
-    duration_ms: Math.round(llmDuration * 0.4),
+    duration_ms: Math.round(llmDuration * 0.35),
     detail: "OpenRouter",
   });
 

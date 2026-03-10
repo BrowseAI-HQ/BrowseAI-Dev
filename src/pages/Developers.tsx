@@ -69,10 +69,10 @@ const ROADMAP_ITEMS = [
     done: true,
   },
   {
-    phase: "Next",
+    phase: "Done",
     title: "Multi-source verification",
-    desc: "Cross-reference claims across sources. Consensus scoring. Contradiction detection.",
-    done: false,
+    desc: "BM25 claim matching, cross-source consensus scoring, contradiction detection, domain authority (150+ domains).",
+    done: true,
   },
   {
     phase: "Then",

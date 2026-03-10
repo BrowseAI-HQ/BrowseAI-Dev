@@ -1,9 +1,31 @@
 import { motion } from "framer-motion";
-import { Globe, Quote, LinkIcon, CheckCircle2, AlertCircle } from "lucide-react";
+import { Globe, Quote, LinkIcon, CheckCircle2, AlertCircle, Users, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { BrowseClaim, BrowseSource } from "@/lib/api/browse";
+import type { BrowseClaim, BrowseSource, Contradiction } from "@/lib/api/browse";
 
-export function EvidenceGraph({ claims, sources }: { claims: BrowseClaim[]; sources: BrowseSource[] }) {
+const CONSENSUS_COLORS: Record<string, string> = {
+  strong: "text-emerald-500 border-emerald-500/30",
+  moderate: "text-blue-400 border-blue-400/30",
+  weak: "text-muted-foreground border-border",
+  none: "text-muted-foreground/50 border-border/50",
+};
+
+const CONSENSUS_LABELS: Record<string, string> = {
+  strong: "strong consensus",
+  moderate: "2-source agreement",
+  weak: "single source",
+  none: "unverified",
+};
+
+export function EvidenceGraph({
+  claims,
+  sources,
+  contradictions,
+}: {
+  claims: BrowseClaim[];
+  sources: BrowseSource[];
+  contradictions?: Contradiction[];
+}) {
   const sourceMap = new Map(sources.map((s) => [s.url, s]));
 
   return (
@@ -18,6 +40,32 @@ export function EvidenceGraph({ claims, sources }: { claims: BrowseClaim[]; sour
           {claims.length} claims / {sources.length} sources
         </Badge>
       </div>
+
+      {/* Contradictions warning */}
+      {contradictions && contradictions.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            <span className="text-xs font-semibold text-amber-500 uppercase tracking-wider">
+              {contradictions.length} potential contradiction{contradictions.length !== 1 ? "s" : ""} detected
+            </span>
+          </div>
+          <div className="space-y-2">
+            {contradictions.map((c, i) => (
+              <div key={i} className="text-xs text-muted-foreground pl-6">
+                <p className="italic">"{c.claimA.slice(0, 100)}..."</p>
+                <p className="text-amber-500/60 my-0.5">vs</p>
+                <p className="italic">"{c.claimB.slice(0, 100)}..."</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       <div className="space-y-6">
         {claims.map((claim, i) => (
           <motion.div
@@ -34,7 +82,7 @@ export function EvidenceGraph({ claims, sources }: { claims: BrowseClaim[]; sour
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">{claim.claim}</p>
-                <div className="flex items-center gap-1.5 mt-1.5">
+                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                   <LinkIcon className="w-3 h-3 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">{claim.sources.length} source{claim.sources.length !== 1 ? "s" : ""}</span>
                   {claim.verified !== undefined && (
@@ -47,6 +95,15 @@ export function EvidenceGraph({ claims, sources }: { claims: BrowseClaim[]; sour
                         <AlertCircle className="w-3 h-3" /> unverified
                       </span>
                     )
+                  )}
+                  {claim.consensusLevel && claim.consensusLevel !== "none" && (
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] px-1.5 py-0 h-4 ${CONSENSUS_COLORS[claim.consensusLevel] || ""}`}
+                    >
+                      <Users className="w-2.5 h-2.5 mr-0.5" />
+                      {CONSENSUS_LABELS[claim.consensusLevel]}
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -63,6 +120,11 @@ export function EvidenceGraph({ claims, sources }: { claims: BrowseClaim[]; sour
                       <Globe className="w-3 h-3 text-muted-foreground" />
                       <span className="text-xs text-accent font-mono">{src.domain}</span>
                       {src.verified && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                      {src.authority !== undefined && src.authority >= 0.85 && (
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-3.5 text-blue-400 border-blue-400/30">
+                          trusted
+                        </Badge>
+                      )}
                       <span className="text-xs text-muted-foreground truncate">— {src.title}</span>
                     </div>
                     {src.quote && (

@@ -101,7 +101,7 @@ const Results = () => {
         {result && (
           <>
             <FinalAnswer answer={result.answer} confidence={result.confidence} />
-            <EvidenceGraph claims={result.claims} sources={result.sources} />
+            <EvidenceGraph claims={result.claims} sources={result.sources} contradictions={result.contradictions} />
             <TracePipeline trace={result.trace} />
             <AgentJson result={result} />
             <div className="flex justify-center pt-4">
