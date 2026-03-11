@@ -112,29 +112,34 @@ async function getRequestEnv(
   // When a user has saved API keys (via dashboard), use them automatically
   // so they don't hit the demo limit on the website UI
   if (apiKeyService && userId) {
-    const userCacheKey = `user_keys:${userId}`;
-    const cached = await cache.get(userCacheKey);
+    try {
+      const userCacheKey = `user_keys:${userId}`;
+      const cached = await cache.get(userCacheKey);
 
-    let resolved: { tavilyKey: string; openrouterKey: string } | null;
-    if (cached) {
-      resolved = JSON.parse(cached);
-    } else {
-      resolved = await apiKeyService.resolveByUserId(userId);
-      if (resolved) {
-        await cache.set(userCacheKey, JSON.stringify(resolved), 60);
+      let resolved: { tavilyKey: string; openrouterKey: string } | null;
+      if (cached) {
+        resolved = JSON.parse(cached);
+      } else {
+        resolved = await apiKeyService.resolveByUserId(userId);
+        if (resolved) {
+          await cache.set(userCacheKey, JSON.stringify(resolved), 60);
+        }
       }
-    }
 
-    if (resolved) {
-      return {
-        env: {
-          ...env,
-          SERP_API_KEY: resolved.tavilyKey,
-          OPENROUTER_API_KEY: resolved.openrouterKey,
-        },
-        isOwnKeys: true,
-        userId,
-      };
+      if (resolved) {
+        return {
+          env: {
+            ...env,
+            SERP_API_KEY: resolved.tavilyKey,
+            OPENROUTER_API_KEY: resolved.openrouterKey,
+          },
+          isOwnKeys: true,
+          userId,
+        };
+      }
+    } catch (e) {
+      // Decryption or DB failure — fall through to demo keys
+      console.warn("Auto-resolve stored keys failed for user", userId, e);
     }
   }
 
