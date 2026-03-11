@@ -81,6 +81,12 @@ const ROADMAP_ITEMS = [
     done: true,
   },
   {
+    phase: "Done",
+    title: "Thorough mode & self-improving accuracy",
+    desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
+    done: true,
+  },
+  {
     phase: "Then",
     title: "Knowledge graph & entity extraction",
     desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
