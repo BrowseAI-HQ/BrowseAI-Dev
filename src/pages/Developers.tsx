@@ -51,55 +51,49 @@ const CONTRIBUTION_AREAS = [
 
 const ROADMAP_ITEMS = [
   {
-    phase: "Today",
+    phase: "Shipped",
     title: "Reliable research infrastructure",
     desc: "Web search, evidence extraction, structured citations, Python SDK, MCP server, agent recipes, intelligent caching.",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Python SDK & framework integrations",
     desc: "pip install browseai — works with LangChain and CrewAI out of the box.",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Intelligent caching & source tracking",
     desc: "Smart TTL for time-sensitive queries, automatic domain tracking for every search.",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Multi-source verification",
     desc: "BM25 claim matching, cross-source consensus scoring, contradiction detection, domain authority (10,000+ domains).",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Thorough mode & self-improving accuracy",
     desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
     done: true,
   },
   {
-    phase: "Done",
-    title: "Thorough mode & self-improving accuracy",
-    desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
-    done: true,
-  },
-  {
-    phase: "Then",
+    phase: "In Progress",
     title: "Knowledge graph & entity extraction",
     desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
     done: false,
   },
   {
-    phase: "Later",
+    phase: "Coming Soon",
     title: "Academic papers & broader sources",
     desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
     done: false,
   },
   {
-    phase: "Later",
+    phase: "Coming Soon",
     title: "Streaming API & response formats",
     desc: "Low-latency streaming for voice agents. Brief and detailed response modes. Built for real-time pipelines.",
     done: false,
