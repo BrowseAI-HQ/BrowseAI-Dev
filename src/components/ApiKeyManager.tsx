@@ -74,6 +74,14 @@ export function ApiKeyManager() {
   };
 
   const handleRevoke = async (id: string) => {
+    // Warn if this is the last key
+    if (activeKeys.length <= 1) {
+      const confirmed = window.confirm(
+        "This is your last API key. Removing it will put you back on the free demo tier (5 queries/hour). Continue?"
+      );
+      if (!confirmed) return;
+    }
+
     try {
       await revokeApiKey(id);
       fetchKeys();
@@ -128,8 +136,8 @@ export function ApiKeyManager() {
           {/* Generate form */}
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Save your API keys and get a single BrowseAI Dev key for CLI, MCP,
-              and API access.
+              Save your API keys to get unlimited queries on the website, CLI, MCP,
+              and API. Your default key is used automatically when you're signed in.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -194,7 +202,7 @@ export function ApiKeyManager() {
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Your Keys
               </h4>
-              {activeKeys.map((key) => (
+              {activeKeys.map((key, index) => (
                 <div
                   key={key.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
@@ -206,6 +214,11 @@ export function ApiKeyManager() {
                     <span className="text-xs text-muted-foreground">
                       {key.label}
                     </span>
+                    {index === 0 && (
+                      <Badge className="text-[10px] bg-accent/10 text-accent border-accent/20">
+                        Default
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="text-[10px]">
                       {new Date(key.created_at).toLocaleDateString()}
                     </Badge>

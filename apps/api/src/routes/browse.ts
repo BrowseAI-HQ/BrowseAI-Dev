@@ -108,7 +108,37 @@ async function getRequestEnv(
     }
   }
 
-  // Priority 3: Default env
+  // Priority 3: Auto-resolve stored keys for signed-in users
+  // When a user has saved API keys (via dashboard), use them automatically
+  // so they don't hit the demo limit on the website UI
+  if (apiKeyService && userId) {
+    const userCacheKey = `user_keys:${userId}`;
+    const cached = await cache.get(userCacheKey);
+
+    let resolved: { tavilyKey: string; openrouterKey: string } | null;
+    if (cached) {
+      resolved = JSON.parse(cached);
+    } else {
+      resolved = await apiKeyService.resolveByUserId(userId);
+      if (resolved) {
+        await cache.set(userCacheKey, JSON.stringify(resolved), 60);
+      }
+    }
+
+    if (resolved) {
+      return {
+        env: {
+          ...env,
+          SERP_API_KEY: resolved.tavilyKey,
+          OPENROUTER_API_KEY: resolved.openrouterKey,
+        },
+        isOwnKeys: true,
+        userId,
+      };
+    }
+  }
+
+  // Priority 4: Default env (demo limits apply)
   return { env, isOwnKeys: false, userId };
 }
 

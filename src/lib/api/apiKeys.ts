@@ -8,11 +8,18 @@ async function authFetch(path: string, options: RequestInit = {}) {
     throw new Error("Not authenticated");
   }
 
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${session.access_token}`,
+  };
+  // Only set Content-Type for requests with a body
+  if (options.body) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
+      ...headers,
       ...options.headers,
     },
   });

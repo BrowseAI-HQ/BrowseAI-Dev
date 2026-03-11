@@ -31,6 +31,10 @@ export interface ApiKeyService {
   list(userId: string): Promise<ApiKeyRecord[]>;
   revoke(userId: string, keyId: string): Promise<boolean>;
   resolve(apiKey: string): Promise<ResolvedKeys | null>;
+  /** Resolve stored keys by user ID (for auto-using keys in website UI) */
+  resolveByUserId(userId: string): Promise<Omit<ResolvedKeys, "userId"> | null>;
+  /** Count active (non-revoked) keys for a user */
+  countActive(userId: string): Promise<number>;
   updateLastUsed(keyHash: string): Promise<void>;
 }
 
@@ -144,6 +148,41 @@ export function createApiKeyService(
       service.updateLastUsed(hash);
 
       return { userId: row.user_id, tavilyKey, openrouterKey };
+    },
+
+    async resolveByUserId(userId) {
+      // Get the most recently used (or most recently created) active key for this user
+      const res = await supabaseFetch(
+        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=tavily_key_encrypted,tavily_key_iv,openrouter_key_encrypted,openrouter_key_iv&order=last_used_at.desc.nullslast,created_at.desc&limit=1`
+      );
+
+      if (!res.ok) return null;
+      const rows = await res.json();
+      if (!rows.length) return null;
+
+      const row = rows[0];
+      const tavilyKey = decryptValue(
+        row.tavily_key_encrypted,
+        row.tavily_key_iv,
+        encryptionKey
+      );
+      const openrouterKey = decryptValue(
+        row.openrouter_key_encrypted,
+        row.openrouter_key_iv,
+        encryptionKey
+      );
+
+      return { tavilyKey, openrouterKey };
+    },
+
+    async countActive(userId) {
+      const res = await supabaseFetch(
+        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=id`,
+        { headers: { Prefer: "count=exact" } }
+      );
+      if (!res.ok) return 0;
+      const rows = await res.json();
+      return rows.length;
     },
 
     async updateLastUsed(keyHash) {

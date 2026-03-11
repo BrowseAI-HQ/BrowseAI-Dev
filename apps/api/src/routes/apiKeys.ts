@@ -67,11 +67,22 @@ export function registerApiKeyRoutes(
     const { id } = request.params as { id: string };
 
     try {
+      // Check how many active keys the user has
+      const activeCount = await apiKeyService.countActive(userId);
+
       const revoked = await apiKeyService.revoke(userId, id);
       if (!revoked) {
         return reply.status(404).send({ success: false, error: "Key not found" });
       }
-      return { success: true };
+
+      // If this was the last key, include a warning
+      const isLastKey = activeCount <= 1;
+      return {
+        success: true,
+        ...(isLastKey && {
+          warning: "All API keys removed. You're now on the free demo tier (5 queries/hour). Add keys again anytime to get unlimited access.",
+        }),
+      };
     } catch (e: any) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to revoke API key" });
