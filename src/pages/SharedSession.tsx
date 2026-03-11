@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Brain, CheckCircle2, ExternalLink, GitFork, Loader2 } from "lucide-react";
@@ -23,6 +23,8 @@ const SharedSession = () => {
   const [loading, setLoading] = useState(true);
   const [forking, setForking] = useState(false);
   const [forked, setForked] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const pendingFork = useRef(false);
 
   useEffect(() => {
     if (!shareId) return;
@@ -35,13 +37,28 @@ const SharedSession = () => {
       .finally(() => setLoading(false));
   }, [shareId]);
 
+  // Auto-fork after user signs in (if they clicked fork before signing in)
+  useEffect(() => {
+    if (user && pendingFork.current && !forked && !forking) {
+      pendingFork.current = false;
+      handleFork();
+    }
+  }, [user]);
+
   const handleFork = async () => {
     if (!shareId || forking) return;
+
+    // If not signed in, open login modal and set pending fork
+    if (!user) {
+      pendingFork.current = true;
+      setLoginOpen(true);
+      return;
+    }
+
     setForking(true);
     try {
-      const result = await forkSharedSession(shareId);
+      await forkSharedSession(shareId);
       setForked(true);
-      // Navigate to the new forked session after a brief moment
       setTimeout(() => navigate("/sessions"), 1500);
     } catch (e: any) {
       setError(e.message);
@@ -72,6 +89,9 @@ const SharedSession = () => {
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </nav>
+
+      {/* Hidden controlled login modal for fork flow */}
+      <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
 
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         {loading && (
@@ -110,8 +130,8 @@ const SharedSession = () => {
                 This research session was built with BrowseAI Dev — evidence-backed research with verified claims and confidence scores.
               </p>
 
-              {/* Fork button — prominent CTA */}
-              {user && !forked && (
+              {/* Fork button — always visible, triggers login if needed */}
+              {!forked && (
                 <Button
                   onClick={handleFork}
                   disabled={forking}
@@ -125,6 +145,11 @@ const SharedSession = () => {
                   {forking ? "Forking..." : "Fork this Research"}
                 </Button>
               )}
+              {!user && !authLoading && !forked && (
+                <p className="text-xs text-muted-foreground">
+                  Sign in to fork and continue building on this research.
+                </p>
+              )}
               {forked && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -134,11 +159,6 @@ const SharedSession = () => {
                   <CheckCircle2 className="w-4 h-4" />
                   Forked! Redirecting to your sessions...
                 </motion.div>
-              )}
-              {!user && !authLoading && (
-                <p className="text-xs text-muted-foreground">
-                  Sign in to fork this research and continue building on it.
-                </p>
               )}
             </motion.div>
 
