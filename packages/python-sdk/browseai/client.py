@@ -203,6 +203,12 @@ class BrowseAI:
         data = self._get("/sessions")
         return [Session(**s) for s in data]
 
+    def fork_session(self, share_id: str) -> "SessionClient":
+        """Fork a shared session to continue building on someone else's research."""
+        data = self._post(f"/session/share/{share_id}/fork", {})
+        sess = Session(**data["session"])
+        return SessionClient(self, sess)
+
     def close(self) -> None:
         self._client.close()
 
@@ -378,6 +384,12 @@ class AsyncBrowseAI:
         """List all sessions for the authenticated user."""
         data = await self._get("/sessions")
         return [Session(**s) for s in data]
+
+    async def fork_session(self, share_id: str) -> "AsyncSessionClient":
+        """Fork a shared session to continue building on someone else's research."""
+        data = await self._post(f"/session/share/{share_id}/fork", {})
+        sess = Session(**data["session"])
+        return AsyncSessionClient(self, sess)
 
     async def close(self) -> None:
         await self._client.aclose()

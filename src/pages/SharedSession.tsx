@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Brain, CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, Brain, CheckCircle2, ExternalLink, GitFork, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BrowseBadge } from "@/components/BrowseBadge";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
-import { getSharedSession, type KnowledgeEntry } from "@/lib/api/sessions";
+import { getSharedSession, forkSharedSession, type KnowledgeEntry } from "@/lib/api/sessions";
 
 const SharedSession = () => {
   const { shareId } = useParams<{ shareId: string }>();
@@ -21,6 +21,8 @@ const SharedSession = () => {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [forking, setForking] = useState(false);
+  const [forked, setForked] = useState(false);
 
   useEffect(() => {
     if (!shareId) return;
@@ -32,6 +34,21 @@ const SharedSession = () => {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [shareId]);
+
+  const handleFork = async () => {
+    if (!shareId || forking) return;
+    setForking(true);
+    try {
+      const result = await forkSharedSession(shareId);
+      setForked(true);
+      // Navigate to the new forked session after a brief moment
+      setTimeout(() => navigate("/sessions"), 1500);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setForking(false);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -92,6 +109,37 @@ const SharedSession = () => {
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
                 This research session was built with BrowseAI Dev — evidence-backed research with verified claims and confidence scores.
               </p>
+
+              {/* Fork button — prominent CTA */}
+              {user && !forked && (
+                <Button
+                  onClick={handleFork}
+                  disabled={forking}
+                  className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2 mt-2"
+                >
+                  {forking ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <GitFork className="w-4 h-4" />
+                  )}
+                  {forking ? "Forking..." : "Fork this Research"}
+                </Button>
+              )}
+              {forked && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 text-sm"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Forked! Redirecting to your sessions...
+                </motion.div>
+              )}
+              {!user && !authLoading && (
+                <p className="text-xs text-muted-foreground">
+                  Sign in to fork this research and continue building on it.
+                </p>
+              )}
             </motion.div>
 
             {/* Knowledge entries */}
@@ -165,13 +213,17 @@ const SharedSession = () => {
                 Build your own research sessions with evidence-backed claims and persistent knowledge.
               </p>
               <div className="flex items-center gap-3">
-                <Button
-                  onClick={() => navigate("/sessions")}
-                  className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-                >
-                  Start Researching
-                  <ExternalLink className="w-4 h-4" />
-                </Button>
+                {user ? (
+                  <Button
+                    onClick={() => navigate("/sessions")}
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
+                  >
+                    Start Researching
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
+                ) : (
+                  <LoginModal />
+                )}
                 <Button
                   variant="outline"
                   onClick={() => navigate("/")}

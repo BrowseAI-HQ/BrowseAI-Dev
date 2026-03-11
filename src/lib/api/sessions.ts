@@ -109,3 +109,7 @@ export async function getSharedSession(shareId: string): Promise<{
   }
   return data.result;
 }
+
+export async function forkSharedSession(shareId: string): Promise<{ session: Session; claimsForked: number }> {
+  return authFetch(`/session/share/${shareId}/fork`, { method: "POST" });
+}

@@ -565,6 +565,31 @@ function registerTools(server: McpServer) {
       return { content: [{ type: "text", text: JSON.stringify(data.result, null, 2) }] };
     }
   );
+
+  server.tool(
+    "browse_session_fork",
+    "Fork a shared research session to continue building on someone else's research. Creates a copy of all knowledge in your own session.",
+    {
+      share_id: z.string().describe("Share ID from a shared session URL"),
+    },
+    async ({ share_id }) => {
+      if (!API_MODE) {
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+      }
+      const result = await apiCall(`/session/share/${share_id}/fork`, {});
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            sessionId: result.session.id,
+            name: result.session.name,
+            claimsForked: result.claimsForked,
+            message: "Session forked! You can now continue researching with all the prior knowledge.",
+          }, null, 2),
+        }],
+      };
+    }
+  );
 }
 
 // --- MCP Server ---

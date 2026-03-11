@@ -313,4 +313,44 @@ export function registerSessionRoutes(
       return reply.status(500).send({ success: false, error: "Failed to load shared session" });
     }
   });
+
+  // Fork a shared session — creates a copy under the authenticated user
+  app.post("/session/share/:shareId/fork", async (request, reply) => {
+    const { shareId } = request.params as { shareId: string };
+    try {
+      const { userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      if (!userId) return reply.status(401).send({ success: false, error: "Sign in to fork a research session" });
+
+      const shared = await sessionStore.getSharedSession(shareId);
+      if (!shared) return reply.status(404).send({ success: false, error: "Shared session not found" });
+
+      // Create new session
+      const newSession = await sessionStore.createSession(
+        `Fork: ${shared.session.name}`,
+        userId
+      );
+
+      // Copy knowledge entries
+      if (shared.entries.length > 0) {
+        const claims = shared.entries.map((e) => ({
+          claim: e.claim,
+          sources: e.sources,
+          verified: e.verified,
+          verificationScore: e.confidence,
+        }));
+        await sessionStore.storeKnowledge(newSession.id, claims as any, "forked from shared session");
+      }
+
+      return {
+        success: true,
+        result: {
+          session: newSession,
+          claimsForked: shared.entries.length,
+        },
+      };
+    } catch (e: any) {
+      request.log.error(e);
+      return reply.status(e.statusCode || 500).send({ success: false, error: e.message || "Failed to fork session" });
+    }
+  });
 }
