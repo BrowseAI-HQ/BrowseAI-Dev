@@ -51,6 +51,8 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_session_create  Create a research session (persistent memory)
     browse_session_ask     Research within a session (recalls prior knowledge)
     browse_session_recall  Query session knowledge without new searches
+    browse_session_share   Share a session publicly via URL
+    browse_session_knowledge  Export all knowledge from a session
 
   Quick Setup:
     Option A: Use a BrowseAI API key (one key for everything)
@@ -520,6 +522,47 @@ function registerTools(server: McpServer) {
       }
       const result = await apiCall(`/session/${session_id}/recall`, { query, limit: limit ?? 10 });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "browse_session_share",
+    "Share a research session publicly. Returns a shareable URL that anyone can view — great for sharing research findings with teammates, in reports, or on social media.",
+    {
+      session_id: z.string().describe("Session ID to share"),
+    },
+    async ({ session_id }) => {
+      if (!API_MODE) {
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+      }
+      const result = await apiCall(`/session/${session_id}/share`, {});
+      const shareUrl = `https://browseai.dev/session/share/${result.shareId}`;
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ shareId: result.shareId, url: shareUrl, message: "Session shared! Anyone with this link can view the research." }, null, 2),
+        }],
+      };
+    }
+  );
+
+  server.tool(
+    "browse_session_knowledge",
+    "Export all knowledge from a research session. Returns all verified claims, sources, and confidence scores accumulated across queries.",
+    {
+      session_id: z.string().describe("Session ID"),
+      limit: z.number().optional().describe("Max entries to return (default 50)"),
+    },
+    async ({ session_id, limit }) => {
+      if (!API_MODE) {
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+      }
+      const res = await fetch(`${BROWSE_API_URL}/session/${session_id}/knowledge?limit=${limit ?? 50}`, {
+        headers: { "X-API-Key": BROWSE_API_KEY! },
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Failed to export knowledge");
+      return { content: [{ type: "text", text: JSON.stringify(data.result, null, 2) }] };
     }
   );
 }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, ExternalLink,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, ExternalLink, Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -246,6 +246,12 @@ const Index = () => {
               <GitCompare className="w-3.5 h-3.5" />
               Compare vs Raw LLM
             </Button>
+            {user && (
+              <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => navigate("/sessions")}>
+                <Brain className="w-3.5 h-3.5" />
+                Research Sessions
+              </Button>
+            )}
             {EXAMPLE_PROMPTS.map((prompt) => (
               <button
                 key={prompt}

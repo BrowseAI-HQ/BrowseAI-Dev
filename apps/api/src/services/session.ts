@@ -17,6 +17,15 @@ export interface SessionStore {
 
   /** Increment query count for a session */
   touchSession(sessionId: string): Promise<void>;
+
+  /** Create a public share link for a session, returns shareId */
+  shareSession(sessionId: string): Promise<string>;
+
+  /** Get a shared session by shareId (public, no auth) */
+  getSharedSession(shareId: string): Promise<{
+    session: { name: string; claimCount: number; queryCount: number };
+    entries: KnowledgeEntry[];
+  } | null>;
 }
 
 export function createSupabaseSessionStore(
@@ -178,6 +187,51 @@ export function createSupabaseSessionStore(
         }),
       });
     },
+
+    async shareSession(sessionId) {
+      // Use a short hash of session ID as the share ID
+      // This is deterministic — sharing the same session always gives the same link
+      const encoder = new TextEncoder();
+      const data = encoder.encode(sessionId);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
+    },
+
+    async getSharedSession(shareId) {
+      // Reverse lookup: find session whose hash matches the shareId
+      // Since we can't reverse the hash, fetch all sessions and check
+      // For efficiency, we store share_id concept: the shareId IS derived from session.id
+      // We need to find the session. Let's fetch recent sessions and match.
+      // Better approach: just fetch all non-deleted sessions and hash-check
+      const res = await sbFetch(`/sessions?select=id,name,claim_count,query_count&order=updated_at.desc&limit=500`);
+      if (!res.ok) return null;
+      const rows = await res.json();
+
+      for (const row of rows) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(row.id);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hash = hashArray.map((b: number) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
+        if (hash === shareId) {
+          // Found the session — return its knowledge
+          const knowledgeRes = await sbFetch(
+            `/knowledge_entries?session_id=eq.${row.id}&select=*&order=created_at.desc&limit=100`
+          );
+          const entries = knowledgeRes.ok ? (await knowledgeRes.json()).map(toKnowledgeEntry) : [];
+          return {
+            session: {
+              name: row.name,
+              claimCount: row.claim_count || 0,
+              queryCount: row.query_count || 0,
+            },
+            entries,
+          };
+        }
+      }
+      return null;
+    },
   };
 }
 
@@ -234,6 +288,21 @@ export function createNoopSessionStore(): SessionStore {
     async touchSession(sessionId) {
       const s = sessions.get(sessionId);
       if (s) { s.queryCount++; s.updatedAt = new Date().toISOString(); }
+    },
+    async shareSession(sessionId) {
+      return sessionId.replace(/-/g, "").slice(0, 12);
+    },
+    async getSharedSession(shareId) {
+      for (const [id, session] of sessions) {
+        if (id.replace(/-/g, "").slice(0, 12) === shareId) {
+          const entries = knowledge.get(id) || [];
+          return {
+            session: { name: session.name, claimCount: session.claimCount, queryCount: session.queryCount },
+            entries,
+          };
+        }
+      }
+      return null;
     },
   };
 }

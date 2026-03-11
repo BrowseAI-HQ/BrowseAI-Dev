@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Share2, GitCompare, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { browseKnowledge, type BrowseResult } from "@/lib/api/browse";
+import type { BrowseResult } from "@/lib/api/browse";
+import { streamAnswer, type TraceEvent, type SourcePreview, type StreamEvent } from "@/lib/api/stream";
 import { FinalAnswer } from "@/components/results/FinalAnswer";
 import { EvidenceGraph } from "@/components/results/EvidenceGraph";
 import { TracePipeline } from "@/components/results/TracePipeline";
 import { AgentJson } from "@/components/results/AgentJson";
-import { LoadingPipeline } from "@/components/results/LoadingPipeline";
+import { StreamingPipeline } from "@/components/results/StreamingPipeline";
 import { BrowseBadge } from "@/components/BrowseBadge";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
@@ -25,15 +26,45 @@ const Results = () => {
   const [copied, setCopied] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
+  // Streaming state
+  const [traceSteps, setTraceSteps] = useState<TraceEvent[]>([]);
+  const [previewSources, setPreviewSources] = useState<SourcePreview[]>([]);
+  const [streamDone, setStreamDone] = useState(false);
+
+  const handleStreamEvent = useCallback((event: StreamEvent) => {
+    switch (event.type) {
+      case "trace":
+        setTraceSteps((prev) => [...prev, event.data]);
+        break;
+      case "sources":
+        setPreviewSources(event.data);
+        break;
+      case "result":
+        setResult(event.data);
+        break;
+      case "done":
+        setStreamDone(true);
+        break;
+    }
+  }, []);
+
   useEffect(() => {
     if (!query) return;
     setLoading(true);
     setError(null);
-    browseKnowledge(query, depth)
-      .then(setResult)
+    setResult(null);
+    setTraceSteps([]);
+    setPreviewSources([]);
+    setStreamDone(false);
+
+    streamAnswer(query, depth, handleStreamEvent)
+      .then((res) => {
+        setResult(res);
+        setStreamDone(true);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [query, depth]);
+  }, [query, depth, handleStreamEvent]);
 
   const handleShare = () => {
     if (!result?.shareId) return;
@@ -87,7 +118,14 @@ const Results = () => {
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
-        {loading && <LoadingPipeline />}
+        {/* Streaming pipeline progress */}
+        {loading && (
+          <StreamingPipeline
+            steps={traceSteps}
+            sources={previewSources}
+            done={streamDone}
+          />
+        )}
 
         {error && (
           <motion.div
@@ -99,7 +137,7 @@ const Results = () => {
           </motion.div>
         )}
 
-        {result && (
+        {result && !loading && (
           <>
             <FinalAnswer answer={result.answer} confidence={result.confidence} />
             <EvidenceGraph claims={result.claims} sources={result.sources} contradictions={result.contradictions} />

@@ -18,6 +18,7 @@ import Docs from "./pages/Docs";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Sessions from "./pages/Sessions";
+import SharedSession from "./pages/SharedSession";
 import NotFound from "./pages/NotFound";
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/playground" element={<Playground />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/sessions" element={<Sessions />} />
+            <Route path="/session/share/:shareId" element={<SharedSession />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/developers" element={<Developers />} />
             <Route path="/recipes" element={<Recipes />} />

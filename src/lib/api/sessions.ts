@@ -8,11 +8,17 @@ async function authFetch(path: string, options: RequestInit = {}) {
     throw new Error("Not authenticated");
   }
 
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${session.access_token}`,
+  };
+  if (options.body) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
+      ...headers,
       ...options.headers,
     },
   });
@@ -84,4 +90,22 @@ export async function sessionAsk(id: string, query: string, depth?: "fast" | "th
 
 export async function getSessionKnowledge(id: string, limit = 50): Promise<{ entries: KnowledgeEntry[]; count: number }> {
   return authFetch(`/session/${id}/knowledge?limit=${limit}`);
+}
+
+export async function shareSession(id: string): Promise<{ shareId: string }> {
+  return authFetch(`/session/${id}/share`, { method: "POST" });
+}
+
+// Public (no auth) — for the shared session page
+export async function getSharedSession(shareId: string): Promise<{
+  session: { name: string; claimCount: number; queryCount: number };
+  entries: KnowledgeEntry[];
+}> {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+  const res = await fetch(`${API_BASE_URL}/session/share/${shareId}`);
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || "Failed to load shared session");
+  }
+  return data.result;
 }

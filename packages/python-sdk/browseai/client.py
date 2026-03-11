@@ -243,6 +243,15 @@ class SessionClient:
         data = self._client._get(f"/session/{self.id}/knowledge")
         return [KnowledgeEntry(**e) for e in data.get("entries", [])]
 
+    def share(self) -> dict:
+        """Share this session publicly. Returns shareId and URL."""
+        data = self._client._post(f"/session/{self.id}/share", {})
+        share_id = data.get("shareId", "")
+        return {
+            "share_id": share_id,
+            "url": f"https://browseai.dev/session/share/{share_id}",
+        }
+
     def delete(self) -> None:
         """Delete this session and all its knowledge."""
         self._client._client.delete(f"/session/{self.id}")
@@ -409,6 +418,15 @@ class AsyncSessionClient:
         """Export all knowledge entries from this session."""
         data = await self._client._get(f"/session/{self.id}/knowledge")
         return [KnowledgeEntry(**e) for e in data.get("entries", [])]
+
+    async def share(self) -> dict:
+        """Share this session publicly. Returns shareId and URL."""
+        data = await self._client._post(f"/session/{self.id}/share", {})
+        share_id = data.get("shareId", "")
+        return {
+            "share_id": share_id,
+            "url": f"https://browseai.dev/session/share/{share_id}",
+        }
 
     async def delete(self) -> None:
         """Delete this session and all its knowledge."""
