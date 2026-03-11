@@ -115,11 +115,11 @@ export function EvidenceGraph({
                 const src = sourceMap.get(url);
                 if (!src) return null;
                 return (
-                  <div key={url} className="p-3 rounded-lg bg-secondary/50 border border-border/50 hover:border-accent/20 transition-colors">
+                  <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block p-3 rounded-lg bg-secondary/50 border border-border/50 hover:border-accent/20 transition-colors">
                     <div className="flex items-center gap-2 mb-1">
-                      <Globe className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-accent font-mono">{src.domain}</span>
-                      {src.verified && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                      <Globe className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-accent font-mono hover:underline">{src.domain}</span>
+                      {src.verified && <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />}
                       {src.authority !== undefined && src.authority >= 0.85 && (
                         <Badge variant="outline" className="text-[10px] px-1 py-0 h-3.5 text-blue-400 border-blue-400/30">
                           trusted
@@ -133,7 +133,7 @@ export function EvidenceGraph({
                         <p className="text-xs text-muted-foreground italic leading-relaxed">{src.quote}</p>
                       </div>
                     )}
-                  </div>
+                  </a>
                 );
               })}
             </div>
