@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,9 @@ const TOOLS = [
   { name: "browse_extract", desc: "Extract structured claims from a page" },
   { name: "browse_answer", desc: "Full pipeline: search + extract + cite" },
   { name: "browse_compare", desc: "Compare raw LLM vs evidence-backed answer" },
+  { name: "browse_session_create", desc: "Create a research session (persistent memory)" },
+  { name: "browse_session_ask", desc: "Research within a session (recalls prior knowledge)" },
+  { name: "browse_session_recall", desc: "Query session knowledge without new web search" },
 ];
 
 const PIPELINE_STEPS = [
@@ -128,18 +131,17 @@ const Index = () => {
             Recipes
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" asChild>
+            <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener">
+              <MessageCircle className="w-4 h-4" />
+              <span className="ml-1">Discord</span>
+            </a>
+          </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" asChild>
             <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4" />
               <span className="ml-1">GitHub</span>
             </a>
           </Button>
-          <a
-            href="#waitlist"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
-          >
-            <Sparkles className="w-3 h-3" />
-            Pro Waitlist
-          </a>
 
           {/* Mobile hamburger menu */}
           <DropdownMenu>
@@ -148,16 +150,25 @@ const Index = () => {
                 <Menu className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => navigate("/playground")}>Playground</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/docs")}>Docs</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/developers")}>Developers</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/recipes")}>Recipes</DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener" className="flex items-center gap-2">
+                  <Star className="w-3.5 h-3.5" /> Star on GitHub
+                </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <a href="#waitlist">Pro Waitlist</a>
+                <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener" className="flex items-center gap-2">
+                  <MessageCircle className="w-3.5 h-3.5" /> Join Discord
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="#waitlist" className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5" /> Pro Waitlist
+                </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -250,6 +261,57 @@ const Index = () => {
         </motion.div>
       </section>
 
+      {/* ===== COMMUNITY CTA BANNER ===== */}
+      <section className="py-8 px-6 border-t border-border bg-card/50">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
+          >
+            <a
+              href="https://github.com/BrowseAI-HQ/BrowserAI-Dev"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary border border-border text-sm font-medium hover:border-accent/40 hover:text-accent transition-all w-full sm:w-auto justify-center"
+            >
+              <Star className="w-4 h-4" />
+              Star on GitHub
+              <ExternalLink className="w-3 h-3 text-muted-foreground" />
+            </a>
+            <a
+              href="https://discord.gg/ubAuT4YQsT"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20 text-sm font-medium text-[#5865F2] hover:bg-[#5865F2]/20 transition-all w-full sm:w-auto justify-center"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Join Discord
+              <ExternalLink className="w-3 h-3 opacity-60" />
+            </a>
+            {!user && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 px-5 py-2.5 h-auto text-sm border-accent/30 text-accent hover:bg-accent/10 w-full sm:w-auto justify-center"
+                onClick={() => setLoginOpen(true)}
+              >
+                <LogIn className="w-4 h-4" />
+                Sign in free
+              </Button>
+            )}
+            <a
+              href="#waitlist"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent/10 border border-accent/20 text-sm font-medium text-accent hover:bg-accent/20 transition-all w-full sm:w-auto justify-center"
+            >
+              <Sparkles className="w-4 h-4" />
+              Join Pro Waitlist
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ===== THE ANTI-HALLUCINATION STACK ===== */}
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto">
@@ -289,7 +351,9 @@ const Index = () => {
                 { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
                 { phase: "Shipped", text: "Self-improving accuracy — domain authority scores improve over time via Bayesian smoothing, every query makes future results better" },
                 { phase: "Shipped", text: "Streaming API & retry with backoff — real-time SSE streaming, automatic retry with exponential backoff on all external APIs" },
-                { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
+                { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
+                { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels for broader evidence coverage" },
+                { phase: "Coming Soon", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Coming Soon", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
               ].map((item, i) => (
@@ -552,7 +616,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">5 Tools for Agents</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">8 Tools for Agents</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               Each tool returns structured JSON with sources. No HTML parsing, no hallucination. Available via MCP and REST API.
             </p>
@@ -595,6 +659,10 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "GET", path: "/browse/stats", desc: "Total queries answered" },
               { method: "GET", path: "/browse/sources/top", desc: "Top cited sources" },
               { method: "GET", path: "/browse/analytics/summary", desc: "Usage analytics" },
+              { method: "POST", path: "/session", desc: "Create research session" },
+              { method: "POST", path: "/session/:id/ask", desc: "Research with memory recall" },
+              { method: "POST", path: "/session/:id/recall", desc: "Query session knowledge" },
+              { method: "GET", path: "/session/:id/knowledge", desc: "Export session claims" },
             ].map((ep) => (
               <div key={ep.path} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
                 <Badge variant="outline" className={`text-xs font-mono ${ep.method === "GET" ? "text-blue-400 border-blue-400/30" : "text-emerald-400 border-emerald-400/30"}`}>
@@ -657,6 +725,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               </div>
               <ul className="space-y-2.5 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Research Sessions — persistent memory across queries</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI API key (one key for everything)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Usage analytics</li>
@@ -724,6 +793,43 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             {waitlistStatus === "error" && (
               <p className="text-sm text-destructive">{waitlistMessage}</p>
             )}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ===== COMMUNITY BOTTOM CTA ===== */}
+      <section className="py-16 px-6 border-t border-border">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Join the community</h2>
+            <p className="text-muted-foreground text-sm">
+              Star the repo, join Discord, and help shape the future of AI research infrastructure.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          >
+            <a
+              href="https://github.com/BrowseAI-HQ/BrowserAI-Dev"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-secondary border border-border text-sm font-semibold hover:border-accent/40 hover:text-accent transition-all w-full sm:w-auto justify-center"
+            >
+              <Star className="w-4 h-4" />
+              Star on GitHub
+            </a>
+            <a
+              href="https://discord.gg/ubAuT4YQsT"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/20 text-sm font-semibold text-[#5865F2] hover:bg-[#5865F2]/20 transition-all w-full sm:w-auto justify-center"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Join Discord
+            </a>
           </motion.div>
         </div>
       </section>

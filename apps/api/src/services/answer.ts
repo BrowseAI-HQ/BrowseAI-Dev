@@ -108,6 +108,16 @@ async function singlePass(
 
   const [mainResults, variantQuery, analysis, braveResults] = await Promise.all(parallelTasks);
 
+  // Add query plan trace step if plan exists
+  if (analysis.plan && analysis.plan.length > 0) {
+    const planDetail = analysis.plan.map((p) => `[${p.intent}] ${p.query}`).join("; ");
+    trace.push({
+      step: `Query Plan${label}`,
+      duration_ms: 0, // included in search timing
+      detail: `${analysis.plan.length} sub-queries: ${planDetail}`,
+    });
+  }
+
   let allResults = mainResults.results;
   let searchDetail = "";
 

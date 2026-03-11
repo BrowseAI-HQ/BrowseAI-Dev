@@ -67,6 +67,41 @@ with httpx.stream("POST", "https://browseai.dev/api/browse/answer/stream",
 
 Events: `trace` (progress), `sources` (discovered early), `result` (final answer), `done`.
 
+## Research Memory (Sessions)
+
+Persistent research sessions that accumulate knowledge across multiple queries. Later queries recall prior knowledge — faster, cheaper, more coherent.
+
+```python
+from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+
+# Create a session
+session = client.session("wasm-research")
+
+# Each query builds on previous knowledge
+r1 = session.ask("What is WebAssembly?")
+r2 = session.ask("How does WASM compare to JavaScript performance?")
+# ^ r2 recalls WASM knowledge from r1, only searches for JS perf
+
+# Query accumulated knowledge without new searches
+recalled = session.recall("WASM")
+for entry in recalled.entries:
+    print(f"  {entry.claim} (from: {entry.origin_query})")
+
+# Export all knowledge
+knowledge = session.knowledge()
+```
+
+Async sessions work the same way:
+
+```python
+async with AsyncBrowseAI(api_key="bai_xxx") as client:
+    session = await client.session("my-project")
+    r1 = await session.ask("What is WASM?")
+    r2 = await session.ask("WASM vs JS?")
+```
+
 ## BYOK (Bring Your Own Keys)
 
 ```python

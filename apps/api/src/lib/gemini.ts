@@ -5,9 +5,16 @@ import { fetchWithRetry } from "./retry.js";
 
 export type QueryType = "factual" | "comparison" | "how-to" | "time-sensitive" | "opinion";
 
+export type SubQuery = {
+  query: string;
+  intent: string; // e.g. "definition", "comparison", "evidence", "counterargument"
+};
+
 export type QueryAnalysis = {
   type: QueryType;
   subQueries: string[] | null;
+  /** Richer query plan with intents per sub-query */
+  plan?: SubQuery[];
 };
 
 const BASE_PROMPT = `You are a knowledge extraction engine. Given web page content, extract structured claims with source attribution and write a clear answer.
@@ -295,7 +302,7 @@ export async function analyzeQuery(
         messages: [
           {
             role: "system",
-            content: `Classify the search query and optionally decompose it into sub-queries for better search results.
+            content: `You are a research query planner. Analyze the query and create a search plan.
 
 Query types:
 - factual: Single-answer questions (definitions, dates, numbers, "what is X")
@@ -304,15 +311,23 @@ Query types:
 - time-sensitive: Current events, prices, scores, weather ("latest", "current", "today", year mentions)
 - opinion: Subjective topics with multiple valid perspectives ("best", "should I", "is X worth")
 
-Sub-queries: For complex multi-part questions or comparisons, break into 2-3 focused sub-queries that would surface complementary results. For simple factual questions, return an empty array.`,
+Query plan: For complex questions, create 2-4 focused sub-queries with intent labels. Each sub-query should target a different aspect of the question to maximize source diversity. For simple factual questions, return an empty plan.
+
+Intent types:
+- definition: Core concept explanation
+- evidence: Supporting data, stats, or examples
+- comparison: Side-by-side analysis
+- counterargument: Opposing viewpoints or limitations
+- technical: Implementation details, specifications
+- historical: Background, timeline, evolution`,
           },
           { role: "user", content: query },
         ],
         tools: [{
           type: "function" as const,
           function: {
-            name: "classify_query",
-            description: "Classify query type and decompose if complex",
+            name: "plan_query",
+            description: "Create a research plan for the query",
             parameters: {
               type: "object",
               properties: {
@@ -320,18 +335,25 @@ Sub-queries: For complex multi-part questions or comparisons, break into 2-3 foc
                   type: "string",
                   enum: ["factual", "comparison", "how-to", "time-sensitive", "opinion"],
                 },
-                subQueries: {
+                plan: {
                   type: "array",
-                  items: { type: "string" },
-                  description: "Sub-queries for complex questions, or empty array for simple ones",
+                  items: {
+                    type: "object",
+                    properties: {
+                      query: { type: "string", description: "Focused sub-query for search" },
+                      intent: { type: "string", description: "What this sub-query targets: definition, evidence, comparison, counterargument, technical, historical" },
+                    },
+                    required: ["query", "intent"],
+                  },
+                  description: "Research plan: 2-4 focused sub-queries for complex questions, empty array for simple ones",
                 },
               },
-              required: ["type", "subQueries"],
+              required: ["type", "plan"],
             },
           },
         }],
-        tool_choice: { type: "function", function: { name: "classify_query" } },
-        max_tokens: 200,
+        tool_choice: { type: "function", function: { name: "plan_query" } },
+        max_tokens: 300,
       }),
     });
 
@@ -342,9 +364,11 @@ Sub-queries: For complex multi-part questions or comparisons, break into 2-3 foc
     if (!toolCall) return { type: "factual", subQueries: null };
 
     const result = JSON.parse(toolCall.function.arguments);
+    const plan: SubQuery[] = (result.plan || []).slice(0, 4);
     return {
       type: result.type || "factual",
-      subQueries: result.subQueries?.length > 0 ? result.subQueries.slice(0, 3) : null,
+      subQueries: plan.length > 0 ? plan.map((p: SubQuery) => p.query) : null,
+      plan: plan.length > 0 ? plan : undefined,
     };
   } catch {
     return { type: "factual", subQueries: null };

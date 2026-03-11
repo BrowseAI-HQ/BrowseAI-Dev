@@ -12,6 +12,7 @@ import { BrowseLogo } from "@/components/BrowseLogo";
 const NAV_ITEMS = [
   { id: "pipeline", label: "Pipeline", icon: Layers },
   { id: "thorough-mode", label: "Thorough Mode", icon: Zap },
+  { id: "research-sessions", label: "Research Sessions", icon: Brain },
   { id: "verification", label: "Verification", icon: Shield },
   { id: "confidence", label: "Confidence Score", icon: BarChart3 },
   { id: "domain-authority", label: "Domain Authority", icon: Brain },
@@ -183,6 +184,87 @@ result = client.ask("What is quantum computing?", depth="thorough")`}</CodeBlock
 
             <CodeBlock label="Website">{`Toggle "Fast Mode" → "Thorough Mode" below the search bar, then search.
 Or append &depth=thorough to the results URL.`}</CodeBlock>
+          </Section>
+
+          {/* Research Sessions */}
+          <Section id="research-sessions" title="Research Sessions (Memory)" icon={Brain}>
+            <p>
+              Persistent research sessions that accumulate knowledge across multiple queries.
+              Each session stores verified claims and automatically <strong className="text-foreground">recalls prior findings</strong> when
+              you ask follow-up questions — building deeper understanding over time.
+            </p>
+
+            <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
+              <h4 className="text-sm font-semibold text-foreground mb-2">How sessions work</h4>
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>Create a named session (e.g., "quantum-research")</li>
+                <li>Ask questions within the session — each query goes through the full verification pipeline</li>
+                <li>Verified claims are automatically stored in the session knowledge base</li>
+                <li>Future queries recall relevant prior claims before searching — providing context</li>
+                <li>Vague follow-ups like "How does this work?" are automatically contextualized using session knowledge</li>
+              </ol>
+            </div>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Query contextualization</h4>
+            <p>
+              When you ask a short or vague question (e.g., "How does this work?", "Tell me more"),
+              the system detects it's ambiguous and prepends context from the session name and top recalled claims.
+              This ensures searches are always topic-relevant, even for pronouns and references.
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Usage</h4>
+
+            <CodeBlock label="Python SDK">{`from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+
+# Create a session
+session = client.session("quantum-research")
+
+# First query — 13 claims stored
+r1 = session.ask("What is quantum entanglement?")
+print(f"New claims: {r1.session.new_claims_stored}")
+
+# Follow-up — recalls prior claims automatically
+r2 = session.ask("How is entanglement used in computing?")
+print(f"Recalled: {r2.session.recalled_claims}")
+
+# Export all accumulated knowledge
+knowledge = session.knowledge()`}</CodeBlock>
+
+            <CodeBlock label="REST API">{`# Create session
+curl -X POST https://browseai.dev/api/session \\
+  -H "Authorization: Bearer bai_xxx" \\
+  -d '{"name": "quantum-research"}'
+# Returns: { "success": true, "result": { "id": "abc123", "name": "quantum-research" } }
+
+# Ask within session
+curl -X POST https://browseai.dev/api/session/abc123/ask \\
+  -H "Authorization: Bearer bai_xxx" \\
+  -d '{"query": "What is quantum entanglement?"}'
+
+# Recall without new search
+curl -X POST https://browseai.dev/api/session/abc123/recall \\
+  -d '{"query": "entanglement"}'
+
+# Export knowledge
+curl https://browseai.dev/api/session/abc123/knowledge`}</CodeBlock>
+
+            <CodeBlock label="MCP (Claude Desktop)">{`Ask Claude: "Create a research session called quantum-research"
+Then: "In the quantum-research session, what is quantum entanglement?"
+Then: "How is entanglement used in computing?" — prior findings are recalled automatically`}</CodeBlock>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Response fields</h4>
+            <CodeBlock label="Session ask response">{`{
+  "answer": "...",
+  "confidence": 0.85,
+  "session": {
+    "id": "abc123",
+    "name": "quantum-research",
+    "recalledClaims": 5,    // prior findings recalled for this query
+    "newClaimsStored": 8    // new claims added to session knowledge
+  }
+}`}</CodeBlock>
           </Section>
 
           {/* Verification */}
@@ -358,6 +440,11 @@ Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/extract</td><td className="py-2">Extract structured claims from a page</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer</td><td className="py-2">Full pipeline with citations. Accepts <code className="bg-secondary px-1 rounded">depth: "fast" | "thorough"</code></td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/compare</td><td className="py-2">Compare raw LLM vs evidence-backed answer</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer/stream</td><td className="py-2">Streaming answer via SSE — real-time progress events</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /session</td><td className="py-2">Create a research session</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /session/:id/ask</td><td className="py-2">Research with session memory (recalls + stores claims)</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /session/:id/recall</td><td className="py-2">Query session knowledge without new search</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">GET /session/:id/knowledge</td><td className="py-2">Export all session claims</td></tr>
                 </tbody>
               </table>
             </div>
@@ -375,16 +462,24 @@ result = client.ask("What is quantum computing?", depth="thorough")
 results = client.search("AI news", limit=5)
 page = client.open("https://example.com")
 extract = client.extract("https://example.com", query="pricing")
-compare = client.compare("Is Python faster than Rust?")`}</CodeBlock>
+compare = client.compare("Is Python faster than Rust?")
+
+# Research sessions
+session = client.session("my-research")
+r = session.ask("What is quantum computing?")
+knowledge = session.knowledge()`}</CodeBlock>
 
             <h4 className="text-sm font-semibold text-foreground pt-4">MCP Server</h4>
             <CodeBlock label="Setup">{`npx browse-ai setup`}</CodeBlock>
             <p>
-              5 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
+              8 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_open</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_extract</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_answer</code>,{" "}
-              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_compare</code>.
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_compare</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_create</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_ask</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_recall</code>.
               Works with Claude Desktop, Cursor, and Windsurf.
             </p>
 
@@ -487,6 +582,10 @@ compare = client.compare("Is Python faster than Rust?")`}</CodeBlock>
               {
                 q: "How is my query data used?",
                 a: "Your queries are processed to generate answers and cached to improve response times. Anonymized, domain-level verification signals (e.g., 'wikipedia.org verified 82% of claims across 500 queries') are aggregated to improve domain authority scores for all users. Your specific queries are never shared with other users or used to train models. See our Privacy Policy for full details.",
+              },
+              {
+                q: "What are Research Sessions?",
+                a: "Sessions give your agents persistent memory across multiple research queries. Create a session, ask questions within it, and each query automatically stores verified claims. Follow-up queries recall prior findings before searching, building deeper understanding over time. Vague follow-ups like 'How does this work?' are automatically contextualized using the session's accumulated knowledge.",
               },
               {
                 q: "What LLM does BrowseAI use?",

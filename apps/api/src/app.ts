@@ -8,6 +8,8 @@ import { registerBrowseRoutes } from "./routes/browse.js";
 import { registerApiKeyRoutes } from "./routes/apiKeys.js";
 import { registerWaitlistRoutes } from "./routes/waitlist.js";
 import { registerAdminRoutes } from "./routes/admin.js";
+import { registerSessionRoutes } from "./routes/session.js";
+import { createSupabaseSessionStore, createNoopSessionStore } from "./services/session.js";
 import { initDomainAuthority } from "./lib/verify.js";
 
 export async function buildApp() {
@@ -59,7 +61,13 @@ export async function buildApp() {
     console.log(`Loaded ${domainCount} domain authority entries from DB`);
   }
 
-  registerBrowseRoutes(app, env, cache, store, apiKeyService);
+  const sessionStore =
+    env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
+      ? createSupabaseSessionStore(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+      : createNoopSessionStore();
+
+  registerBrowseRoutes(app, env, cache, store, apiKeyService, sessionStore);
+  registerSessionRoutes(app, env, cache, store, sessionStore, apiKeyService);
 
   if (apiKeyService) {
     registerApiKeyRoutes(app, apiKeyService);

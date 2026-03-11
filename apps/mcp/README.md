@@ -99,6 +99,9 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 | `browse_extract` | Extract structured knowledge from a page |
 | `browse_answer` | Full pipeline: search + extract + cite. Supports `depth: "thorough"` for auto-retry |
 | `browse_compare` | Compare raw LLM vs evidence-backed answer |
+| `browse_session_create` | Create a research session (persistent memory across queries) |
+| `browse_session_ask` | Research within a session (recalls prior knowledge, stores new claims) |
+| `browse_session_recall` | Query session knowledge without new web searches |
 
 ## Example
 

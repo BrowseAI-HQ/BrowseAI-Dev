@@ -19,8 +19,12 @@ from .exceptions import (
 from .models import (
     BrowseResult,
     CompareResult,
+    KnowledgeEntry,
     PageResult,
+    RecallResult,
     SearchResult,
+    Session,
+    SessionAskResult,
 )
 
 DEFAULT_BASE_URL = "https://browseai.dev/api"
@@ -172,6 +176,33 @@ class BrowseAI:
         """Get total query count."""
         return self._get("/browse/stats")
 
+    # ── Research Memory ──
+
+    def session(self, name: str) -> "SessionClient":
+        """Create or resume a research session.
+
+        Usage::
+
+            session = client.session("my-project")
+            r1 = session.ask("What is WASM?")
+            r2 = session.ask("WASM vs JS?")  # recalls prior WASM knowledge
+            knowledge = session.recall("WASM")
+        """
+        data = self._post("/session", {"name": name})
+        sess = Session(**data)
+        return SessionClient(self, sess)
+
+    def get_session(self, session_id: str) -> "SessionClient":
+        """Resume an existing session by ID."""
+        data = self._get(f"/session/{session_id}")
+        sess = Session(**data)
+        return SessionClient(self, sess)
+
+    def list_sessions(self) -> list[Session]:
+        """List all sessions for the authenticated user."""
+        data = self._get("/sessions")
+        return [Session(**s) for s in data]
+
     def close(self) -> None:
         self._client.close()
 
@@ -180,6 +211,41 @@ class BrowseAI:
 
     def __exit__(self, *args):
         self.close()
+
+
+class SessionClient:
+    """Stateful research session. Created via ``client.session("name")``."""
+
+    def __init__(self, client: BrowseAI, session: Session):
+        self._client = client
+        self.session = session
+
+    @property
+    def id(self) -> str:
+        return self.session.id
+
+    @property
+    def name(self) -> str:
+        return self.session.name
+
+    def ask(self, query: str, *, depth: str = "fast") -> SessionAskResult:
+        """Research with session context — recalls prior knowledge, stores new claims."""
+        data = self._client._post(f"/session/{self.id}/ask", {"query": query, "depth": depth})
+        return SessionAskResult(**data)
+
+    def recall(self, query: str, *, limit: int = 10) -> RecallResult:
+        """Query session knowledge without new web search."""
+        data = self._client._post(f"/session/{self.id}/recall", {"query": query, "limit": limit})
+        return RecallResult(**data)
+
+    def knowledge(self, *, limit: int = 50) -> list[KnowledgeEntry]:
+        """Export all knowledge entries from this session."""
+        data = self._client._get(f"/session/{self.id}/knowledge")
+        return [KnowledgeEntry(**e) for e in data.get("entries", [])]
+
+    def delete(self) -> None:
+        """Delete this session and all its knowledge."""
+        self._client._client.delete(f"/session/{self.id}")
 
 
 class AsyncBrowseAI:
@@ -285,6 +351,25 @@ class AsyncBrowseAI:
     async def stats(self) -> dict[str, Any]:
         return await self._get("/browse/stats")
 
+    # ── Research Memory ──
+
+    async def session(self, name: str) -> "AsyncSessionClient":
+        """Create or resume a research session."""
+        data = await self._post("/session", {"name": name})
+        sess = Session(**data)
+        return AsyncSessionClient(self, sess)
+
+    async def get_session(self, session_id: str) -> "AsyncSessionClient":
+        """Resume an existing session by ID."""
+        data = await self._get(f"/session/{session_id}")
+        sess = Session(**data)
+        return AsyncSessionClient(self, sess)
+
+    async def list_sessions(self) -> list[Session]:
+        """List all sessions for the authenticated user."""
+        data = await self._get("/sessions")
+        return [Session(**s) for s in data]
+
     async def close(self) -> None:
         await self._client.aclose()
 
@@ -293,3 +378,38 @@ class AsyncBrowseAI:
 
     async def __aexit__(self, *args):
         await self.close()
+
+
+class AsyncSessionClient:
+    """Async stateful research session."""
+
+    def __init__(self, client: AsyncBrowseAI, session: Session):
+        self._client = client
+        self.session = session
+
+    @property
+    def id(self) -> str:
+        return self.session.id
+
+    @property
+    def name(self) -> str:
+        return self.session.name
+
+    async def ask(self, query: str, *, depth: str = "fast") -> SessionAskResult:
+        """Research with session context."""
+        data = await self._client._post(f"/session/{self.id}/ask", {"query": query, "depth": depth})
+        return SessionAskResult(**data)
+
+    async def recall(self, query: str, *, limit: int = 10) -> RecallResult:
+        """Query session knowledge without new web search."""
+        data = await self._client._post(f"/session/{self.id}/recall", {"query": query, "limit": limit})
+        return RecallResult(**data)
+
+    async def knowledge(self, *, limit: int = 50) -> list[KnowledgeEntry]:
+        """Export all knowledge entries from this session."""
+        data = await self._client._get(f"/session/{self.id}/knowledge")
+        return [KnowledgeEntry(**e) for e in data.get("entries", [])]
+
+    async def delete(self) -> None:
+        """Delete this session and all its knowledge."""
+        await self._client._client.delete(f"/session/{self.id}")

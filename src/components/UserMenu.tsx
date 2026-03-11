@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, LayoutDashboard, Brain } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -35,6 +35,9 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate("/dashboard")}>
           <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/sessions")}>
+          <Brain className="w-4 h-4 mr-2" /> Research Sessions
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut}>

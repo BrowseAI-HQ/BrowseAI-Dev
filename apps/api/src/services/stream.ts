@@ -113,6 +113,18 @@ export async function answerQueryStreaming(
       : Promise.resolve([]),
   ] as const);
 
+  // Add query plan trace step if plan exists
+  if (analysis.plan && analysis.plan.length > 0) {
+    const planDetail = analysis.plan.map((p) => `[${p.intent}] ${p.query}`).join("; ");
+    const planStep: TraceStep = {
+      step: "Query Plan",
+      duration_ms: 0,
+      detail: `${analysis.plan.length} sub-queries: ${planDetail}`,
+    };
+    trace.push(planStep);
+    emit("trace", planStep);
+  }
+
   let allResults = mainResults.results;
   let searchDetail = "";
 

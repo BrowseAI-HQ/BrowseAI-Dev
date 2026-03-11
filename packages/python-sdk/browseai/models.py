@@ -89,3 +89,42 @@ class CompareResult(BaseModel):
     query: str
     raw_llm: CompareRawLLM
     evidence_backed: CompareEvidenceBacked
+
+
+# ── Research Memory models ──
+
+
+class Session(BaseModel):
+    id: str
+    name: str
+    user_id: str | None = Field(None, alias="userId")
+    claim_count: int = Field(0, alias="claimCount")
+    query_count: int = Field(0, alias="queryCount")
+    created_at: str = Field(alias="createdAt")
+    updated_at: str = Field(alias="updatedAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class KnowledgeEntry(BaseModel):
+    id: str
+    session_id: str = Field(alias="sessionId")
+    claim: str
+    sources: list[str]
+    verified: bool = False
+    confidence: float = 0
+    origin_query: str = Field(alias="originQuery")
+    created_at: str = Field(alias="createdAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class SessionAskResult(BrowseResult):
+    """BrowseResult extended with session metadata."""
+    session: dict | None = None
+
+
+class RecallResult(BaseModel):
+    session: dict
+    entries: list[KnowledgeEntry]
+    count: int

@@ -10,7 +10,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.1.7";
+const VERSION = "0.1.8";
 const LLM_MODEL = "google/gemini-2.5-flash";
 const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
@@ -48,6 +48,9 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_extract         Extract structured knowledge from a page
     browse_answer          Full pipeline: search + extract + answer
     browse_compare         Compare raw LLM vs evidence-backed answer
+    browse_session_create  Create a research session (persistent memory)
+    browse_session_ask     Research within a session (recalls prior knowledge)
+    browse_session_recall  Query session knowledge without new searches
 
   Quick Setup:
     Option A: Use a BrowseAI API key (one key for everything)
@@ -469,6 +472,54 @@ function registerTools(server: McpServer) {
           { type: "text", text: JSON.stringify(comparison, null, 2) },
         ],
       };
+    }
+  );
+  // --- Research Memory tools (API mode only — sessions require Supabase) ---
+
+  server.tool(
+    "browse_session_create",
+    "Create a new research session. Sessions persist knowledge across multiple queries — each query builds on prior research.",
+    { name: z.string().describe("Name for the session (e.g. 'wasm-research', 'react-comparison')") },
+    async ({ name }) => {
+      if (!API_MODE) {
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key. Set BROWSE_API_KEY to use sessions." }] };
+      }
+      const result = await apiCall("/session", { name });
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "browse_session_ask",
+    "Research a question within a session. Recalls prior knowledge, runs the research pipeline, and stores new claims. Later queries in the same session benefit from accumulated knowledge.",
+    {
+      session_id: z.string().describe("Session ID from browse_session_create"),
+      query: z.string(),
+      depth: z.enum(["fast", "thorough"]).optional().describe("'fast' (default) or 'thorough'"),
+    },
+    async ({ session_id, query, depth }) => {
+      if (!API_MODE) {
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+      }
+      const result = await apiCall(`/session/${session_id}/ask`, { query, depth: depth || "fast" });
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "browse_session_recall",
+    "Query accumulated knowledge from a session without making new web searches. Returns previously verified claims relevant to the query.",
+    {
+      session_id: z.string().describe("Session ID"),
+      query: z.string().describe("What to recall from session knowledge"),
+      limit: z.number().optional().describe("Max entries to return (default 10)"),
+    },
+    async ({ session_id, query, limit }) => {
+      if (!API_MODE) {
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+      }
+      const result = await apiCall(`/session/${session_id}/recall`, { query, limit: limit ?? 10 });
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }
   );
 }

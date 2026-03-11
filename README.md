@@ -66,6 +66,35 @@ Events: `trace` (progress), `sources` (discovered early), `result` (final answer
 
 All external API calls (Tavily search, OpenRouter LLM, Brave search, page fetching) automatically retry on transient failures (429 rate limits, 5xx server errors) with exponential backoff and jitter. Auth errors (401/403) fail immediately — no wasted retries.
 
+### Research Memory (Sessions)
+
+Persistent research sessions that accumulate knowledge across multiple queries. Later queries automatically recall prior verified claims, building deeper understanding over time.
+
+```python
+# Python SDK
+session = client.session("quantum-research")
+r1 = session.ask("What is quantum entanglement?")       # 13 claims stored
+r2 = session.ask("How is entanglement used in computing?")  # 12 claims recalled!
+knowledge = session.knowledge()  # Export all accumulated claims
+```
+
+```bash
+# REST API
+curl -X POST https://browseai.dev/api/session \
+  -H "Authorization: Bearer bai_xxx" \
+  -d '{"name": "my-research"}'
+# Returns session ID, then:
+curl -X POST https://browseai.dev/api/session/{id}/ask \
+  -H "Authorization: Bearer bai_xxx" \
+  -d '{"query": "What is quantum entanglement?"}'
+```
+
+Each session response includes `recalledClaims` (how many prior findings were recalled) and `newClaimsStored` (how many new claims were added to the session knowledge base).
+
+### Query Planning
+
+Complex queries are automatically decomposed into focused sub-queries with intent labels (definition, evidence, comparison, counterargument, technical, historical). Each sub-query targets a different aspect of the question, maximizing source diversity. Simple factual queries skip planning entirely — no added latency.
+
 ### Self-Improving Accuracy
 
 Domain authority scores improve automatically over time. Every query feeds verification data back into the system using Bayesian cold-start smoothing — static scores dominate initially, but as evidence accumulates, real verification rates gradually take over. The more your agents use BrowseAI, the more accurate future results become.
@@ -206,6 +235,10 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `GET /browse/stats` | Total queries answered |
 | `GET /browse/sources/top` | Top cited source domains |
 | `GET /browse/analytics/summary` | Usage analytics (authenticated) |
+| `POST /session` | Create a research session |
+| `POST /session/:id/ask` | Research with session memory (recalls + stores claims) |
+| `POST /session/:id/recall` | Query session knowledge without new search |
+| `GET /session/:id/knowledge` | Export all session claims |
 
 ## MCP Tools
 
@@ -216,6 +249,9 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `browse_extract` | Extract structured claims from a page |
 | `browse_answer` | Full pipeline: search + extract + cite. Supports `depth: "thorough"` |
 | `browse_compare` | Compare raw LLM vs evidence-backed answer |
+| `browse_session_create` | Create a research session (persistent memory) |
+| `browse_session_ask` | Research within a session (recalls prior knowledge) |
+| `browse_session_recall` | Query session knowledge without new web search |
 
 ## Python SDK
 
@@ -226,6 +262,10 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `client.extract(url, query=)` | Extract claims from a page |
 | `client.ask(query, depth=)` | Full pipeline with citations. `depth="thorough"` for auto-retry |
 | `client.compare(query)` | Raw LLM vs evidence-backed |
+| `client.session(name)` | Create a research session |
+| `session.ask(query, depth=)` | Research with memory recall |
+| `session.recall(query)` | Query session knowledge |
+| `session.knowledge()` | Export all session claims |
 
 Async support: `AsyncBrowseAI` with the same API.
 

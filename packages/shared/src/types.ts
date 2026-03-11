@@ -54,6 +54,40 @@ export type ExtractRequest = {
 export type AnswerRequest = {
   query: string;
   depth?: "fast" | "thorough";
+  sessionId?: string;
+};
+
+// ── Research Memory ──
+
+export type Session = {
+  id: string;
+  name: string;
+  userId?: string;
+  claimCount: number;
+  queryCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type KnowledgeEntry = {
+  id: string;
+  sessionId: string;
+  claim: string;
+  sources: string[];
+  verified: boolean;
+  confidence: number;
+  originQuery: string;
+  createdAt: string;
+};
+
+export type SessionAskRequest = {
+  query: string;
+  depth?: "fast" | "thorough";
+};
+
+export type RecallRequest = {
+  query: string;
+  limit?: number;
 };
 
 export type ApiResponse<T> =

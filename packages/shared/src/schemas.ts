@@ -47,4 +47,21 @@ export const ExtractRequestSchema = z.object({
 export const AnswerRequestSchema = z.object({
   query: z.string().min(1).max(500),
   depth: z.enum(["fast", "thorough"]).optional().default("fast"),
+  sessionId: z.string().max(36).optional(),
+});
+
+// ── Research Memory schemas ──
+
+export const CreateSessionSchema = z.object({
+  name: z.string().min(1).max(100),
+});
+
+export const SessionAskSchema = z.object({
+  query: z.string().min(1).max(500),
+  depth: z.enum(["fast", "thorough"]).optional().default("fast"),
+});
+
+export const RecallSchema = z.object({
+  query: z.string().min(1).max(500),
+  limit: z.number().int().min(1).max(50).optional().default(10),
 });

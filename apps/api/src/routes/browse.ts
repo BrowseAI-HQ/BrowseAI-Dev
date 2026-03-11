@@ -16,6 +16,7 @@ import { updateDomainScore } from "../lib/verify.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
+import type { SessionStore } from "../services/session.js";
 import type { Env } from "../config/env.js";
 
 import type { ZodError } from "zod";
@@ -161,7 +162,8 @@ export function registerBrowseRoutes(
   env: Env,
   cache: CacheService,
   store: ResultStore,
-  apiKeyService: ApiKeyService | null = null
+  apiKeyService: ApiKeyService | null = null,
+  sessionStore?: SessionStore
 ) {
   app.post("/browse/search", async (request, reply) => {
     const parsed = SearchRequestSchema.safeParse(request.body);

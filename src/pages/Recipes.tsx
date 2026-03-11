@@ -57,8 +57,17 @@ const RECIPES = [
     github: `${GITHUB_EXAMPLES}/crewai-research-team.py`,
   },
   {
+    title: "Research Session Agent",
+    desc: "Build knowledge over multiple queries. Each question recalls prior findings and stores new claims — persistent memory for deep research.",
+    file: "research-session.py",
+    cmd: 'python examples/research-session.py "quantum computing"',
+    tags: ["Python", "Sessions", "Memory", "Multi-query"],
+    icon: Brain,
+    github: `${GITHUB_EXAMPLES}/research-session.py`,
+  },
+  {
     title: "MCP Server for AI Assistants",
-    desc: "Give Claude Desktop, Cursor, or Windsurf 5 research tools. Search, open, extract, answer, and compare — all via MCP.",
+    desc: "Give Claude Desktop, Cursor, or Windsurf 8 research tools. Search, open, extract, answer, compare, and session memory — all via MCP.",
     file: "npx browse-ai",
     cmd: "npx browse-ai setup",
     tags: ["MCP", "Claude Desktop", "Cursor", "npm"],
