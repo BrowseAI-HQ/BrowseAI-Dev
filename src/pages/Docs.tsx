@@ -265,6 +265,39 @@ Then: "How is entanglement used in computing?" — prior findings are recalled a
     "newClaimsStored": 8    // new claims added to session knowledge
   }
 }`}</CodeBlock>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Sharing & Forking</h4>
+            <p>
+              Sessions can be shared publicly and forked by other agents or humans.
+              One agent builds up research, shares the link, another agent forks it and continues — enabling <strong className="text-foreground">collaborative, multi-agent research</strong>.
+            </p>
+
+            <CodeBlock label="Python SDK">{`# Share a session
+share = session.share()
+print(share.url)  # https://browseai.dev/session/share/abc123def456
+
+# Another agent forks and continues
+forked = client.fork_session(share.share_id)
+forked_session = client.session(forked.session.name)
+forked_session.ask("What about dark energy?")`}</CodeBlock>
+
+            <CodeBlock label="REST API">{`# Share
+curl -X POST https://browseai.dev/api/session/abc123/share \\
+  -H "Authorization: Bearer bai_xxx"
+# Returns: { "shareId": "abc123def456" }
+
+# View shared session (public, no auth)
+curl https://browseai.dev/api/session/share/abc123def456
+
+# Fork into your account
+curl -X POST https://browseai.dev/api/session/share/abc123def456/fork \\
+  -H "Authorization: Bearer bai_xxx"`}</CodeBlock>
+
+            <CodeBlock label="MCP">{`Ask Claude: "Share my quantum-research session"
+→ Returns a share URL
+
+Another agent: "Fork the shared session abc123def456"
+→ Creates a copy with all knowledge, ready to continue`}</CodeBlock>
           </Section>
 
           {/* Verification */}

@@ -39,6 +39,8 @@ const TOOLS = [
   { name: "browse_session_create", desc: "Create a research session (persistent memory)" },
   { name: "browse_session_ask", desc: "Research within a session (recalls prior knowledge)" },
   { name: "browse_session_recall", desc: "Query session knowledge without new web search" },
+  { name: "browse_session_share", desc: "Share a session publicly for other agents to fork" },
+  { name: "browse_session_fork", desc: "Fork a shared session to continue the research" },
 ];
 
 const PIPELINE_STEPS = [
@@ -676,6 +678,9 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "POST", path: "/session/:id/ask", desc: "Research with memory recall" },
               { method: "POST", path: "/session/:id/recall", desc: "Query session knowledge" },
               { method: "GET", path: "/session/:id/knowledge", desc: "Export session claims" },
+              { method: "POST", path: "/session/:id/share", desc: "Share session publicly" },
+              { method: "GET", path: "/session/share/:shareId", desc: "View shared session" },
+              { method: "POST", path: "/session/share/:shareId/fork", desc: "Fork shared session" },
             ].map((ep) => (
               <div key={ep.path} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
                 <Badge variant="outline" className={`text-xs font-mono ${ep.method === "GET" ? "text-blue-400 border-blue-400/30" : "text-emerald-400 border-emerald-400/30"}`}>

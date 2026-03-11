@@ -91,6 +91,13 @@ for entry in recalled.entries:
 
 # Export all knowledge
 knowledge = session.knowledge()
+
+# Share with other agents
+share = session.share()
+print(share.url)  # https://browseai.dev/session/share/abc123def456
+
+# Another agent forks and continues the research
+forked = client.fork_session(share.share_id)
 ```
 
 Async sessions work the same way:
@@ -100,6 +107,10 @@ async with AsyncBrowseAI(api_key="bai_xxx") as client:
     session = await client.session("my-project")
     r1 = await session.ask("What is WASM?")
     r2 = await session.ask("WASM vs JS?")
+
+    # Share and fork work async too
+    share = await session.share()
+    forked = await client.fork_session(share.share_id)
 ```
 
 ## BYOK (Bring Your Own Keys)
