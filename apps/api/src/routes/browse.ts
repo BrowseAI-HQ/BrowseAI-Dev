@@ -250,7 +250,8 @@ export function registerBrowseRoutes(
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
       const result = await answerQuery(parsed.data.query, reqEnv, cache, parsed.data.depth);
       const client = detectClient(request);
-      const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client });
+      const cacheHit = result.trace?.[0]?.step === "Cache Hit";
+      const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
 
       // Self-improving: feed verification signals back into domain authority (fire-and-forget)
       if (result.claims?.length && result.sources?.length) {

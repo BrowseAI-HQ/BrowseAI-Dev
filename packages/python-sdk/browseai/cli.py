@@ -94,7 +94,7 @@ def cmd_search(args: argparse.Namespace) -> None:
     for i, r in enumerate(results, 1):
         print(f"  {i}. {r.title}")
         print(f"     {r.url}")
-        print(f"     {r.content[:120]}...")
+        print(f"     {r.snippet[:120]}...")
         print()
 
     client.close()

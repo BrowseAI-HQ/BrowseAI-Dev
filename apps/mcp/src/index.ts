@@ -43,11 +43,11 @@ if (args.includes("--help") || args.includes("-h")) {
     MCP_HTTP_PORT          Port for HTTP transport (default: 3100)
 
   MCP Tools:
-    browse.search          Search the web for information
-    browse.open            Fetch and parse a web page
-    browse.extract         Extract structured knowledge from a page
-    browse.answer          Full pipeline: search + extract + answer
-    browse.compare         Compare raw LLM vs evidence-backed answer
+    browse_search          Search the web for information
+    browse_open            Fetch and parse a web page
+    browse_extract         Extract structured knowledge from a page
+    browse_answer          Full pipeline: search + extract + answer
+    browse_compare         Compare raw LLM vs evidence-backed answer
 
   Quick Setup:
     Option A: Use a BrowseAI API key (one key for everything)

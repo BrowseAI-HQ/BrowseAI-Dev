@@ -14,6 +14,7 @@ from .models import (
     BrowseResult,
     BrowseSource,
     CompareResult,
+    Contradiction,
     PageResult,
     SearchResult,
     TraceStep,
@@ -31,10 +32,11 @@ __all__ = [
     "BrowseResult",
     "BrowseSource",
     "BrowseClaim",
+    "Contradiction",
     "TraceStep",
     "SearchResult",
     "PageResult",
     "CompareResult",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

@@ -15,6 +15,12 @@ class BrowseSource(BaseModel):
 class BrowseClaim(BaseModel):
     claim: str
     sources: list[str]
+    verified: bool | None = None
+    verification_score: float | None = Field(None, alias="verificationScore")
+    consensus_count: int | None = Field(None, alias="consensusCount")
+    consensus_level: str | None = Field(None, alias="consensusLevel")
+
+    model_config = {"populate_by_name": True}
 
 
 class TraceStep(BaseModel):
@@ -23,12 +29,21 @@ class TraceStep(BaseModel):
     detail: str | None = None
 
 
+class Contradiction(BaseModel):
+    claim_a: str = Field(alias="claimA")
+    claim_b: str = Field(alias="claimB")
+    topic: str
+
+    model_config = {"populate_by_name": True}
+
+
 class BrowseResult(BaseModel):
     answer: str
     claims: list[BrowseClaim]
     sources: list[BrowseSource]
     confidence: float = Field(ge=0, le=1)
     trace: list[TraceStep]
+    contradictions: list[Contradiction] | None = None
     share_id: str | None = Field(None, alias="shareId")
 
     model_config = {"populate_by_name": True}
