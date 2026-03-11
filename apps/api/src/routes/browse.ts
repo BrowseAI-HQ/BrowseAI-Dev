@@ -9,6 +9,7 @@ import { search } from "../services/search.js";
 import { openPage } from "../services/scrape.js";
 import { extractFromPage } from "../services/extract.js";
 import { answerQuery } from "../services/answer.js";
+import { answerQueryStreaming } from "../services/stream.js";
 import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import { updateDomainScore } from "../lib/verify.js";
@@ -298,6 +299,53 @@ export function registerBrowseRoutes(
       request.log.error(e);
       const { status, error } = errorResponse(e, "Answer generation failed");
       return reply.status(status).send({ success: false, error });
+    }
+  });
+
+  // Streaming answer — SSE endpoint for real-time progress
+  app.post("/browse/answer/stream", async (request, reply) => {
+    const parsed = AnswerRequestSchema.safeParse(request.body);
+    if (!parsed.success)
+      return reply
+        .status(400)
+        .send({ success: false, error: zodMessage(parsed.error) });
+
+    try {
+      const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      const limitError = await checkDemoLimit(request, cache, isOwnKeys);
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
+
+      // Set up SSE response
+      reply.raw.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+      });
+
+      const emit = (event: string, data: unknown) => {
+        reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      };
+
+      const result = await answerQueryStreaming(parsed.data.query, reqEnv, cache, emit);
+
+      // Save to store (fire-and-forget, same as non-streaming)
+      const client = detectClient(request);
+      const cacheHit = result.trace?.[0]?.step === "Cache Hit";
+      store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
+
+      reply.raw.write("event: done\ndata: {}\n\n");
+      reply.raw.end();
+    } catch (e: any) {
+      request.log.error(e);
+      const { error } = errorResponse(e, "Answer generation failed");
+      // If headers already sent, send error as SSE event
+      if (reply.raw.headersSent) {
+        reply.raw.write(`event: error\ndata: ${JSON.stringify({ error })}\n\n`);
+        reply.raw.end();
+      } else {
+        return reply.status(500).send({ success: false, error });
+      }
     }
   });
 

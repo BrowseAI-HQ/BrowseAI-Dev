@@ -1,3 +1,5 @@
+import { fetchWithRetry } from "./retry.js";
+
 const BRAVE_ENDPOINT = "https://api.search.brave.com/res/v1/web/search";
 
 export type BraveResult = {
@@ -22,12 +24,12 @@ export async function braveSearch(
     url.searchParams.set("q", query);
     url.searchParams.set("count", String(count));
 
-    const res = await fetch(url.toString(), {
+    const res = await fetchWithRetry(url.toString(), {
       headers: {
         Accept: "application/json",
         "X-Subscription-Token": apiKey,
       },
-    });
+    }, { maxRetries: 2 });
 
     if (!res.ok) return [];
 

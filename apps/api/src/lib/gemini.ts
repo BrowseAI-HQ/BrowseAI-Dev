@@ -1,6 +1,7 @@
 import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
 import type { BrowseResult, BrowseClaim, BrowseSource } from "@browse/shared";
 import { verifyEvidence } from "./verify.js";
+import { fetchWithRetry } from "./retry.js";
 
 export type QueryType = "factual" | "comparison" | "how-to" | "time-sensitive" | "opinion";
 
@@ -198,7 +199,7 @@ export async function rephraseQuery(
   originalQuery: string,
   apiKey: string,
 ): Promise<string> {
-  const res = await fetch(LLM_ENDPOINT, {
+  const res = await fetchWithRetry(LLM_ENDPOINT, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -236,7 +237,7 @@ export async function generateQueryVariant(
   apiKey: string,
 ): Promise<string> {
   try {
-    const res = await fetch(LLM_ENDPOINT, {
+    const res = await fetchWithRetry(LLM_ENDPOINT, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -283,7 +284,7 @@ export async function analyzeQuery(
   apiKey: string,
 ): Promise<QueryAnalysis> {
   try {
-    const res = await fetch(LLM_ENDPOINT, {
+    const res = await fetchWithRetry(LLM_ENDPOINT, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -358,7 +359,7 @@ export async function extractKnowledge(
   queryType?: QueryType,
 ): Promise<Omit<BrowseResult, "trace">> {
   const systemPrompt = getExtractionPrompt(queryType);
-  const res = await fetch(LLM_ENDPOINT, {
+  const res = await fetchWithRetry(LLM_ENDPOINT, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,

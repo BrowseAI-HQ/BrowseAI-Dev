@@ -81,6 +81,12 @@ const ROADMAP_ITEMS = [
     done: true,
   },
   {
+    phase: "Shipped",
+    title: "Streaming API & retry with backoff",
+    desc: "Real-time SSE streaming for the answer pipeline. Automatic retry with exponential backoff on all external API calls (search, LLM, page fetching). Production-grade reliability.",
+    done: true,
+  },
+  {
     phase: "In Progress",
     title: "Knowledge graph & entity extraction",
     desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
@@ -90,12 +96,6 @@ const ROADMAP_ITEMS = [
     phase: "Coming Soon",
     title: "Academic papers & broader sources",
     desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
-    done: false,
-  },
-  {
-    phase: "Coming Soon",
-    title: "Streaming API & response formats",
-    desc: "Low-latency streaming for voice agents. Brief and detailed response modes. Built for real-time pipelines.",
     done: false,
   },
 ];

@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, BookOpen,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BrowseLogo } from "@/components/BrowseLogo";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
@@ -107,31 +106,27 @@ const Index = () => {
         animate={{ opacity: 1, y: 0 }}
         className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
           <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
-          <span className="font-semibold text-sm tracking-tight">BrowseAI Dev</span>
+          <span className="font-semibold text-sm tracking-tight hidden sm:inline">BrowseAI Dev</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
-            <Terminal className="w-4 h-4 sm:hidden" />
-            <span className="hidden sm:inline">Playground</span>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/playground")}>
+            Playground
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/docs")}>
-            <BookOpen className="w-4 h-4 sm:hidden" />
-            <span className="hidden sm:inline">Docs</span>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/docs")}>
+            Docs
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/developers")}>
-            <Rocket className="w-4 h-4 sm:hidden" />
-            <span className="hidden sm:inline">Developers</span>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/developers")}>
+            Developers
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/recipes")}>
-            <BrowseLogo className="w-4 h-4 sm:hidden" />
-            <span className="hidden sm:inline">Recipes</span>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/recipes")}>
+            Recipes
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
             <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
-              <Github className="w-4 h-4 sm:hidden" />
-              <span className="hidden sm:inline">GitHub</span>
+              <Github className="w-4 h-4" />
+              <span className="hidden sm:inline ml-1">GitHub</span>
             </a>
           </Button>
           <a
@@ -267,9 +262,9 @@ const Index = () => {
                 { phase: "Shipped", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
                 { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
                 { phase: "Shipped", text: "Self-improving accuracy — domain authority scores improve over time via Bayesian smoothing, every query makes future results better" },
+                { phase: "Shipped", text: "Streaming API & retry with backoff — real-time SSE streaming, automatic retry with exponential backoff on all external APIs" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
-                { phase: "Coming Soon", text: "Streaming API & response formats — low-latency streaming for voice agents, brief/detailed modes" },
                 { phase: "Coming Soon", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">

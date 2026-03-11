@@ -144,6 +144,10 @@ Response:
 | Freshness | Training data | Real-time web |
 | Claims | Mixed in text | Structured + linked |
 
+## Reliability
+
+All API calls include automatic retry with exponential backoff on transient failures (429 rate limits, 5xx server errors). Auth errors fail immediately — no wasted retries.
+
 ## Tech Stack
 
 - **Search**: Tavily API

@@ -1,6 +1,7 @@
 import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 import { sanitizeText } from "./sanitize.js";
+import { fetchWithRetry } from "./retry.js";
 
 export type ParsedPage = {
   title: string;
@@ -36,13 +37,13 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
     throw new Error("URL not allowed: only public http/https URLs are supported");
   }
 
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (compatible; BrowseAI/1.0)",
       Accept: "text/html,application/xhtml+xml",
     },
     signal: AbortSignal.timeout(10000),
-  });
+  }, { maxRetries: 1 });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.status}`);

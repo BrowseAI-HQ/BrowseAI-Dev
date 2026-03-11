@@ -48,6 +48,24 @@ curl -X POST https://browseai.dev/api/browse/answer \
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'
 ```
 
+### Streaming API
+
+Get real-time progress instead of waiting for the full response. The streaming endpoint sends Server-Sent Events (SSE) as each pipeline step completes:
+
+```bash
+curl -N -X POST https://browseai.dev/api/browse/answer/stream \
+  -H "Content-Type: application/json" \
+  -H "X-Tavily-Key: tvly-xxx" \
+  -H "X-OpenRouter-Key: sk-or-xxx" \
+  -d '{"query": "What is quantum computing?"}'
+```
+
+Events: `trace` (progress), `sources` (discovered early), `result` (final answer), `done`.
+
+### Retry with Backoff
+
+All external API calls (Tavily search, OpenRouter LLM, Brave search, page fetching) automatically retry on transient failures (429 rate limits, 5xx server errors) with exponential backoff and jitter. Auth errors (401/403) fail immediately — no wasted retries.
+
 ### Self-Improving Accuracy
 
 Domain authority scores improve automatically over time. Every query feeds verification data back into the system using Bayesian cold-start smoothing — static scores dominate initially, but as evidence accumulates, real verification rates gradually take over. The more your agents use BrowseAI, the more accurate future results become.
@@ -182,6 +200,7 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `POST /browse/open` | Fetch and parse a page |
 | `POST /browse/extract` | Extract structured claims from a page |
 | `POST /browse/answer` | Full pipeline: search + extract + cite. Pass `depth: "thorough"` for auto-retry |
+| `POST /browse/answer/stream` | Streaming answer via SSE — real-time progress events |
 | `POST /browse/compare` | Compare raw LLM vs evidence-backed answer |
 | `GET /browse/share/:id` | Get a shared result |
 | `GET /browse/stats` | Total queries answered |
@@ -239,7 +258,7 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 - **Search**: Tavily API
 - **Parsing**: @mozilla/readability + linkedom
 - **AI**: Gemini 2.5 Flash via OpenRouter
-- **Caching**: In-memory with intelligent TTL (time-sensitive queries get shorter TTL)
+- **Caching**: Redis or in-memory with intelligent TTL (time-sensitive queries get shorter TTL)
 - **Frontend**: React, Tailwind CSS, shadcn/ui, Framer Motion
 - **MCP**: @modelcontextprotocol/sdk
 - **Python SDK**: httpx, Pydantic

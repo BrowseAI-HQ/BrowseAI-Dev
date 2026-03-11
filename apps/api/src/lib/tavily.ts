@@ -1,4 +1,5 @@
 import { TAVILY_ENDPOINT } from "@browse/shared";
+import { fetchWithRetry } from "./retry.js";
 
 export type TavilyResult = {
   title: string;
@@ -17,7 +18,7 @@ export async function tavilySearch(
   apiKey: string,
   limit: number = 10
 ): Promise<TavilyResponse> {
-  const res = await fetch(TAVILY_ENDPOINT, {
+  const res = await fetchWithRetry(TAVILY_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -27,7 +28,7 @@ export async function tavilySearch(
       include_raw_content: false,
       search_depth: "basic",
     }),
-  });
+  }, { maxRetries: 2 });
 
   if (!res.ok) {
     const text = await res.text();
