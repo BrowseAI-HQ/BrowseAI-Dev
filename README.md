@@ -76,6 +76,11 @@ session = client.session("quantum-research")
 r1 = session.ask("What is quantum entanglement?")       # 13 claims stored
 r2 = session.ask("How is entanglement used in computing?")  # 12 claims recalled!
 knowledge = session.knowledge()  # Export all accumulated claims
+
+# Share with other agents or humans
+share = session.share()  # Returns shareId + URL
+# Another agent forks and continues the research
+forked = client.fork_session(share.share_id)
 ```
 
 ```bash
@@ -87,9 +92,17 @@ curl -X POST https://browseai.dev/api/session \
 curl -X POST https://browseai.dev/api/session/{id}/ask \
   -H "Authorization: Bearer bai_xxx" \
   -d '{"query": "What is quantum entanglement?"}'
+
+# Share a session publicly
+curl -X POST https://browseai.dev/api/session/{id}/share \
+  -H "Authorization: Bearer bai_xxx"
+
+# Fork a shared session (copies all knowledge)
+curl -X POST https://browseai.dev/api/session/share/{shareId}/fork \
+  -H "Authorization: Bearer bai_xxx"
 ```
 
-Each session response includes `recalledClaims` (how many prior findings were recalled) and `newClaimsStored` (how many new claims were added to the session knowledge base).
+Each session response includes `recalledClaims` and `newClaimsStored`. Sessions can be shared publicly and forked by other agents — enabling collaborative, multi-agent research workflows.
 
 ### Query Planning
 
@@ -239,6 +252,9 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `POST /session/:id/ask` | Research with session memory (recalls + stores claims) |
 | `POST /session/:id/recall` | Query session knowledge without new search |
 | `GET /session/:id/knowledge` | Export all session claims |
+| `POST /session/:id/share` | Share a session publicly (returns shareId) |
+| `GET /session/share/:shareId` | View a shared session (public, no auth) |
+| `POST /session/share/:shareId/fork` | Fork a shared session into your account |
 
 ## MCP Tools
 
@@ -252,6 +268,9 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `browse_session_create` | Create a research session (persistent memory) |
 | `browse_session_ask` | Research within a session (recalls prior knowledge) |
 | `browse_session_recall` | Query session knowledge without new web search |
+| `browse_session_share` | Share a session publicly (returns share URL) |
+| `browse_session_knowledge` | Export all claims from a session |
+| `browse_session_fork` | Fork a shared session to continue the research |
 
 ## Python SDK
 
@@ -266,6 +285,8 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `session.ask(query, depth=)` | Research with memory recall |
 | `session.recall(query)` | Query session knowledge |
 | `session.knowledge()` | Export all session claims |
+| `session.share()` | Share session publicly (returns shareId + URL) |
+| `client.fork_session(share_id)` | Fork a shared session into your account |
 
 Async support: `AsyncBrowseAI` with the same API.
 
