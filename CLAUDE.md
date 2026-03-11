@@ -10,9 +10,9 @@ BrowseAI Dev is open-source research infrastructure for AI agents. It gives agen
 
 ```
 apps/api/          — Fastify REST API (search, answer, extract, compare)
-apps/mcp/          — MCP server (npm: browse-ai, v0.1.5)
+apps/mcp/          — MCP server (npm: browse-ai)
 packages/shared/   — Shared types, schemas, constants
-packages/python-sdk/ — Python SDK (PyPI: browseai, v0.1.0)
+packages/python-sdk/ — Python SDK (PyPI: browseai)
 src/               — Vite + React frontend (landing, developers, playground pages)
 ```
 
@@ -108,8 +108,9 @@ Every time a new feature is implemented, go through this checklist before consid
 - [ ] `packages/python-sdk/README.md` — Python SDK usage examples if method signatures changed
 
 ### 4. Versioning (if publishing)
-- [ ] Bump version in `apps/mcp/package.json` (npm auto-publish on merge to main)
-- [ ] Bump version in `packages/python-sdk/pyproject.toml` (PyPI auto-publish on merge to main)
+- [ ] Bump version in `apps/mcp/package.json` AND `apps/mcp/src/index.ts` (`VERSION` constant) — must match
+- [ ] Bump version in `packages/python-sdk/pyproject.toml` AND `packages/python-sdk/browseai/__init__.py` (`__version__`) — must match
+- [ ] CI auto-publishes on merge to main but **skips if version unchanged** — always bump before merging
 - [ ] Update `CLAUDE.md` architecture section if significant new capability
 
 ### 5. Ship
