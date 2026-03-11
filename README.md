@@ -247,7 +247,8 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 |----------|----------|-------------|
 | `SERP_API_KEY` | Yes | Web search API key ([Tavily](https://app.tavily.com)) |
 | `OPENROUTER_API_KEY` | Yes | LLM API key ([OpenRouter](https://openrouter.ai/keys)) |
-| `REDIS_URL` | No | Redis URL (falls back to in-memory cache) |
+| `KV_REST_API_URL` | No | Vercel KV / Upstash Redis REST URL (falls back to in-memory cache) |
+| `KV_REST_API_TOKEN` | No | Vercel KV / Upstash Redis REST token |
 | `SUPABASE_URL` | No | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
 | `PORT` | No | API server port (default: 3001) |

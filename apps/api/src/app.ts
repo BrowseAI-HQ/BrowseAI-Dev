@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { loadEnv } from "./config/env.js";
-import { createRedisCache, createMemoryCache } from "./services/cache.js";
+import { createUpstashCache, createMemoryCache } from "./services/cache.js";
 import { createSupabaseStore, createNoopStore } from "./services/store.js";
 import { createApiKeyService } from "./services/apiKeys.js";
 import { registerBrowseRoutes } from "./routes/browse.js";
@@ -34,8 +34,13 @@ export async function buildApp() {
     allowedHeaders: ["Content-Type", "X-Tavily-Key", "X-OpenRouter-Key", "X-API-Key", "Authorization"],
   });
 
-  const cache = env.REDIS_URL
-    ? createRedisCache(env.REDIS_URL)
+  // Vercel KV sets KV_REST_API_URL + KV_REST_API_TOKEN
+  // Upstash sets UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  const cache = kvUrl && kvToken
+    ? createUpstashCache({ url: kvUrl, token: kvToken })
     : createMemoryCache();
 
   const store =

@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { ApiKeySettings } from "@/components/ApiKeySettings";
 import { LoginModal } from "@/components/LoginModal";
@@ -111,6 +114,7 @@ const Index = () => {
           <span className="font-semibold text-sm tracking-tight hidden sm:inline">BrowseAI Dev</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* Desktop nav links */}
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/playground")}>
             Playground
           </Button>
@@ -123,10 +127,10 @@ const Index = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" onClick={() => navigate("/recipes")}>
             Recipes
           </Button>
-          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" asChild>
             <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4" />
-              <span className="hidden sm:inline ml-1">GitHub</span>
+              <span className="ml-1">GitHub</span>
             </a>
           </Button>
           <a
@@ -136,6 +140,28 @@ const Index = () => {
             <Sparkles className="w-3 h-3" />
             Pro Waitlist
           </a>
+
+          {/* Mobile hamburger menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="sm:hidden">
+                <Menu className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => navigate("/playground")}>Playground</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/docs")}>Docs</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/developers")}>Developers</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/recipes")}>Recipes</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">GitHub</a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="#waitlist">Pro Waitlist</a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <ApiKeySettings />
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>

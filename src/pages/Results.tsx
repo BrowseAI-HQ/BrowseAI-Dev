@@ -53,7 +53,7 @@ const Results = () => {
           </Button>
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
-            <span className="font-semibold text-sm">BrowseAI Dev</span>
+            <span className="font-semibold text-sm hidden sm:inline">BrowseAI Dev</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ const Results = () => {
                 onClick={handleShare}
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
-                {copied ? "Copied!" : "Share"}
+                <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
               </Button>
               <Button
                 variant="outline"
@@ -75,7 +75,7 @@ const Results = () => {
                 onClick={() => navigate(`/compare?q=${encodeURIComponent(query)}`)}
               >
                 <GitCompare className="w-3.5 h-3.5" />
-                Compare
+                <span className="hidden sm:inline">Compare</span>
               </Button>
             </>
           )}

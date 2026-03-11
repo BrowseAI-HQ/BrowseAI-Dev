@@ -52,3 +52,4 @@ __pycache__/
 *.sw?
 .vercel
 packages/python-sdk/browseai/__pycache__/
+.env*.local

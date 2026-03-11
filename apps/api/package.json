@@ -22,7 +22,7 @@
     "@mozilla/readability": "^0.5.0",
     "dotenv": "^16.4.7",
     "fastify": "^5.3.0",
-    "ioredis": "^5.6.0",
+    "@upstash/redis": "^1.34.3",
     "linkedom": "^0.18.0",
     "zod": "^3.25.76"
   },

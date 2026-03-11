@@ -1,18 +1,21 @@
-import Redis from "ioredis";
+import { Redis } from "@upstash/redis";
 
 export interface CacheService {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttlSeconds?: number): Promise<void>;
 }
 
-export function createRedisCache(url: string): CacheService {
-  const redis = new (Redis as any)(url);
+export function createUpstashCache(urlOrRedis: string | { url: string; token: string }): CacheService {
+  const redis = typeof urlOrRedis === "string"
+    ? Redis.fromEnv() // uses UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+    : new Redis({ url: urlOrRedis.url, token: urlOrRedis.token });
+
   return {
     async get(key) {
-      return redis.get(key);
+      return redis.get<string>(key);
     },
     async set(key, value, ttl = 300) {
-      await redis.setex(key, ttl, value);
+      await redis.set(key, value, { ex: ttl });
     },
   };
 }
