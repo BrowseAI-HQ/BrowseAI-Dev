@@ -12,6 +12,16 @@ export type DomainStats = {
   verificationRate: number;
 };
 
+export type DomainAuthorityRow = {
+  domain: string;
+  tier: number;
+  static_score: number;
+  dynamic_score: number | null;
+  sample_count: number;
+  global_rank: number | null;
+  curated: boolean;
+};
+
 export interface ResultStore {
   save(query: string, result: BrowseResult, userId?: string, tool?: string, options?: SaveOptions): Promise<string>;
   get(id: string): Promise<{ query: string; result: BrowseResult; created_at: string } | null>;
@@ -28,6 +38,10 @@ export interface ResultStore {
   }>;
   /** Compute per-domain verification stats from stored query results */
   getDomainStats(limit?: number): Promise<DomainStats[]>;
+  /** Load all domain authority rows from DB */
+  loadDomainAuthority(): Promise<DomainAuthorityRow[]>;
+  /** Upsert domain authority rows (for imports and dynamic score updates) */
+  saveDomainAuthority(entries: Partial<DomainAuthorityRow>[]): Promise<number>;
 }
 
 export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string): ResultStore {
@@ -139,6 +153,49 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         .slice(0, limit);
     },
 
+    async loadDomainAuthority(): Promise<DomainAuthorityRow[]> {
+      const res = await supabaseFetch(
+        `/domain_authority?select=domain,tier,static_score,dynamic_score,sample_count,global_rank,curated&order=static_score.desc&limit=10000`
+      );
+      if (!res.ok) {
+        console.warn("Failed to load domain authority:", res.status);
+        return [];
+      }
+      return res.json();
+    },
+
+    async saveDomainAuthority(entries: Partial<DomainAuthorityRow>[]): Promise<number> {
+      if (entries.length === 0) return 0;
+
+      // Batch upsert in chunks of 500
+      let saved = 0;
+      for (let i = 0; i < entries.length; i += 500) {
+        const chunk = entries.slice(i, i + 500);
+        const rows = chunk.map((e) => ({
+          domain: e.domain,
+          ...(e.tier !== undefined && { tier: e.tier }),
+          ...(e.static_score !== undefined && { static_score: e.static_score }),
+          ...(e.dynamic_score !== undefined && { dynamic_score: e.dynamic_score }),
+          ...(e.sample_count !== undefined && { sample_count: e.sample_count }),
+          ...(e.global_rank !== undefined && { global_rank: e.global_rank }),
+          ...(e.curated !== undefined && { curated: e.curated }),
+          updated_at: new Date().toISOString(),
+        }));
+
+        const res = await supabaseFetch("/domain_authority", {
+          method: "POST",
+          headers: {
+            Prefer: "resolution=merge-duplicates,return=minimal",
+          },
+          body: JSON.stringify(rows),
+        });
+
+        if (res.ok) saved += chunk.length;
+        else console.warn("Failed to save domain authority chunk:", res.status);
+      }
+      return saved;
+    },
+
     async getDomainStats(limit = 5000): Promise<DomainStats[]> {
       // Fetch recent results with claims and sources for domain-level verification stats
       const res = await supabaseFetch(
@@ -240,5 +297,7 @@ export function createNoopStore(): ResultStore {
     async getTopSources() { return []; },
     async getAnalyticsSummary() { return { totalQueries: 0, queriesToday: 0, avgConfidence: null, avgResponseTimeMs: null, cacheHitRate: null }; },
     async getDomainStats() { return []; },
+    async loadDomainAuthority() { return []; },
+    async saveDomainAuthority() { return 0; },
   };
 }

@@ -1,4 +1,5 @@
 import type { BrowseClaim, BrowseSource, Contradiction } from "@browse/shared";
+import type { DomainAuthorityRow } from "../services/store.js";
 
 // ─── Text Processing ────────────────────────────────────────────────
 
@@ -284,6 +285,40 @@ export function isLowQualityDomain(url: string): boolean {
     return false;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Initialize domain authority from database.
+ * Loads all rows from domain_authority table and populates in-memory maps.
+ * Falls back to hardcoded defaults if DB is empty or unavailable.
+ */
+export async function initDomainAuthority(
+  loader: { loadDomainAuthority(): Promise<DomainAuthorityRow[]> }
+): Promise<number> {
+  try {
+    const rows = await loader.loadDomainAuthority();
+    if (rows.length === 0) return 0;
+
+    // Clear and repopulate from DB
+    for (const key of Object.keys(AUTHORITY)) delete AUTHORITY[key];
+    LOW_QUALITY_SET.clear();
+
+    for (const row of rows) {
+      AUTHORITY[row.domain] = Number(row.static_score);
+      if (row.tier === 0) LOW_QUALITY_SET.add(row.domain);
+      if (row.dynamic_score != null && row.sample_count >= 3) {
+        dynamicAuthority.set(row.domain, {
+          dynamicScore: Number(row.dynamic_score),
+          sampleCount: row.sample_count,
+        });
+      }
+    }
+
+    return rows.length;
+  } catch (e) {
+    console.warn("Failed to load domain authority from DB, using defaults:", e);
+    return 0;
   }
 }
 

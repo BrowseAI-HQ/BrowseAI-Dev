@@ -8,6 +8,7 @@ import { registerBrowseRoutes } from "./routes/browse.js";
 import { registerApiKeyRoutes } from "./routes/apiKeys.js";
 import { registerWaitlistRoutes } from "./routes/waitlist.js";
 import { registerAdminRoutes } from "./routes/admin.js";
+import { initDomainAuthority } from "./lib/verify.js";
 
 export async function buildApp() {
   const env = await loadEnv();
@@ -46,6 +47,12 @@ export async function buildApp() {
     env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY && env.API_KEY_ENCRYPTION_KEY
       ? createApiKeyService(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env.API_KEY_ENCRYPTION_KEY)
       : null;
+
+  // Load domain authority from DB (falls back to hardcoded defaults if unavailable)
+  const domainCount = await initDomainAuthority(store);
+  if (domainCount > 0) {
+    console.log(`Loaded ${domainCount} domain authority entries from DB`);
+  }
 
   registerBrowseRoutes(app, env, cache, store, apiKeyService);
 

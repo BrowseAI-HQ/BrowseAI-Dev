@@ -94,12 +94,22 @@ export function registerAdminRoutes(
       sampleCount: s.totalClaims,
     }));
 
+    // Update in-memory
     setDynamicAuthority(dynamicStats);
+
+    // Persist to DB so dynamic scores survive restarts
+    const dbEntries = dynamicStats.map(d => ({
+      domain: d.domain,
+      dynamic_score: Math.round(d.verificationRate * 100) / 100,
+      sample_count: d.sampleCount,
+    }));
+    const persisted = await store.saveDomainAuthority(dbEntries);
 
     return reply.send({
       success: true,
       result: {
         domainsUpdated: dynamicStats.length,
+        persistedToDB: persisted,
         topDomains: dynamicStats.slice(0, 10).map(d => ({
           domain: d.domain,
           score: d.verificationRate,
@@ -107,6 +117,79 @@ export function registerAdminRoutes(
         })),
       },
     });
+  });
+
+  // Import domain authority from Majestic Million (free CSV, CC license)
+  app.post("/admin/import-domain-data", async (request, reply) => {
+    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
+    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+
+    const { limit: importLimit } = (request.body as { limit?: number }) || {};
+    const maxDomains = Math.min(importLimit || 10000, 50000);
+
+    try {
+      // Download Majestic Million CSV (free, CC-BY-3.0)
+      const res = await fetch("https://downloads.majestic.com/majestic_million.csv");
+      if (!res.ok) {
+        return reply.status(502).send({ success: false, error: `Majestic download failed: ${res.status}` });
+      }
+
+      const text = await res.text();
+      const lines = text.split("\n");
+
+      // Parse CSV: GlobalRank,TldRank,Domain,TLD,...
+      const entries: { domain: string; tier: number; static_score: number; global_rank: number; curated: boolean }[] = [];
+
+      for (let i = 1; i < lines.length && entries.length < maxDomains; i++) {
+        const cols = lines[i].split(",");
+        if (cols.length < 4) continue;
+
+        const rank = parseInt(cols[0]);
+        const domain = cols[2]?.trim().toLowerCase();
+        if (!domain || !rank) continue;
+
+        // Map rank to base score (popularity != authority, so scores are conservative)
+        let score: number;
+        if (rank <= 100) score = 0.65;
+        else if (rank <= 500) score = 0.60;
+        else if (rank <= 2000) score = 0.58;
+        else if (rank <= 10000) score = 0.55;
+        else if (rank <= 50000) score = 0.50;
+        else score = 0.48;
+
+        entries.push({
+          domain,
+          tier: -1, // auto-scored, not curated
+          static_score: score,
+          global_rank: rank,
+          curated: false,
+        });
+      }
+
+      // Save to DB (ON CONFLICT will merge, but curated entries won't be overwritten due to Prefer header)
+      const saved = await store.saveDomainAuthority(entries);
+
+      // Reload into memory
+      const { initDomainAuthority } = await import("../lib/verify.js");
+      const loaded = await initDomainAuthority(store);
+
+      return reply.send({
+        success: true,
+        result: {
+          parsed: entries.length,
+          savedToDB: saved,
+          loadedToMemory: loaded,
+          sampleDomains: entries.slice(0, 5).map(e => ({
+            domain: e.domain,
+            rank: e.global_rank,
+            score: e.static_score,
+          })),
+        },
+      });
+    } catch (e: any) {
+      request.log.error(e);
+      return reply.status(500).send({ success: false, error: `Import failed: ${e.message}` });
+    }
   });
 
   // Remove admin (cannot remove yourself)
