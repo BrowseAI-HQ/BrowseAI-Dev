@@ -98,8 +98,8 @@ async function apiCall<T>(
   return data.result;
 }
 
-export async function browseKnowledge(query: string): Promise<BrowseResult> {
-  return apiCall<BrowseResult>("/browse/answer", { query });
+export async function browseKnowledge(query: string, depth: "fast" | "thorough" = "fast"): Promise<BrowseResult> {
+  return apiCall<BrowseResult>("/browse/answer", { query, depth });
 }
 
 export async function browseSearch(query: string, limit?: number) {

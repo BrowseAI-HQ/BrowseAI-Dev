@@ -17,6 +17,7 @@ const EnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   API_KEY_ENCRYPTION_KEY: z.string().trim().transform(v => v || undefined).pipe(z.string().length(64).optional()),
   SUPABASE_JWT_SECRET: z.string().optional(),
+  BRAVE_API_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

@@ -13,7 +13,7 @@ export async function search(
   query: string,
   apiKey: string,
   cache: CacheService,
-  limit: number = 5
+  limit: number = 10
 ): Promise<{ results: SearchResult[]; cached: boolean }> {
   const cacheKey = `search:${query}:${limit}`;
   const cached = await cache.get(cacheKey);

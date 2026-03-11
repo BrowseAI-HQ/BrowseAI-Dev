@@ -22,6 +22,9 @@ print(f"Confidence: {result.confidence:.0%}")
 for source in result.sources:
     print(f"  - {source.title}: {source.url}")
 
+# Thorough mode — auto-retries if confidence < 60%
+deep = client.ask("What is quantum computing?", depth="thorough")
+
 # Web search
 results = client.search("latest AI news", limit=5)
 
@@ -42,6 +45,8 @@ from browseai import AsyncBrowseAI
 
 async with AsyncBrowseAI(api_key="bai_xxx") as client:
     result = await client.ask("What is quantum computing?")
+    # Thorough mode works with async too
+    deep = await client.ask("What is quantum computing?", depth="thorough")
 ```
 
 ## BYOK (Bring Your Own Keys)

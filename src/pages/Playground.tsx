@@ -16,6 +16,7 @@ const Playground = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("search");
+  const [depth, setDepth] = useState<"fast" | "thorough">("fast");
 
   const run = async () => {
     if (!input.trim()) return;
@@ -28,7 +29,7 @@ const Playground = () => {
       } else if (activeTab === "extract") {
         result = await browseExtract(input);
       } else {
-        result = await browseKnowledge(input);
+        result = await browseKnowledge(input, depth);
       }
       setResponse(result);
     } catch (e: any) {
@@ -79,6 +80,14 @@ const Playground = () => {
                   placeholder={placeholders[tab]}
                   className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
                 />
+                {tab === "answer" && (
+                  <button
+                    onClick={() => setDepth(depth === "fast" ? "thorough" : "fast")}
+                    className={`h-12 px-3 rounded-lg border text-xs font-mono transition-colors ${depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "bg-secondary border-border text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {depth === "thorough" ? "Thorough" : "Fast"}
+                  </button>
+                )}
                 <Button onClick={run} disabled={loading || !input.trim()} className="bg-accent text-accent-foreground h-12 px-5">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                 </Button>

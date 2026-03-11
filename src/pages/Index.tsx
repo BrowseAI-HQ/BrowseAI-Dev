@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,11 +55,13 @@ const Index = () => {
   const typedText = useTypewriter(TYPEWRITER_QUERIES);
   const { user, loading: authLoading } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
+  const [depth, setDepth] = useState<"fast" | "thorough">("fast");
 
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
     if (!searchQuery.trim()) return;
-    navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}`);
+    const depthParam = depth === "thorough" ? "&depth=thorough" : "";
+    navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}${depthParam}`);
   };
 
   const handleWaitlist = async () => {
@@ -113,6 +115,10 @@ const Index = () => {
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
             <Terminal className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Playground</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/docs")}>
+            <BookOpen className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Docs</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/developers")}>
             <Rocket className="w-4 h-4 sm:hidden" />
@@ -191,6 +197,12 @@ const Index = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-2">
+            <button
+              onClick={() => setDepth(depth === "fast" ? "thorough" : "fast")}
+              className={`px-4 py-2 rounded-full border text-xs font-medium transition-all ${depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-accent/40"}`}
+            >
+              {depth === "thorough" ? "Thorough Mode" : "Fast Mode"}
+            </button>
             <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={handleCompare} disabled={!query.trim()}>
               <GitCompare className="w-3.5 h-3.5" />
               Compare vs Raw LLM
@@ -256,7 +268,8 @@ const Index = () => {
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
                 { phase: "Later", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Later", text: "Streaming API & response formats — low-latency streaming for voice agents, brief/detailed modes" },
-                { phase: "Later", text: "Contradiction detection — flag conflicting claims across sources, surface disagreements for agents" },
+                { phase: "Done", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
+                { phase: "Done", text: "Self-improving accuracy — domain authority scores improve over time via Bayesian smoothing, every query makes future results better" },
                 { phase: "Later", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
@@ -367,7 +380,7 @@ const Index = () => {
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BM25-verified claims against source text</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (150+ domains)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (6-factor score)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score)</li>
               </ul>
             </motion.div>
           </div>

@@ -154,7 +154,7 @@ const AUTHORITY: Record<string, number> = {};
 // Tier 4: Institutional / scientific (0.95)
 const T4 = [
   // TLDs
-  ".gov", ".edu", ".mil", ".ac.uk", ".gov.uk",
+  ".gov", ".edu", ".mil", ".ac.uk", ".gov.uk", ".gov.au", ".gc.ca", ".europa.eu",
   // Science & health
   "who.int", "cdc.gov", "nih.gov", "nasa.gov", "fda.gov", "epa.gov",
   "nature.com", "science.org", "sciencedirect.com", "springer.com",
@@ -163,6 +163,17 @@ const T4 = [
   "ieee.org", "acm.org", "arxiv.org",
   // Standards bodies
   "w3.org", "ietf.org", "iso.org",
+  // Top universities
+  "mit.edu", "stanford.edu", "harvard.edu", "ox.ac.uk", "cam.ac.uk",
+  "caltech.edu", "berkeley.edu", "cmu.edu", "princeton.edu", "yale.edu",
+  "columbia.edu", "cornell.edu", "uchicago.edu", "eth.ch", "epfl.ch",
+  // International organizations
+  "un.org", "worldbank.org", "imf.org", "oecd.org", "wto.org",
+  // More science journals
+  "plos.org", "frontiersin.org", "wiley.com", "tandfonline.com",
+  "jstor.org", "ssrn.com", "researchgate.net",
+  // National academies & research
+  "nist.gov", "noaa.gov", "energy.gov", "nsf.gov",
 ];
 
 // Tier 3: Major news & reference (0.85)
@@ -172,14 +183,21 @@ const T3 = [
   "nytimes.com", "washingtonpost.com", "theguardian.com",
   "economist.com", "ft.com", "wsj.com", "npr.org", "pbs.org",
   "aljazeera.com", "dw.com", "france24.com",
+  // More international news
+  "abc.net.au", "cbc.ca", "scmp.com", "japantimes.co.jp",
+  "thehindu.com", "straitstimes.com", "irishtimes.com",
   // Reference
   "wikipedia.org", "britannica.com", "merriam-webster.com",
+  "wikimedia.org", "wikidata.org",
   // Official docs
   "developer.mozilla.org", "docs.python.org", "docs.microsoft.com",
   "learn.microsoft.com", "cloud.google.com", "developer.apple.com",
   "docs.aws.amazon.com", "docs.oracle.com", "docs.github.com",
   "kubernetes.io", "reactjs.org", "vuejs.org", "angular.io",
   "typescriptlang.org", "rust-lang.org", "go.dev", "python.org",
+  // More official docs
+  "docs.djangoproject.com", "ruby-lang.org", "docs.swift.org",
+  "kotlinlang.org", "elixir-lang.org", "haskell.org",
 ];
 
 // Tier 2: Established tech & business (0.72)
@@ -200,6 +218,16 @@ const T2 = [
   "openai.com", "anthropic.com", "huggingface.co", "ai.google",
   "blog.google", "engineering.fb.com", "aws.amazon.com",
   "azure.microsoft.com",
+  // More tech
+  "infoq.com", "dzone.com", "thenewstack.io", "semianalysis.com",
+  "theregister.com", "protocol.com", "platformer.news",
+  // Health & medicine
+  "mayoclinic.org", "clevelandclinic.org", "hopkinsmedicine.org",
+  "medscape.com", "uptodate.com",
+  // Finance
+  "morningstar.com", "seekingalpha.com", "fool.com",
+  // Legal & policy
+  "law.cornell.edu", "findlaw.com", "scotusblog.com",
 ];
 
 // Tier 1: Known decent sources (0.60)
@@ -211,6 +239,11 @@ const T1 = [
   "producthunt.com", "crunchbase.com", "glassdoor.com",
   "investopedia.com", "healthline.com", "webmd.com",
   "imdb.com", "rottentomatoes.com", "goodreads.com",
+  // More community/educational
+  "baeldung.com", "tutorialspoint.com", "geeksforgeeks.org",
+  "javatpoint.com", "w3schools.com", "codecademy.com",
+  "coursera.org", "edx.org", "khanacademy.org",
+  "towardsdatascience.com", "analyticsvidhya.com",
 ];
 
 // Tier 0: Known low-quality (0.25)
@@ -218,6 +251,18 @@ const T0 = [
   "tiktok.com", "pinterest.com",
   // Content farms
   "ehow.com", "answers.com", "ask.com",
+  "wikihow.com", "howstuffworks.com",
+  // SEO spam / clickbait
+  "buzzfeed.com", "boredpanda.com", "distractify.com",
+  "screenrant.com", "cbr.com", "gamerant.com",
+  // Low-quality aggregators
+  "articlesbase.com", "ezinearticles.com", "hubpages.com",
+  "squidoo.com", "helium.com", "suite101.com",
+  // Auto-generated / scraped
+  "copyblogger.com", "contentful.com",
+  // Unreliable health/science
+  "naturalnews.com", "mercola.com", "infowars.com",
+  "breitbart.com", "dailymail.co.uk",
 ];
 
 for (const d of T4) AUTHORITY[d] = 0.95;
@@ -225,6 +270,22 @@ for (const d of T3) AUTHORITY[d] = 0.85;
 for (const d of T2) AUTHORITY[d] = 0.72;
 for (const d of T1) AUTHORITY[d] = 0.60;
 for (const d of T0) AUTHORITY[d] = 0.25;
+
+const LOW_QUALITY_SET = new Set(T0);
+
+/** Check if a URL belongs to a known low-quality domain (T0 tier). */
+export function isLowQualityDomain(url: string): boolean {
+  try {
+    const domain = new URL(url).hostname.replace(/^www\./, "");
+    if (LOW_QUALITY_SET.has(domain)) return true;
+    for (const d of LOW_QUALITY_SET) {
+      if (d.startsWith(".") && domain.endsWith(d)) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 // ─── Dynamic Authority (Bayesian smoothing) ─────────────────────────
 

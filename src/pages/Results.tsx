@@ -18,6 +18,7 @@ const Results = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get("q") || "";
+  const depth = (searchParams.get("depth") as "fast" | "thorough") || "fast";
   const [result, setResult] = useState<BrowseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,11 +29,11 @@ const Results = () => {
     if (!query) return;
     setLoading(true);
     setError(null);
-    browseKnowledge(query)
+    browseKnowledge(query, depth)
       .then(setResult)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [query]);
+  }, [query, depth]);
 
   const handleShare = () => {
     if (!result?.shareId) return;

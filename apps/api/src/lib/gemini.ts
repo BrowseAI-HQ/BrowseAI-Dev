@@ -2,7 +2,14 @@ import { LLM_ENDPOINT, LLM_MODEL } from "@browse/shared";
 import type { BrowseResult, BrowseClaim, BrowseSource } from "@browse/shared";
 import { verifyEvidence } from "./verify.js";
 
-const SYSTEM_PROMPT = `You are a knowledge extraction engine. Given web page content, extract structured claims with source attribution and write a clear answer.
+export type QueryType = "factual" | "comparison" | "how-to" | "time-sensitive" | "opinion";
+
+export type QueryAnalysis = {
+  type: QueryType;
+  subQueries: string[] | null;
+};
+
+const BASE_PROMPT = `You are a knowledge extraction engine. Given web page content, extract structured claims with source attribution and write a clear answer.
 
 Rules:
 - Use only extracted evidence from the provided sources
@@ -11,6 +18,19 @@ Rules:
 - Explain clearly in 2-4 paragraphs
 
 Return a JSON object using the tool provided.`;
+
+const TYPE_PROMPT_ADDITIONS: Record<string, string> = {
+  comparison: "\n- Structure the answer as a balanced comparison. Extract claims for each option being compared. Include pros and cons.",
+  "how-to": "\n- Structure the answer as clear step-by-step instructions with key requirements and prerequisites.",
+  "time-sensitive": "\n- Prioritize the most recent information. Include dates and timeframes for each claim.",
+  opinion: "\n- Present multiple perspectives fairly. Note which sources support each viewpoint. Avoid taking sides.",
+};
+
+function getExtractionPrompt(queryType?: QueryType): string {
+  if (!queryType) return BASE_PROMPT;
+  const addition = TYPE_PROMPT_ADDITIONS[queryType] || "";
+  return BASE_PROMPT + addition;
+}
 
 const TOOL_SCHEMA = {
   type: "function" as const,
@@ -181,12 +201,138 @@ export async function rephraseQuery(
   return rephrased && rephrased.length > 5 ? rephrased.replace(/^["']|["']$/g, "") : originalQuery;
 }
 
+/**
+ * Generate a search query variant for broader coverage.
+ * Uses different phrasing/terms to surface results the original query might miss.
+ * Lightweight call — returns original query on any failure.
+ */
+export async function generateQueryVariant(
+  originalQuery: string,
+  apiKey: string,
+): Promise<string> {
+  try {
+    const res = await fetch(LLM_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: "Generate an alternative search query that would find complementary results. Use different keywords, synonyms, or angles. Return ONLY the query, nothing else.",
+          },
+          {
+            role: "user",
+            content: originalQuery,
+          },
+        ],
+        max_tokens: 80,
+      }),
+    });
+
+    if (!res.ok) return originalQuery;
+    const data = await res.json();
+    const variant = data.choices?.[0]?.message?.content?.trim();
+    return variant && variant.length > 3 ? variant.replace(/^["']|["']$/g, "") : originalQuery;
+  } catch {
+    return originalQuery;
+  }
+}
+
+/**
+ * Classify query type and optionally decompose into sub-queries.
+ * Runs in parallel with search — no added latency.
+ *
+ * Query types determine:
+ * - Extraction prompt (comparison → pros/cons, how-to → steps, etc.)
+ * - Adaptive page count (factual → fewer, comparison → more)
+ *
+ * Sub-queries: complex multi-part questions are broken into 2-3 focused
+ * searches, run in parallel, then merged for broader evidence coverage.
+ */
+export async function analyzeQuery(
+  query: string,
+  apiKey: string,
+): Promise<QueryAnalysis> {
+  try {
+    const res = await fetch(LLM_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: `Classify the search query and optionally decompose it into sub-queries for better search results.
+
+Query types:
+- factual: Single-answer questions (definitions, dates, numbers, "what is X")
+- comparison: Comparing two or more things ("X vs Y", "pros and cons", "difference between")
+- how-to: Step-by-step instructions or processes ("how to", "tutorial", "guide")
+- time-sensitive: Current events, prices, scores, weather ("latest", "current", "today", year mentions)
+- opinion: Subjective topics with multiple valid perspectives ("best", "should I", "is X worth")
+
+Sub-queries: For complex multi-part questions or comparisons, break into 2-3 focused sub-queries that would surface complementary results. For simple factual questions, return an empty array.`,
+          },
+          { role: "user", content: query },
+        ],
+        tools: [{
+          type: "function" as const,
+          function: {
+            name: "classify_query",
+            description: "Classify query type and decompose if complex",
+            parameters: {
+              type: "object",
+              properties: {
+                type: {
+                  type: "string",
+                  enum: ["factual", "comparison", "how-to", "time-sensitive", "opinion"],
+                },
+                subQueries: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Sub-queries for complex questions, or empty array for simple ones",
+                },
+              },
+              required: ["type", "subQueries"],
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "classify_query" } },
+        max_tokens: 200,
+      }),
+    });
+
+    if (!res.ok) return { type: "factual", subQueries: null };
+
+    const data = await res.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall) return { type: "factual", subQueries: null };
+
+    const result = JSON.parse(toolCall.function.arguments);
+    return {
+      type: result.type || "factual",
+      subQueries: result.subQueries?.length > 0 ? result.subQueries.slice(0, 3) : null,
+    };
+  } catch {
+    return { type: "factual", subQueries: null };
+  }
+}
+
 export async function extractKnowledge(
   query: string,
   pageContents: string,
   apiKey: string,
   pageTexts?: Map<string, string>,
+  queryType?: QueryType,
 ): Promise<Omit<BrowseResult, "trace">> {
+  const systemPrompt = getExtractionPrompt(queryType);
   const res = await fetch(LLM_ENDPOINT, {
     method: "POST",
     headers: {
@@ -196,7 +342,7 @@ export async function extractKnowledge(
     body: JSON.stringify({
       model: LLM_MODEL,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         {
           role: "user",
           content: `Question: ${query}\n\nWeb sources:\n${pageContents}`,

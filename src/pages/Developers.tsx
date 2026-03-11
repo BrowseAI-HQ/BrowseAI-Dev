@@ -75,6 +75,12 @@ const ROADMAP_ITEMS = [
     done: true,
   },
   {
+    phase: "Done",
+    title: "Thorough mode & self-improving accuracy",
+    desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
+    done: true,
+  },
+  {
     phase: "Then",
     title: "Knowledge graph & entity extraction",
     desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
@@ -466,7 +472,7 @@ print(result.answer, result.confidence)`}</pre>
             <div className="space-y-4">
               {ROADMAP_ITEMS.map((item, i) => (
                 <motion.div
-                  key={item.phase}
+                  key={`${item.phase}-${i}`}
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}

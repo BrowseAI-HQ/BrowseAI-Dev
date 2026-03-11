@@ -15,7 +15,7 @@ export type TavilyResponse = {
 export async function tavilySearch(
   query: string,
   apiKey: string,
-  limit: number = 5
+  limit: number = 10
 ): Promise<TavilyResponse> {
   const res = await fetch(TAVILY_ENDPOINT, {
     method: "POST",

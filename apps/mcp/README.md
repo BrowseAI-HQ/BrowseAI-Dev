@@ -13,10 +13,11 @@ Your question → Web search → Fetch pages → Extract claims → Build eviden
 ```
 
 Every answer includes:
-- **Claims** with source URLs
-- **Confidence score** (0-1)
-- **Source quotes** from actual web pages
+- **Claims** with source URLs, verification status, and consensus level
+- **7-factor confidence score** (0-1) — evidence-based, not LLM self-assessed
+- **Source quotes** verified against actual page text via BM25
 - **Execution trace** with timing
+- **Thorough mode** — pass `depth: "thorough"` to auto-retry with rephrased queries when confidence < 60%
 
 ## Quick Start
 
@@ -96,12 +97,14 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 | `browse_search` | Search the web via Tavily |
 | `browse_open` | Fetch and parse a page into clean text |
 | `browse_extract` | Extract structured knowledge from a page |
-| `browse_answer` | Full pipeline: search + extract + cite |
+| `browse_answer` | Full pipeline: search + extract + cite. Supports `depth: "thorough"` for auto-retry |
 | `browse_compare` | Compare raw LLM vs evidence-backed answer |
 
 ## Example
 
 Ask Claude: *"Use browse_answer to explain what causes aurora borealis"*
+
+For higher accuracy: *"Use browse_answer with depth thorough to research quantum computing"*
 
 Response:
 ```json
@@ -110,7 +113,10 @@ Response:
   "claims": [
     {
       "claim": "Aurora borealis is caused by solar wind particles...",
-      "sources": ["https://en.wikipedia.org/wiki/Aurora"]
+      "sources": ["https://en.wikipedia.org/wiki/Aurora"],
+      "verified": true,
+      "verificationScore": 0.82,
+      "consensusLevel": "strong"
     }
   ],
   "sources": [
@@ -118,7 +124,9 @@ Response:
       "url": "https://en.wikipedia.org/wiki/Aurora",
       "title": "Aurora - Wikipedia",
       "domain": "en.wikipedia.org",
-      "quote": "An aurora is a natural light display..."
+      "quote": "An aurora is a natural light display...",
+      "verified": true,
+      "authority": 0.70
     }
   ],
   "confidence": 0.92
@@ -131,7 +139,8 @@ Response:
 |---------|---------|-----------|
 | Sources | None | Real URLs with quotes |
 | Citations | Hallucinated | Verified from pages |
-| Confidence | Unknown | 0-1 score |
+| Confidence | Unknown | 7-factor evidence-based score |
+| Depth | Single pass | Thorough mode with auto-retry |
 | Freshness | Training data | Real-time web |
 | Claims | Mixed in text | Structured + linked |
 

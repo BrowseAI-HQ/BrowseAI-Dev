@@ -1,0 +1,524 @@
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft, Search, Layers, Shield, Brain, Zap, AlertTriangle,
+  BarChart3, Terminal, Code2, BookOpen, Github, Cloud, Server,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { BrowseLogo } from "@/components/BrowseLogo";
+
+const NAV_ITEMS = [
+  { id: "pipeline", label: "Pipeline", icon: Layers },
+  { id: "thorough-mode", label: "Thorough Mode", icon: Zap },
+  { id: "verification", label: "Verification", icon: Shield },
+  { id: "confidence", label: "Confidence Score", icon: BarChart3 },
+  { id: "domain-authority", label: "Domain Authority", icon: Brain },
+  { id: "contradictions", label: "Contradictions", icon: AlertTriangle },
+  { id: "api", label: "API Reference", icon: Code2 },
+  { id: "hosted-vs-self", label: "Hosted vs Self-Host", icon: Cloud },
+  { id: "faq", label: "FAQ", icon: BookOpen },
+];
+
+const Section = ({ id, title, icon: Icon, children }: { id: string; title: string; icon: any; children: React.ReactNode }) => (
+  <section id={id} className="scroll-mt-24">
+    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+      <div className="flex items-center gap-2 mb-4">
+        <Icon className="w-5 h-5 text-accent" />
+        <h2 className="text-2xl font-bold">{title}</h2>
+      </div>
+      <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">{children}</div>
+    </motion.div>
+  </section>
+);
+
+const CodeBlock = ({ children, label }: { children: string; label?: string }) => (
+  <div className="rounded-xl bg-card border border-border overflow-hidden">
+    {label && (
+      <div className="px-4 py-2 border-b border-border bg-secondary/50">
+        <span className="text-xs font-mono text-muted-foreground">{label}</span>
+      </div>
+    )}
+    <pre className="p-4 overflow-x-auto text-xs font-mono text-secondary-foreground leading-relaxed">{children}</pre>
+  </div>
+);
+
+const Docs = () => {
+  const navigate = useNavigate();
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [hash]);
+
+  return (
+    <div className="min-h-screen">
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <img src="/logo.svg" alt="BrowseAI" className="w-5 h-5" />
+            <span className="font-semibold text-sm tracking-tight">Docs</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/playground")}>
+            <Terminal className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Playground</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => navigate("/developers")}>
+            <Code2 className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">Developers</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
+            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
+              <Github className="w-4 h-4 sm:hidden" />
+              <span className="hidden sm:inline">GitHub</span>
+            </a>
+          </Button>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto px-6 pt-24 pb-20 flex gap-10">
+        {/* Sidebar */}
+        <aside className="hidden lg:block w-48 shrink-0 sticky top-24 self-start">
+          <nav className="space-y-1">
+            {NAV_ITEMS.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <item.icon className="w-3.5 h-3.5" />
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 space-y-16">
+          {/* Hero */}
+          <div>
+            <Badge variant="outline" className="text-xs font-normal mb-4">Documentation</Badge>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">How BrowseAI Works</h1>
+            <p className="text-muted-foreground max-w-2xl leading-relaxed">
+              BrowseAI gives AI agents reliable web research with evidence-backed citations.
+              This page explains every feature — how it works, when to use it, and how to integrate it.
+            </p>
+          </div>
+
+          {/* Pipeline */}
+          <Section id="pipeline" title="The Verification Pipeline" icon={Layers}>
+            <p>Every query goes through a 6-step pipeline. Each step adds a layer of verification.</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {[
+                { step: "1. Search", desc: "Query the web via Tavily API. Returns 5-10 relevant results." },
+                { step: "2. Fetch", desc: "Parse each page with Readability. Strip ads, nav, scripts — keep content." },
+                { step: "3. Extract", desc: "LLM extracts structured claims with source attribution." },
+                { step: "4. Verify", desc: "BM25 scores each claim against its cited source text." },
+                { step: "5. Consensus", desc: "Cross-source check — claims verified against ALL pages, not just cited ones." },
+                { step: "6. Answer", desc: "Generate cited answer with confidence score, claims, sources, and trace." },
+              ].map((s) => (
+                <div key={s.step} className="p-3 rounded-lg bg-card border border-border">
+                  <span className="text-xs font-semibold text-accent">{s.step}</span>
+                  <p className="text-xs text-muted-foreground mt-1">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* Thorough Mode */}
+          <Section id="thorough-mode" title="Thorough Mode" icon={Zap}>
+            <p>
+              By default, BrowseAI runs in <strong className="text-foreground">fast mode</strong> — a single search-fetch-extract pass.
+              For important queries where accuracy matters more than speed, use <strong className="text-foreground">thorough mode</strong>.
+            </p>
+
+            <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
+              <h4 className="text-sm font-semibold text-foreground mb-2">How thorough mode works</h4>
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>Runs the normal pipeline (search, fetch, extract, verify)</li>
+                <li>Checks the confidence score — if it's below 60%, triggers a retry</li>
+                <li>Rephrases the query using the LLM (alternative terms, more specific phrasing)</li>
+                <li>Runs a second pass with the rephrased query</li>
+                <li>Merges sources from both passes</li>
+                <li>Picks whichever pass produced the higher confidence result</li>
+              </ol>
+            </div>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">When to use it</h4>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Complex or niche topics where the first search might miss key sources</li>
+              <li>When you need high-confidence results and can afford ~2x latency</li>
+              <li>Ambiguous queries that could benefit from rephrasing</li>
+            </ul>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Usage</h4>
+
+            <CodeBlock label="REST API">{`curl -X POST https://browseai.dev/api/browse/answer \\
+  -H "Content-Type: application/json" \\
+  -H "X-Tavily-Key: tvly-xxx" \\
+  -H "X-OpenRouter-Key: sk-or-xxx" \\
+  -d '{"query": "What is quantum computing?", "depth": "thorough"}'`}</CodeBlock>
+
+            <CodeBlock label="Python SDK">{`from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+
+# Fast (default)
+result = client.ask("What is quantum computing?")
+
+# Thorough — auto-retries if confidence < 60%
+result = client.ask("What is quantum computing?", depth="thorough")`}</CodeBlock>
+
+            <CodeBlock label="MCP (Claude Desktop)">{`Ask Claude: "Use browse_answer with depth thorough to research quantum computing"`}</CodeBlock>
+
+            <CodeBlock label="Website">{`Toggle "Fast Mode" → "Thorough Mode" below the search bar, then search.
+Or append &depth=thorough to the results URL.`}</CodeBlock>
+          </Section>
+
+          {/* Verification */}
+          <Section id="verification" title="Claim Verification" icon={Shield}>
+            <p>
+              After the LLM extracts claims, each one is verified against the actual source page text.
+              This catches hallucinated claims that have no basis in the cited sources.
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground">BM25 sentence matching</h4>
+            <p>
+              Each claim is tokenized and scored against every sentence in its cited sources using
+              the <a href="https://en.wikipedia.org/wiki/Okapi_BM25" className="text-accent hover:underline" target="_blank" rel="noopener">BM25 algorithm</a> — the
+              same ranking function behind Elasticsearch and Lucene. This catches paraphrased claims that simple keyword overlap would miss.
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground">Source quote verification</h4>
+            <p>
+              LLM-extracted quotes are verified against actual page text using hybrid matching:
+              first tries exact substring match, then falls back to BM25 scoring.
+              Sources get a <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">verified: true</code> flag when their quote is found.
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground">Cross-source consensus</h4>
+            <p>
+              Each claim is verified against <em>all</em> available page texts, not just its cited sources.
+              A claim found in 3+ independent domains gets <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">consensusLevel: "strong"</code>.
+              Single-source claims are flagged as <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">"weak"</code>.
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground">Response fields</h4>
+            <CodeBlock label="Claim object">{`{
+  "claim": "Aurora borealis is caused by solar wind particles...",
+  "sources": ["https://nasa.gov/..."],
+  "verified": true,
+  "verificationScore": 0.82,
+  "consensusCount": 3,
+  "consensusLevel": "strong"
+}`}</CodeBlock>
+          </Section>
+
+          {/* Confidence */}
+          <Section id="confidence" title="7-Factor Confidence Score" icon={BarChart3}>
+            <p>
+              Confidence scores are <strong className="text-foreground">evidence-based</strong>, not LLM self-assessed.
+              The score is computed from 7 real signals after verification:
+            </p>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Factor</th>
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Weight</th>
+                    <th className="text-left py-2 font-semibold text-foreground">What it measures</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  <tr><td className="py-2 pr-4">Verification rate</td><td className="py-2 pr-4 text-accent font-mono">25%</td><td className="py-2">% of claims verified in actual source text</td></tr>
+                  <tr><td className="py-2 pr-4">Domain authority</td><td className="py-2 pr-4 text-accent font-mono">20%</td><td className="py-2">Avg trustworthiness of source domains</td></tr>
+                  <tr><td className="py-2 pr-4">Source count</td><td className="py-2 pr-4 text-accent font-mono">15%</td><td className="py-2">More sources = more corroboration (log curve)</td></tr>
+                  <tr><td className="py-2 pr-4">Consensus</td><td className="py-2 pr-4 text-accent font-mono">15%</td><td className="py-2">Cross-source agreement across independent domains</td></tr>
+                  <tr><td className="py-2 pr-4">Domain diversity</td><td className="py-2 pr-4 text-accent font-mono">10%</td><td className="py-2">Unique domains / total sources</td></tr>
+                  <tr><td className="py-2 pr-4">Claim grounding</td><td className="py-2 pr-4 text-accent font-mono">10%</td><td className="py-2">% of claims citing at least one source</td></tr>
+                  <tr><td className="py-2 pr-4">Citation depth</td><td className="py-2 pr-4 text-accent font-mono">5%</td><td className="py-2">Avg sources per claim (capped at 3)</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>
+              <strong className="text-foreground">Contradiction penalty:</strong> Each detected contradiction subtracts 0.05 from the raw score.
+              Final range: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">0.10</code> (unverified, unknown sources)
+              to <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">0.97</code> (verified, multi-source consensus from authoritative domains).
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground">How to interpret scores</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { range: "0.80+", label: "High", color: "text-emerald-400", desc: "Well-verified, multiple authoritative sources" },
+                { range: "0.60-0.79", label: "Moderate", color: "text-amber-400", desc: "Partially verified, decent sources" },
+                { range: "0.40-0.59", label: "Low", color: "text-orange-400", desc: "Weak verification or few sources" },
+                { range: "< 0.40", label: "Very Low", color: "text-red-400", desc: "Unverified or unreliable sources" },
+              ].map((s) => (
+                <div key={s.range} className="p-3 rounded-lg bg-card border border-border">
+                  <span className={`text-xs font-mono font-bold ${s.color}`}>{s.range}</span>
+                  <p className="text-xs font-semibold text-foreground mt-1">{s.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* Domain Authority */}
+          <Section id="domain-authority" title="Domain Authority" icon={Brain}>
+            <p>
+              150+ domains are classified into 5 tiers of trustworthiness. Unknown domains get a neutral score (0.50).
+            </p>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Tier</th>
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Score</th>
+                    <th className="text-left py-2 font-semibold text-foreground">Examples</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  <tr><td className="py-2 pr-4">Institutional</td><td className="py-2 pr-4 font-mono">0.95</td><td className="py-2">.gov, .edu, WHO, CDC, Nature</td></tr>
+                  <tr><td className="py-2 pr-4">Major news</td><td className="py-2 pr-4 font-mono">0.80</td><td className="py-2">Reuters, AP, BBC, NYT</td></tr>
+                  <tr><td className="py-2 pr-4">Tech / reference</td><td className="py-2 pr-4 font-mono">0.70</td><td className="py-2">Wikipedia, MDN, Stack Overflow</td></tr>
+                  <tr><td className="py-2 pr-4">Community</td><td className="py-2 pr-4 font-mono">0.50</td><td className="py-2">Medium, Reddit, dev blogs</td></tr>
+                  <tr><td className="py-2 pr-4">Low quality</td><td className="py-2 pr-4 font-mono">0.20</td><td className="py-2">Content farms, SEO spam</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Self-improving scores</h4>
+            <p>
+              Domain authority scores <strong className="text-foreground">improve automatically over time</strong>.
+              Every query feeds verification data back into the system. We use Bayesian cold-start smoothing to blend
+              static tier scores with real verification rates:
+            </p>
+            <CodeBlock label="Formula">{`blended = (static_score * PRIOR_WEIGHT + dynamic_score * sample_count) / (PRIOR_WEIGHT + sample_count)
+
+PRIOR_WEIGHT = 15  (static scores dominate until ~15+ samples)
+Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
+            <p>
+              This means static tier scores are trusted initially. As evidence accumulates for a domain,
+              its real verification rate gradually takes over. The more your agents use BrowseAI, the more
+              accurate future results become.
+            </p>
+          </Section>
+
+          {/* Contradictions */}
+          <Section id="contradictions" title="Contradiction Detection" icon={AlertTriangle}>
+            <p>
+              Claim pairs are analyzed for semantic conflicts using topic overlap and negation asymmetry.
+              When two claims discuss the same topic but assert opposite things, a contradiction is flagged.
+            </p>
+
+            <CodeBlock label="Contradiction in response">{`{
+  "contradictions": [
+    {
+      "claimA": "Python is the fastest growing programming language",
+      "claimB": "JavaScript remains the most rapidly adopted language",
+      "topic": "programming language growth"
+    }
+  ]
+}`}</CodeBlock>
+
+            <p>
+              Each contradiction <strong className="text-foreground">penalizes the confidence score by 0.05</strong>.
+              Agents can use the <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">contradictions</code> field
+              to flag uncertainty or ask for clarification instead of choosing between conflicting claims.
+            </p>
+          </Section>
+
+          {/* API Reference */}
+          <Section id="api" title="API Reference" icon={Code2}>
+            <h4 className="text-sm font-semibold text-foreground">REST API</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Endpoint</th>
+                    <th className="text-left py-2 font-semibold text-foreground">Description</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/search</td><td className="py-2">Search the web</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/open</td><td className="py-2">Fetch and parse a page</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/extract</td><td className="py-2">Extract structured claims from a page</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer</td><td className="py-2">Full pipeline with citations. Accepts <code className="bg-secondary px-1 rounded">depth: "fast" | "thorough"</code></td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/compare</td><td className="py-2">Compare raw LLM vs evidence-backed answer</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4 className="text-sm font-semibold text-foreground pt-4">Python SDK</h4>
+            <CodeBlock label="pip install browseai">{`from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+
+# Full pipeline
+result = client.ask("What is quantum computing?")
+result = client.ask("What is quantum computing?", depth="thorough")
+
+# Individual tools
+results = client.search("AI news", limit=5)
+page = client.open("https://example.com")
+extract = client.extract("https://example.com", query="pricing")
+compare = client.compare("Is Python faster than Rust?")`}</CodeBlock>
+
+            <h4 className="text-sm font-semibold text-foreground pt-4">MCP Server</h4>
+            <CodeBlock label="Setup">{`npx browse-ai setup`}</CodeBlock>
+            <p>
+              5 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_open</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_extract</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_answer</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_compare</code>.
+              Works with Claude Desktop, Cursor, and Windsurf.
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground pt-4">Authentication</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Method</th>
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">How</th>
+                    <th className="text-left py-2 font-semibold text-foreground">Limits</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  <tr><td className="py-2 pr-4">BYOK</td><td className="py-2 pr-4">Pass <code className="bg-secondary px-1 rounded">X-Tavily-Key</code> + <code className="bg-secondary px-1 rounded">X-OpenRouter-Key</code> headers</td><td className="py-2">Unlimited, free</td></tr>
+                  <tr><td className="py-2 pr-4">API Key</td><td className="py-2 pr-4"><code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code></td><td className="py-2">Unlimited</td></tr>
+                  <tr><td className="py-2 pr-4">Demo</td><td className="py-2 pr-4">No auth</td><td className="py-2">5 queries/hour per IP</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </Section>
+
+          {/* Hosted vs Self-Hosted */}
+          <Section id="hosted-vs-self" title="Hosted vs Self-Hosted" icon={Cloud}>
+            <p>
+              BrowseAI is MIT-licensed and can be self-hosted. But the hosted service at{" "}
+              <a href="https://browseai.dev" className="text-accent hover:underline">browseai.dev</a>{" "}
+              provides advantages that can't be replicated by running your own instance:
+            </p>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Feature</th>
+                    <th className="text-left py-2 pr-4 font-semibold text-foreground">Hosted (browseai.dev)</th>
+                    <th className="text-left py-2 font-semibold text-foreground">Self-Hosted</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  <tr><td className="py-2 pr-4">Domain authority</td><td className="py-2 pr-4 text-accent">Self-improving from all users' data</td><td className="py-2">Static tiers only</td></tr>
+                  <tr><td className="py-2 pr-4">Cache</td><td className="py-2 pr-4 text-accent">Shared across all users — popular queries are instant</td><td className="py-2">Your queries only</td></tr>
+                  <tr><td className="py-2 pr-4">Accuracy over time</td><td className="py-2 pr-4 text-accent">Gets smarter with every query</td><td className="py-2">Same accuracy forever</td></tr>
+                  <tr><td className="py-2 pr-4">Updates</td><td className="py-2 pr-4 text-accent">Automatic — new algorithms, domains, features</td><td className="py-2">Manual git pull</td></tr>
+                  <tr><td className="py-2 pr-4">Infrastructure</td><td className="py-2 pr-4 text-accent">Zero ops — we handle scaling, uptime, monitoring</td><td className="py-2">You manage everything</td></tr>
+                  <tr><td className="py-2 pr-4">API key management</td><td className="py-2 pr-4 text-accent">One BrowseAI key bundles all services</td><td className="py-2">Manage Tavily + OpenRouter keys yourself</td></tr>
+                  <tr><td className="py-2 pr-4">Pro features (coming)</td><td className="py-2 pr-4 text-accent">Multi-model verification, priority queue, 15+ sources</td><td className="py-2">Not available</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
+              <h4 className="text-sm font-semibold text-foreground mb-2">The data flywheel</h4>
+              <p className="text-xs">
+                The hosted service aggregates anonymized verification signals from thousands of queries across all users.
+                When a domain consistently produces verified claims, its authority score rises. When it doesn't, the score drops.
+                This creates a compounding accuracy advantage that no single self-hosted instance can match — because accuracy
+                scales with collective usage, not individual deployment.
+              </p>
+            </div>
+
+            <p>
+              Self-hosting is great for air-gapped environments, compliance requirements, or experimentation.
+              For production agent pipelines where accuracy matters, the hosted service delivers meaningfully better results
+              and keeps improving automatically.
+            </p>
+          </Section>
+
+          {/* FAQ */}
+          <Section id="faq" title="FAQ" icon={BookOpen}>
+            {[
+              {
+                q: "Why is my confidence score low (40-60%)?",
+                a: "Confidence depends on real evidence signals. Common reasons for lower scores: the topic has few authoritative sources online, claims are only found in one source (weak consensus), or the sources are community-tier domains. Try thorough mode — it often improves scores by finding better sources on a rephrased query.",
+              },
+              {
+                q: "What's the difference between fast and thorough mode?",
+                a: "Fast mode runs one search-fetch-extract pass. Thorough mode does the same, then checks confidence — if below 60%, it rephrases your query and runs a second pass, merging sources from both. Thorough mode takes ~2x longer but produces higher-confidence results on complex queries.",
+              },
+              {
+                q: "How does BrowseAI differ from Perplexity?",
+                a: "Perplexity is a consumer search engine for humans. BrowseAI is research infrastructure for AI agents. It returns structured JSON (claims, sources, confidence, trace) that agents can programmatically evaluate — not a chat response. Available as MCP server, REST API, and Python SDK.",
+              },
+              {
+                q: "Is the confidence score the LLM's self-assessment?",
+                a: "No. The LLM never sees or sets the confidence score. It's computed post-extraction from 7 real signals: verification rate, domain authority, source count, consensus, domain diversity, claim grounding, and citation depth.",
+              },
+              {
+                q: "What does 'self-improving accuracy' mean?",
+                a: "Domain authority scores start from static tiers (gov/edu = high, content farms = low). Over time, real verification data from queries is blended in using Bayesian smoothing. Domains that consistently produce verified claims get higher scores; unreliable ones get lower scores. The system gets smarter with use.",
+              },
+              {
+                q: "Can I self-host BrowseAI?",
+                a: "Yes — the code is MIT licensed. However, self-hosted instances miss the key advantages of the hosted service: the self-improving data flywheel (domain authority scores that get smarter from aggregated verification data across all users), shared cache (popular queries are instant), automatic updates, and upcoming Pro features (multi-model verification, priority queue). Self-hosted instances start with static domain scores and never improve beyond your own query volume.",
+              },
+              {
+                q: "What do I miss by self-hosting?",
+                a: "Three things you can't replicate by forking: (1) The data flywheel — hosted domain authority scores are continuously refined from thousands of queries across all users. A self-hosted instance only has its own data. (2) Shared cache — when someone else already searched your query, you get instant results. (3) Continuous improvement — new verification algorithms, domain tiers, and features ship to hosted users automatically.",
+              },
+              {
+                q: "How is my query data used?",
+                a: "Your queries are processed to generate answers and cached to improve response times. Anonymized, domain-level verification signals (e.g., 'wikipedia.org verified 82% of claims across 500 queries') are aggregated to improve domain authority scores for all users. Your specific queries are never shared with other users or used to train models. See our Privacy Policy for full details.",
+              },
+              {
+                q: "What LLM does BrowseAI use?",
+                a: "Google Gemini 2.5 Flash via OpenRouter. The model extracts claims and generates answers. All verification (BM25, consensus, domain authority, contradictions) happens in code — not in the LLM.",
+              },
+            ].map((item) => (
+              <div key={item.q} className="p-4 rounded-xl bg-card border border-border">
+                <h4 className="text-sm font-semibold text-foreground mb-2">{item.q}</h4>
+                <p className="text-xs">{item.a}</p>
+              </div>
+            ))}
+          </Section>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <img src="/logo.svg" alt="BrowseAI" className="w-4 h-4" />
+            <span className="text-sm font-semibold">BrowseAI Dev</span>
+          </div>
+          <div className="flex items-center gap-6 text-xs text-muted-foreground">
+            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+            <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
+            <button onClick={() => navigate("/developers")} className="hover:text-foreground transition-colors">Developers</button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Docs;
