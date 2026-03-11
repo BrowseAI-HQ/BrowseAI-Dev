@@ -17,21 +17,8 @@ export async function buildApp() {
 
   const app = Fastify({ logger: true });
 
-  const allowedOrigins = [
-    env.CORS_ORIGIN,
-    ...(process.env.NODE_ENV !== "production"
-      ? ["http://localhost:8080", "http://localhost:5173"]
-      : []),
-  ].filter(Boolean);
-
   await app.register(cors, {
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(null, false);
-      }
-    },
+    origin: true, // Allow all origins — API is public, protected by auth tokens + rate limiting
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "X-Tavily-Key", "X-OpenRouter-Key", "X-API-Key", "Authorization"],
   });

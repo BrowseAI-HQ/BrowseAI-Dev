@@ -42,14 +42,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       payload: body || undefined,
     });
 
-    // Set CORS headers — use origin from request if it matches allowed list
-    const allowedOrigins = [
-      process.env.CORS_ORIGIN || "http://localhost:8080",
-      "http://localhost:8080",
-      "http://localhost:5173",
-    ];
+    // Set CORS headers — allow same-origin and configured origins
     const origin = req.headers.origin || "";
-    const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+    const corsOrigin = origin || process.env.CORS_ORIGIN || "*";
     res.setHeader("Access-Control-Allow-Origin", corsOrigin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Tavily-Key, X-OpenRouter-Key, X-API-Key, Authorization");
@@ -67,9 +62,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.end(response.body);
   } catch (err: any) {
     res.setHeader("Content-Type", "application/json");
-    const origin = req.headers?.origin || "";
-    const fallback = process.env.CORS_ORIGIN || "http://localhost:8080";
-    res.setHeader("Access-Control-Allow-Origin", [fallback, "http://localhost:8080", "http://localhost:5173"].includes(origin) ? origin : fallback);
+    res.setHeader("Access-Control-Allow-Origin", req.headers?.origin || "*");
     res.statusCode = 500;
     console.error("Handler error:", err);
     res.end(JSON.stringify({ success: false, error: "Internal server error" }));
