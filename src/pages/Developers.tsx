@@ -480,7 +480,11 @@ print(result.answer, result.confidence)`}</pre>
                   className={`p-5 rounded-xl border ${item.done ? "bg-accent/5 border-accent/20" : "bg-card border-border"}`}
                 >
                   <div className="flex items-start gap-3">
-                    <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${item.done ? "border-accent/40 text-accent" : ""}`}>
+                    <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${
+                      item.phase === "Shipped" ? "text-emerald-400 border-emerald-400/30" :
+                      item.phase === "In Progress" ? "text-amber-400 border-amber-400/30" :
+                      "text-blue-400 border-blue-400/30"
+                    }`}>
                       {item.phase}
                     </Badge>
                     <div>

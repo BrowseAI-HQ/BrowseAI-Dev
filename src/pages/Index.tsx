@@ -273,7 +273,11 @@ const Index = () => {
                 { phase: "Coming Soon", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
-                  <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
+                  <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${
+                    item.phase === "Shipped" ? "text-emerald-400 border-emerald-400/30" :
+                    item.phase === "In Progress" ? "text-amber-400 border-amber-400/30" :
+                    "text-blue-400 border-blue-400/30"
+                  }`}>
                     {item.phase}
                   </Badge>
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
