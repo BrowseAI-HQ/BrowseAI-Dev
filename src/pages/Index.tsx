@@ -262,18 +262,22 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
               {[
-                { phase: "Today", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
-                { phase: "Today", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
-                { phase: "Done", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
+                { phase: "Shipped", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
+                { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
+                { phase: "Shipped", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
+                { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
+                { phase: "Shipped", text: "Self-improving accuracy — domain authority scores improve over time via Bayesian smoothing, every query makes future results better" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
-                { phase: "Later", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
-                { phase: "Later", text: "Streaming API & response formats — low-latency streaming for voice agents, brief/detailed modes" },
-                { phase: "Done", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
-                { phase: "Done", text: "Self-improving accuracy — domain authority scores improve over time via Bayesian smoothing, every query makes future results better" },
-                { phase: "Later", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
+                { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
+                { phase: "Coming Soon", text: "Streaming API & response formats — low-latency streaming for voice agents, brief/detailed modes" },
+                { phase: "Coming Soon", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
-                  <Badge variant="outline" className="shrink-0 mt-0.5 text-[10px] px-1.5">
+                  <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${
+                    item.phase === "Shipped" ? "text-emerald-400 border-emerald-400/30" :
+                    item.phase === "In Progress" ? "text-amber-400 border-amber-400/30" :
+                    "text-blue-400 border-blue-400/30"
+                  }`}>
                     {item.phase}
                   </Badge>
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>

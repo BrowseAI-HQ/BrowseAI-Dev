@@ -51,55 +51,49 @@ const CONTRIBUTION_AREAS = [
 
 const ROADMAP_ITEMS = [
   {
-    phase: "Today",
+    phase: "Shipped",
     title: "Reliable research infrastructure",
     desc: "Web search, evidence extraction, structured citations, Python SDK, MCP server, agent recipes, intelligent caching.",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Python SDK & framework integrations",
     desc: "pip install browseai — works with LangChain and CrewAI out of the box.",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Intelligent caching & source tracking",
     desc: "Smart TTL for time-sensitive queries, automatic domain tracking for every search.",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Multi-source verification",
     desc: "BM25 claim matching, cross-source consensus scoring, contradiction detection, domain authority (10,000+ domains).",
     done: true,
   },
   {
-    phase: "Done",
+    phase: "Shipped",
     title: "Thorough mode & self-improving accuracy",
     desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
     done: true,
   },
   {
-    phase: "Done",
-    title: "Thorough mode & self-improving accuracy",
-    desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
-    done: true,
-  },
-  {
-    phase: "Then",
+    phase: "In Progress",
     title: "Knowledge graph & entity extraction",
     desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
     done: false,
   },
   {
-    phase: "Later",
+    phase: "Coming Soon",
     title: "Academic papers & broader sources",
     desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
     done: false,
   },
   {
-    phase: "Later",
+    phase: "Coming Soon",
     title: "Streaming API & response formats",
     desc: "Low-latency streaming for voice agents. Brief and detailed response modes. Built for real-time pipelines.",
     done: false,
@@ -486,7 +480,11 @@ print(result.answer, result.confidence)`}</pre>
                   className={`p-5 rounded-xl border ${item.done ? "bg-accent/5 border-accent/20" : "bg-card border-border"}`}
                 >
                   <div className="flex items-start gap-3">
-                    <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${item.done ? "border-accent/40 text-accent" : ""}`}>
+                    <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${
+                      item.phase === "Shipped" ? "text-emerald-400 border-emerald-400/30" :
+                      item.phase === "In Progress" ? "text-amber-400 border-amber-400/30" :
+                      "text-blue-400 border-blue-400/30"
+                    }`}>
                       {item.phase}
                     </Badge>
                     <div>

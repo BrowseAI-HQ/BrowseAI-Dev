@@ -51,3 +51,4 @@ __pycache__/
 *.sln
 *.sw?
 .vercel
+packages/python-sdk/browseai/__pycache__/
