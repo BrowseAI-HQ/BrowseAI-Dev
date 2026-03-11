@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   createApiKey,
@@ -34,6 +35,9 @@ export function ApiKeyManager() {
   const [newKey, setNewKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
+
+  // Delete confirmation dialog
+  const [deleteKeyId, setDeleteKeyId] = useState<string | null>(null);
 
   const fetchKeys = useCallback(async () => {
     try {
@@ -74,14 +78,16 @@ export function ApiKeyManager() {
   };
 
   const handleRevoke = async (id: string) => {
-    // Warn if this is the last key
+    // Show confirmation dialog if this is the last key
     if (activeKeys.length <= 1) {
-      const confirmed = window.confirm(
-        "This is your last API key. Removing it will put you back on the free demo tier (5 queries/hour). Continue?"
-      );
-      if (!confirmed) return;
+      setDeleteKeyId(id);
+      return;
     }
+    await doRevoke(id);
+  };
 
+  const doRevoke = async (id: string) => {
+    setDeleteKeyId(null);
     try {
       await revokeApiKey(id);
       fetchKeys();
@@ -312,6 +318,35 @@ export function ApiKeyManager() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete last key confirmation */}
+      <Dialog open={!!deleteKeyId} onOpenChange={() => setDeleteKeyId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-orange-400" />
+              Remove last API key?
+            </DialogTitle>
+            <DialogDescription>
+              This is your only API key. Removing it will put you back on the
+              free demo tier (<strong>5 queries/hour</strong>). You can add new
+              keys anytime to get unlimited access again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" size="sm" onClick={() => setDeleteKeyId(null)}>
+              Keep key
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => deleteKeyId && doRevoke(deleteKeyId)}
+            >
+              Remove key
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
