@@ -142,6 +142,13 @@ const Index = () => {
               <span className="ml-1">GitHub</span>
             </a>
           </Button>
+          <a
+            href="#waitlist"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors"
+          >
+            <Sparkles className="w-3 h-3" />
+            Pro Waitlist
+          </a>
 
           {/* Mobile hamburger menu */}
           <DropdownMenu>
