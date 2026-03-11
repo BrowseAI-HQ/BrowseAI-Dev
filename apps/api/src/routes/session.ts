@@ -42,7 +42,7 @@ async function getRequestEnv(
     if (browseKey) {
       const cacheKey = `bai_resolve:${browseKey.slice(0, 12)}`;
       const cached = await cache.get(cacheKey);
-      let resolved = cached ? JSON.parse(cached) : await apiKeyService.resolve(browseKey);
+      const resolved = cached ? JSON.parse(cached) : await apiKeyService.resolve(browseKey);
       if (resolved && !cached) await cache.set(cacheKey, JSON.stringify(resolved), 60);
       if (resolved) {
         userId = resolved.userId;
