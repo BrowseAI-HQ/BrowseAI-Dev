@@ -110,11 +110,14 @@ export function createApiKeyService(
 
     async revoke(userId, keyId) {
       // First check the key exists and belongs to this user
+      console.log(`[revoke] checking key=${keyId} userId=${userId}`);
       const check = await supabaseFetch(
         `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}&select=id,revoked`
       );
+      console.log(`[revoke] check.ok=${check.ok} check.status=${check.status}`);
       if (!check.ok) return false;
       const rows = await check.json();
+      console.log(`[revoke] rows=${JSON.stringify(rows)}`);
       if (!rows.length) return false;
 
       // Already revoked — idempotent success

@@ -70,8 +70,10 @@ export function registerApiKeyRoutes(
       // Check how many active keys the user has
       const activeCount = await apiKeyService.countActive(userId);
 
+      console.log(`[api-keys] DELETE key=${id} userId=${userId} activeCount=${activeCount}`);
       const revoked = await apiKeyService.revoke(userId, id);
       if (!revoked) {
+        console.log(`[api-keys] revoke returned false for key=${id} userId=${userId}`);
         return reply.status(404).send({ success: false, error: "Key not found" });
       }
 
