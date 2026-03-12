@@ -6,7 +6,8 @@
   },
   "functions": {
     "api/index.ts": {
-      "maxDuration": 300
+      "maxDuration": 300,
+      "supportsResponseStreaming": true
     },
     "api/mcp.ts": {
       "maxDuration": 300
