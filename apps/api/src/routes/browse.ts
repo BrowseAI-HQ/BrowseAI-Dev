@@ -138,13 +138,15 @@ async function getRequestEnv(
         };
       }
     } catch (e) {
-      // Decryption or DB failure — fall through to demo keys
+      // Decryption or DB failure — fall through to server keys (no demo limit for authenticated users)
       console.warn("Auto-resolve stored keys failed for user", userId, e);
     }
   }
 
-  // Priority 4: Default env (demo limits apply)
-  return { env, isOwnKeys: false, userId };
+  // Priority 4: Default env
+  // Authenticated users (valid JWT) bypass demo limits even when using server keys
+  const isAuthenticated = !!userId;
+  return { env, isOwnKeys: isAuthenticated, userId };
 }
 
 async function checkDemoLimit(
