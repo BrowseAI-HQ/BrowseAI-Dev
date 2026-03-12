@@ -42,7 +42,7 @@ class BrowseResult(BaseModel):
     claims: list[BrowseClaim]
     sources: list[BrowseSource]
     confidence: float = Field(ge=0, le=1)
-    trace: list[TraceStep]
+    trace: list[TraceStep] = []
     contradictions: list[Contradiction] | None = None
     share_id: str | None = Field(None, alias="shareId")
 

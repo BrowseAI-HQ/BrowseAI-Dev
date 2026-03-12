@@ -94,6 +94,15 @@ for entry in recalled.entries:
 # Export all knowledge
 knowledge = session.knowledge()
 
+# Delete a session
+session.delete()
+
+# List all your sessions
+sessions = client.list_sessions()
+
+# Resume an existing session by ID
+session = client.get_session("session-id-here")
+
 # Share with other agents
 share = session.share()
 print(share.url)  # https://browseai.dev/session/share/abc123def456

@@ -137,7 +137,7 @@ class BrowseAI:
     def search(self, query: str, *, limit: int = 5) -> list[SearchResult]:
         """Search the web. Returns ranked results with URLs, titles, and snippets."""
         data = self._post("/browse/search", {"query": query, "limit": limit})
-        return [SearchResult(**r) for r in data]
+        return [SearchResult(**r) for r in data["results"]]
 
     def open(self, url: str) -> PageResult:
         """Fetch and parse a web page into clean text."""
@@ -333,7 +333,7 @@ class AsyncBrowseAI:
 
     async def search(self, query: str, *, limit: int = 5) -> list[SearchResult]:
         data = await self._post("/browse/search", {"query": query, "limit": limit})
-        return [SearchResult(**r) for r in data]
+        return [SearchResult(**r) for r in data["results"]]
 
     async def open(self, url: str) -> PageResult:
         data = await self._post("/browse/open", {"url": url})

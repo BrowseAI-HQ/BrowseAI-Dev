@@ -2,26 +2,37 @@ import { supabase } from "@/integrations/supabase/client";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
-async function authFetch(path: string, options: RequestInit = {}) {
+async function getAccessToken(): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    throw new Error("Not authenticated");
-  }
+  if (session?.access_token) return session.access_token;
+  throw new Error("Not authenticated");
+}
 
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${session.access_token}`,
+async function authFetch(path: string, options: RequestInit = {}) {
+  let token = await getAccessToken();
+
+  const makeHeaders = (t: string): Record<string, string> => {
+    const h: Record<string, string> = { Authorization: `Bearer ${t}` };
+    if (options.body) h["Content-Type"] = "application/json";
+    return h;
   };
-  if (options.body) {
-    headers["Content-Type"] = "application/json";
-  }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  let res = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: {
-      ...headers,
-      ...options.headers,
-    },
+    headers: { ...makeHeaders(token), ...options.headers },
   });
+
+  // On 401, refresh the session once and retry
+  if (res.status === 401) {
+    const { data: { session } } = await supabase.auth.refreshSession();
+    if (session?.access_token) {
+      token = session.access_token;
+      res = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: { ...makeHeaders(token), ...options.headers },
+      });
+    }
+  }
 
   const data = await res.json();
   if (!res.ok || !data.success) {
