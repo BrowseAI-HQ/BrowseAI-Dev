@@ -17,17 +17,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
 
 const EXAMPLE_PROMPTS = [
-  "What is a wormhole?",
-  "Why is the sky blue?",
-  "What causes inflation?",
+  "How do mRNA vaccines work at the molecular level?",
+  "Solar vs wind energy: cost and efficiency comparison",
+  "What are the latest JWST discoveries?",
 ];
 
 const TYPEWRITER_QUERIES = [
-  "What is quantum computing?",
-  "How do black holes form?",
-  "Why is the ocean salty?",
-  "What causes northern lights?",
-  "How does mRNA vaccine work?",
+  "How does quantum computing achieve supremacy?",
+  "Is nuclear energy safe for climate goals?",
+  "How does RAG improve LLM accuracy?",
+  "What causes ocean acidification?",
+  "Kubernetes vs Docker Swarm for orchestration?",
 ];
 
 const TOOLS = [

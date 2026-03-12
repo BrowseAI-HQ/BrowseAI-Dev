@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { id: "contradictions", label: "Contradictions", icon: AlertTriangle },
   { id: "api", label: "API Reference", icon: Code2 },
   { id: "hosted-vs-self", label: "Hosted vs Self-Host", icon: Cloud },
+  { id: "query-tips", label: "Query Tips", icon: Search },
   { id: "faq", label: "FAQ", icon: BookOpen },
 ];
 
@@ -607,6 +608,113 @@ knowledge = session.knowledge()`}</CodeBlock>
               For production agent pipelines where accuracy matters, the hosted service delivers meaningfully better results
               and keeps improving automatically.
             </p>
+          </Section>
+
+          {/* Query Tips */}
+          <Section id="query-tips" title="Query Tips" icon={Search}>
+            <p>
+              BrowseAI classifies queries into types and optimizes each differently.
+              Here's how to get the best results for each type:
+            </p>
+
+            {[
+              {
+                type: "Factual",
+                desc: "Direct questions with verifiable answers. These get the highest confidence scores because claims can be cross-verified across multiple sources.",
+                good: [
+                  "What is the current population of Tokyo?",
+                  "When was the transistor invented?",
+                  "What is the melting point of titanium?",
+                ],
+                bad: [
+                  "Tell me about Tokyo",
+                  "Transistors",
+                ],
+                tip: "Be specific. Ask for concrete facts rather than broad overviews.",
+              },
+              {
+                type: "How-to / Explanatory",
+                desc: "Questions about mechanisms, processes, or procedures. Works best when the query targets a specific mechanism.",
+                good: [
+                  "How does mRNA vaccine technology work at the molecular level?",
+                  "How does retrieval-augmented generation (RAG) improve LLM accuracy?",
+                  "How do carbon capture and storage technologies work?",
+                ],
+                bad: [
+                  "Explain vaccines",
+                  "What is RAG?",
+                ],
+                tip: "Include the specific mechanism or process you want explained. \"How does X work\" outperforms \"What is X\".",
+              },
+              {
+                type: "Comparison",
+                desc: "Comparing two or more things. Use the /compare endpoint for side-by-side raw LLM vs evidence-backed results.",
+                good: [
+                  "How does solar energy compare to wind energy in cost and efficiency?",
+                  "What are the key differences between PostgreSQL and MySQL for modern applications?",
+                  "Kubernetes vs Docker Swarm: which is better for container orchestration?",
+                ],
+                bad: [
+                  "Solar vs wind",
+                  "Best database",
+                ],
+                tip: "Name both things explicitly and specify the comparison dimension (cost, performance, safety, etc.).",
+              },
+              {
+                type: "Time-sensitive",
+                desc: "Questions about current events or recent developments. These get shorter cache TTLs to stay fresh.",
+                good: [
+                  "What are the latest findings from the James Webb Space Telescope?",
+                  "What is the current state of the global semiconductor supply chain?",
+                  "How has the AI boom affected energy consumption in data centers?",
+                ],
+                bad: [
+                  "JWST news",
+                  "Chip shortage",
+                ],
+                tip: "Include temporal context like \"latest\", \"current state\", or \"recent developments\".",
+              },
+              {
+                type: "Opinion / Nuanced",
+                desc: "Topics with multiple valid perspectives. BrowseAI searches more sources and highlights contradictions.",
+                good: [
+                  "Is nuclear energy safe and should it be expanded to fight climate change?",
+                  "What are the arguments for and against universal basic income?",
+                  "Should AI-generated art be eligible for copyright protection?",
+                ],
+                bad: [
+                  "Is nuclear good?",
+                  "UBI opinions",
+                ],
+                tip: "Frame as a balanced question. BrowseAI will surface contradictions and multiple viewpoints automatically.",
+              },
+            ].map((item) => (
+              <div key={item.type} className="p-4 rounded-xl bg-card border border-border space-y-3">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-foreground">{item.type}</h4>
+                </div>
+                <p className="text-xs">{item.desc}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-green-400 mb-1">Good queries:</p>
+                    <ul className="space-y-1">
+                      {item.good.map((q) => (
+                        <li key={q} className="text-xs text-muted-foreground">• {q}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-red-400 mb-1">Too vague:</p>
+                    <ul className="space-y-1">
+                      {item.bad.map((q) => (
+                        <li key={q} className="text-xs text-muted-foreground">• {q}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-accent">Tip: {item.tip}</p>
+              </div>
+            ))}
           </Section>
 
           {/* FAQ */}
