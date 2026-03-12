@@ -260,6 +260,11 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `POST /session/:id/share` | Share a session publicly (returns shareId) |
 | `GET /session/share/:shareId` | View a shared session (public, no auth) |
 | `POST /session/share/:shareId/fork` | Fork a shared session into your account |
+| `GET /session/:id` | Get session details |
+| `GET /sessions` | List your sessions (authenticated) |
+| `DELETE /session/:id` | Delete a session (authenticated) |
+| `GET /user/stats` | Your query stats (authenticated) |
+| `GET /user/history` | Your query history (authenticated) |
 
 ## MCP Tools
 
@@ -291,7 +296,10 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `session.recall(query)` | Query session knowledge |
 | `session.knowledge()` | Export all session claims |
 | `session.share()` | Share session publicly (returns shareId + URL) |
+| `client.get_session(id)` | Resume an existing session by ID |
+| `client.list_sessions()` | List all your sessions |
 | `client.fork_session(share_id)` | Fork a shared session into your account |
+| `session.delete()` | Delete a session |
 
 Async support: `AsyncBrowseAI` with the same API.
 
@@ -306,6 +314,7 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 | [hallucination-detector.py](examples/hallucination-detector.py) | Compare raw LLM vs evidence-backed answers |
 | [langchain-agent.py](examples/langchain-agent.py) | BrowseAI as a LangChain tool |
 | [crewai-research-team.py](examples/crewai-research-team.py) | Multi-agent research team with CrewAI |
+| [research-session.py](examples/research-session.py) | Research sessions with persistent memory |
 
 ## Environment Variables
 

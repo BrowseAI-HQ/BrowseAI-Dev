@@ -87,6 +87,18 @@ const ROADMAP_ITEMS = [
     done: true,
   },
   {
+    phase: "Shipped",
+    title: "Research Memory (Sessions)",
+    desc: "Persistent sessions that accumulate knowledge across queries. Automatic recall of prior findings, session sharing, forking, and collaborative multi-agent research workflows.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Query Planning",
+    desc: "Intelligent decomposition of complex queries into focused sub-queries with intent labels (definition, evidence, comparison, counterargument). Simple factual queries skip planning — no added latency.",
+    done: true,
+  },
+  {
     phase: "In Progress",
     title: "Knowledge graph & entity extraction",
     desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
@@ -390,7 +402,7 @@ const Developers = () => {
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
                   Install as an MCP server for Claude Desktop, Cursor, or Windsurf. Your AI assistant
-                  gets 5 research tools it can call to verify information.
+                  gets 11 research tools it can call to verify information.
                 </p>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary">
                   <Terminal className="w-4 h-4 text-accent" />

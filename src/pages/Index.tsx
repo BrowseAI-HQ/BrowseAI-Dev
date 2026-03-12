@@ -40,6 +40,7 @@ const TOOLS = [
   { name: "browse_session_ask", desc: "Research within a session (recalls prior knowledge)" },
   { name: "browse_session_recall", desc: "Query session knowledge without new web search" },
   { name: "browse_session_share", desc: "Share a session publicly for other agents to fork" },
+  { name: "browse_session_knowledge", desc: "Export all accumulated claims from a session" },
   { name: "browse_session_fork", desc: "Fork a shared session to continue the research" },
 ];
 
@@ -631,7 +632,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">8 Tools for Agents</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">11 Tools for Agents</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               Each tool returns structured JSON with sources. No HTML parsing, no hallucination. Available via MCP and REST API.
             </p>
@@ -681,9 +682,12 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "POST", path: "/session/:id/share", desc: "Share session publicly" },
               { method: "GET", path: "/session/share/:shareId", desc: "View shared session" },
               { method: "POST", path: "/session/share/:shareId/fork", desc: "Fork shared session" },
+              { method: "GET", path: "/session/:id", desc: "Get session details" },
+              { method: "GET", path: "/sessions", desc: "List your sessions" },
+              { method: "DELETE", path: "/session/:id", desc: "Delete a session" },
             ].map((ep) => (
               <div key={ep.path} className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-                <Badge variant="outline" className={`text-xs font-mono ${ep.method === "GET" ? "text-blue-400 border-blue-400/30" : "text-emerald-400 border-emerald-400/30"}`}>
+                <Badge variant="outline" className={`text-xs font-mono ${ep.method === "GET" ? "text-blue-400 border-blue-400/30" : ep.method === "DELETE" ? "text-red-400 border-red-400/30" : "text-emerald-400 border-emerald-400/30"}`}>
                   {ep.method}
                 </Badge>
                 <code className="text-sm font-mono text-foreground">{ep.path}</code>
