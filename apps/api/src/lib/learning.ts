@@ -12,6 +12,7 @@
  */
 
 import type { QueryType } from "./gemini.js";
+import type { CacheService } from "../services/cache.js";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -151,6 +152,9 @@ export function recordQuerySignals(signals: QuerySignals): void {
   if (stats.count >= MIN_SAMPLES) {
     recomputeThresholds(type, stats);
   }
+
+  // Auto-persist to Redis periodically
+  maybeAutoPersist();
 }
 
 /**
@@ -355,6 +359,66 @@ export function importLearningState(state: {
     for (const { queryType, thresholds } of state.thresholds) {
       adaptiveThresholds.set(queryType, thresholds);
     }
+  }
+}
+
+// ─── Persistence (survives serverless cold starts) ──────────────────
+
+const LEARNING_CACHE_KEY = "learning:state:v1";
+const LEARNING_TTL = 604800; // 7 days
+const PERSIST_INTERVAL = 10; // persist every N signal recordings
+let signalsSinceLastPersist = 0;
+let persistCache: CacheService | null = null;
+
+/**
+ * Set the cache reference for auto-persistence.
+ * Called once on startup from app.ts.
+ */
+export function setLearningCache(cache: CacheService): void {
+  persistCache = cache;
+}
+
+/**
+ * Load learning state from cache (Redis). Called on startup.
+ * Returns number of query types restored.
+ */
+export async function loadLearningState(cache: CacheService): Promise<number> {
+  try {
+    const raw = await cache.get(LEARNING_CACHE_KEY);
+    if (!raw) return 0;
+    const state = JSON.parse(raw);
+    importLearningState(state);
+    return state.queryTypeStats?.length || 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Persist current learning state to cache (Redis).
+ * Called periodically after recording signals, and from admin endpoints.
+ */
+export async function persistLearningState(cache?: CacheService): Promise<boolean> {
+  const c = cache || persistCache;
+  if (!c) return false;
+  try {
+    const state = exportLearningState();
+    await c.set(LEARNING_CACHE_KEY, JSON.stringify(state), LEARNING_TTL);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Auto-persist after accumulating enough signals.
+ * Fire-and-forget — never blocks the response path.
+ */
+function maybeAutoPersist(): void {
+  signalsSinceLastPersist++;
+  if (signalsSinceLastPersist >= PERSIST_INTERVAL && persistCache) {
+    signalsSinceLastPersist = 0;
+    persistLearningState().catch(() => { /* non-critical */ });
   }
 }
 

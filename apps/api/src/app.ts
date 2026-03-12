@@ -11,6 +11,7 @@ import { registerAdminRoutes } from "./routes/admin.js";
 import { registerSessionRoutes } from "./routes/session.js";
 import { createSupabaseSessionStore, createNoopSessionStore } from "./services/session.js";
 import { initDomainAuthority } from "./lib/verify.js";
+import { loadLearningState, setLearningCache } from "./lib/learning.js";
 
 export async function buildApp() {
   const env = await loadEnv();
@@ -46,6 +47,13 @@ export async function buildApp() {
   const domainCount = await initDomainAuthority(store);
   if (domainCount > 0) {
     console.log(`Loaded ${domainCount} domain authority entries from DB`);
+  }
+
+  // Restore self-learning state from Redis (survives serverless cold starts)
+  setLearningCache(cache);
+  const learningTypes = await loadLearningState(cache);
+  if (learningTypes > 0) {
+    console.log(`Restored learning state for ${learningTypes} query types`);
   }
 
   const sessionStore =

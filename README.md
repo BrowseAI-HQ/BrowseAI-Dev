@@ -112,7 +112,29 @@ Complex queries are automatically decomposed into focused sub-queries with inten
 
 ### Self-Improving Accuracy
 
-Domain authority scores improve automatically over time. Every query feeds verification data back into the system using Bayesian cold-start smoothing — static scores dominate initially, but as evidence accumulates, real verification rates gradually take over. The more your agents use BrowseAI, the more accurate future results become.
+The entire verification pipeline improves automatically with usage:
+
+- **Domain authority** — Bayesian cold-start smoothing adjusts domain trust scores as evidence accumulates. Static tier scores dominate initially, then real verification rates take over.
+- **Adaptive BM25 thresholds** — Claim verification thresholds tune per query type based on observed verification rates. Too strict? Loosens up. Too lenient? Tightens.
+- **Consensus threshold tuning** — Cross-source agreement thresholds adapt based on query type performance.
+- **Confidence weight optimization** — The 7-factor confidence formula rebalances weights per query type when user feedback indicates inaccuracy.
+- **Page count optimization** — Source fetch counts adjust based on confidence outcomes per query type.
+
+### Feedback Loop
+
+Submit feedback on results to accelerate learning. Agents and users can rate results as `good`, `bad`, or `wrong` — this feeds directly into the adaptive threshold engine.
+
+```bash
+curl -X POST https://browseai.dev/api/browse/feedback \
+  -H "Content-Type: application/json" \
+  -d '{"resultId": "abc123", "rating": "good"}'
+```
+
+```python
+client.feedback(result_id="abc123", rating="good")
+# Or flag a specific wrong claim:
+client.feedback(result_id="abc123", rating="wrong", claim_index=2)
+```
 
 ## Quick Start
 
@@ -263,6 +285,8 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `GET /session/:id` | Get session details |
 | `GET /sessions` | List your sessions (authenticated) |
 | `DELETE /session/:id` | Delete a session (authenticated) |
+| `POST /browse/feedback` | Submit feedback on a result (good/bad/wrong) |
+| `GET /browse/learning/stats` | Self-learning engine stats |
 | `GET /user/stats` | Your query stats (authenticated) |
 | `GET /user/history` | Your query history (authenticated) |
 
@@ -281,6 +305,7 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `browse_session_share` | Share a session publicly (returns share URL) |
 | `browse_session_knowledge` | Export all claims from a session |
 | `browse_session_fork` | Fork a shared session to continue the research |
+| `browse_feedback` | Submit feedback on a result to improve accuracy |
 
 ## Python SDK
 
@@ -300,6 +325,7 @@ Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — 
 | `client.list_sessions()` | List all your sessions |
 | `client.fork_session(share_id)` | Fork a shared session into your account |
 | `session.delete()` | Delete a session |
+| `client.feedback(result_id, rating)` | Submit feedback (good/bad/wrong) to improve accuracy |
 
 Async support: `AsyncBrowseAI` with the same API.
 
