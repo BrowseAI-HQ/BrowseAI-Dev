@@ -12,7 +12,11 @@ export function createUpstashCache(urlOrRedis: string | { url: string; token: st
 
   return {
     async get(key) {
-      return redis.get<string>(key);
+      const val = await redis.get(key);
+      if (val === null || val === undefined) return null;
+      // Upstash auto-deserializes JSON — if it returned an object, re-stringify it
+      // so callers always get a string (matching the CacheService interface)
+      return typeof val === "string" ? val : JSON.stringify(val);
     },
     async set(key, value, ttl = 300) {
       await redis.set(key, value, { ex: ttl });
