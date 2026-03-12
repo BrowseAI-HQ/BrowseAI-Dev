@@ -170,26 +170,30 @@ export function registerSessionRoutes(
       const recalled = await sessionStore.recallKnowledge(id, parsed.data.query, 15);
       const recallMs = Date.now() - recallStart;
 
-      // Phase 1.5: Contextualize vague queries using session knowledge
-      // If query is short/vague and we have recalled claims, prepend session context
-      // so the search engine understands what "this", "it", "how does it work" refers to
+      // Phase 1.5: Build session context from recalled knowledge
+      // Always pass session context to the LLM so it understands references like
+      // "it", "the best", "compare this" etc. No hardcoded detection needed —
+      // the LLM handles coreference resolution naturally when given context.
       let searchQuery = parsed.data.query;
-      const isVague = parsed.data.query.split(/\s+/).length <= 6 &&
-        /\b(this|it|that|these|those|here|there|how|why|what|explain|more|details?)\b/i.test(parsed.data.query);
-
-      if (isVague && recalled.length > 0) {
-        // Build context from session name + top recalled claims
-        // Keep under 350 chars total to stay within Tavily's 400 char limit
+      let sessionContext = "";
+      if (recalled.length > 0) {
         const topicHints = recalled
-          .slice(0, 3)
+          .slice(0, 5)
           .map((r) => r.claim.split(/[.!?]/)[0]) // first sentence of each claim
           .join("; ")
-          .slice(0, 250);
-        searchQuery = `${parsed.data.query} (context: ${session.name} — ${topicHints})`.slice(0, 380);
+          .slice(0, 400);
+        sessionContext = `Session "${session.name}": ${topicHints}`;
+
+        // Also contextualize the search query for Tavily — short queries
+        // without obvious topic keywords benefit from session context
+        const queryWords = parsed.data.query.split(/\s+/).length;
+        if (queryWords <= 12) {
+          searchQuery = `${parsed.data.query} (context: ${session.name} — ${topicHints.slice(0, 200)})`.slice(0, 380);
+        }
       }
 
-      // Phase 2: Run the answer pipeline with contextualized query
-      const result = await answerQuery(searchQuery, reqEnv, cache, parsed.data.depth);
+      // Phase 2: Run the answer pipeline with contextualized query + session context for LLM
+      const result = await answerQuery(searchQuery, reqEnv, cache, parsed.data.depth, sessionContext || undefined);
 
       // Inject recall + contextualize trace steps at the beginning
       const cacheHitIdx = result.trace.findIndex((t) => t.step === "Cache Hit");

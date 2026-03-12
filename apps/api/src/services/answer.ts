@@ -84,6 +84,7 @@ async function singlePass(
   existingPageTexts?: Map<string, string>,
   passLabel?: string,
   preAnalysis?: QueryAnalysis,
+  sessionContext?: string,
 ) {
   const label = passLabel ? ` (${passLabel})` : "";
 
@@ -198,7 +199,7 @@ async function singlePass(
 
   // Phase 5: Extract + verify (with type-aware prompt)
   const llmStart = Date.now();
-  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type);
+  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, sessionContext);
   const llmDuration = Date.now() - llmStart;
 
   // Trace steps
@@ -242,20 +243,24 @@ export async function answerQuery(
   env: Env,
   cache: CacheService,
   depth: "fast" | "thorough" = "fast",
+  sessionContext?: string,
 ): Promise<BrowseResult> {
   // Cache key includes depth so thorough results are cached separately
-  const cacheKey = `answer:${depth}:${hashKey(query)}`;
-  const cached = await cache.get(cacheKey);
-  if (cached) {
-    const result = JSON.parse(cached) as BrowseResult;
-    result.trace = [{ step: "Cache Hit", duration_ms: 0, detail: "Served from cache" }, ...result.trace];
-    return result;
+  // Session-contextualized queries skip cache since context varies
+  const cacheKey = sessionContext ? null : `answer:${depth}:${hashKey(query)}`;
+  if (cacheKey) {
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      const result = JSON.parse(cached) as BrowseResult;
+      result.trace = [{ step: "Cache Hit", duration_ms: 0, detail: "Served from cache" }, ...result.trace];
+      return result;
+    }
   }
 
   const trace: TraceStep[] = [];
 
   // First pass
-  const { knowledge, pageTexts } = await singlePass(query, env, cache, trace);
+  const { knowledge, pageTexts } = await singlePass(query, env, cache, trace, undefined, undefined, undefined, sessionContext);
 
   // Thorough mode: if confidence is low, rephrase and do a second pass
   if (depth === "thorough" && knowledge.confidence < THOROUGH_CONFIDENCE_THRESHOLD) {
@@ -281,11 +286,11 @@ export async function answerQuery(
     });
 
     const result = { ...best, trace };
-    await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    if (cacheKey) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
     return result;
   }
 
   const result = { ...knowledge, trace };
-  await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+  if (cacheKey) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
   return result;
 }

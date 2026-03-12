@@ -381,8 +381,17 @@ export async function extractKnowledge(
   apiKey: string,
   pageTexts?: Map<string, string>,
   queryType?: QueryType,
+  sessionContext?: string,
 ): Promise<Omit<BrowseResult, "trace">> {
   const systemPrompt = getExtractionPrompt(queryType);
+
+  // Build user message — include session context if available so the LLM
+  // can resolve ambiguous references ("it", "the best", "compare this" etc.)
+  let userContent = `Question: ${query}\n\nWeb sources:\n${pageContents}`;
+  if (sessionContext) {
+    userContent = `Question: ${query}\n\nPrior research context (use this to understand what the question refers to):\n${sessionContext}\n\nWeb sources:\n${pageContents}`;
+  }
+
   const res = await fetchWithRetry(LLM_ENDPOINT, {
     method: "POST",
     headers: {
@@ -395,7 +404,7 @@ export async function extractKnowledge(
         { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: `Question: ${query}\n\nWeb sources:\n${pageContents}`,
+          content: userContent,
         },
       ],
       tools: [TOOL_SCHEMA],
