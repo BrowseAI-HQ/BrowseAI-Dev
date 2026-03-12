@@ -366,7 +366,18 @@ export function registerBrowseRoutes(
     try {
       const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
-      if (limitError) return reply.status(429).send({ success: false, error: limitError });
+      if (limitError) return reply.status(429).send({
+        success: false,
+        error: limitError,
+        _debug: {
+          userId,
+          isOwnKeys,
+          hasAuth: !!request.headers.authorization,
+          hasBaiKey: !!extractBrowseApiKey(request),
+          hasByok: !!(request.headers["x-tavily-key"] || request.headers["x-openrouter-key"]),
+          apiKeyServiceInit: !!apiKeyService,
+        },
+      });
 
       // Set up SSE response
       reply.raw.writeHead(200, {
