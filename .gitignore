@@ -54,3 +54,4 @@ __pycache__/
 packages/python-sdk/browseai/__pycache__/
 .env*.local
 scripts/benchmark-results.json
+scripts/seed-benchmark.ts
