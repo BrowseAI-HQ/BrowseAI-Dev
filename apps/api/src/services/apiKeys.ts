@@ -109,18 +109,7 @@ export function createApiKeyService(
     },
 
     async revoke(userId, keyId) {
-      // First check the key exists and belongs to this user
-      const check = await supabaseFetch(
-        `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}&select=id,revoked`
-      );
-      if (!check.ok) return false;
-      const rows = await check.json();
-      if (!rows.length) return false;
-
-      // Already revoked — idempotent success
-      if (rows[0].revoked) return true;
-
-      // Soft delete: mark revoked + wipe encrypted credentials (keep metadata for audit)
+      // Stripe-style: revoke + wipe credentials, keep metadata for audit
       const res = await supabaseFetch(
         `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}`,
         {
@@ -132,9 +121,12 @@ export function createApiKeyService(
             openrouter_key_encrypted: null,
             openrouter_key_iv: null,
           }),
+          headers: { Prefer: "return=representation" },
         }
       );
-      return res.ok;
+      if (!res.ok) return false;
+      const rows = await res.json();
+      return rows.length > 0;
     },
 
     async resolve(apiKey) {

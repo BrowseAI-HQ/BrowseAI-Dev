@@ -140,7 +140,7 @@ export function ApiKeyManager() {
           )}
 
           {/* Generate form */}
-          <div className="space-y-3">
+          <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
             <p className="text-sm text-muted-foreground">
               Save your API keys to get unlimited queries on the website, CLI, MCP,
               and API. Your default key is used automatically when you're signed in.
@@ -196,7 +196,7 @@ export function ApiKeyManager() {
                 {creating ? "Generating..." : "Generate API Key"}
               </Button>
             </div>
-          </div>
+          </form>
 
           {/* Existing keys */}
           {loading ? (

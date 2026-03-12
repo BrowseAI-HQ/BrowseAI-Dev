@@ -81,7 +81,7 @@ export function ApiKeySettings() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <form className="space-y-4 py-2" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center justify-between">
               Tavily API Key
@@ -154,7 +154,7 @@ export function ApiKeySettings() {
               </p>
             </div>
           )}
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
