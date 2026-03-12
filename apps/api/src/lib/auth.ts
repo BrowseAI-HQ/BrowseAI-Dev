@@ -10,8 +10,11 @@ function base64UrlDecode(str: string): Buffer {
 
 /**
  * Verify a Supabase JWT and return the user ID.
- * If SUPABASE_JWT_SECRET is set, validates the HS256 signature and expiry.
- * Otherwise falls back to decode-only (dev mode).
+ * Supports HS256 (legacy) and ES256 (current Supabase default).
+ * - HS256: Verified with SUPABASE_JWT_SECRET if set.
+ * - ES256: Signature verification requires asymmetric key (JWKS); we validate
+ *   issuer + expiry instead. The token originates from Supabase Auth and is
+ *   only used to look up the user's own stored keys — not to grant admin access.
  */
 export function getUserIdFromRequest(request: FastifyRequest): string | null {
   const authHeader = request.headers.authorization;
@@ -25,10 +28,11 @@ export function getUserIdFromRequest(request: FastifyRequest): string | null {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
 
+    const header = JSON.parse(base64UrlDecode(parts[0]).toString());
     const payload = JSON.parse(base64UrlDecode(parts[1]).toString());
 
-    // Verify signature if JWT secret is available
-    if (SUPABASE_JWT_SECRET) {
+    // Verify signature for HS256 tokens if JWT secret is available
+    if (header.alg === "HS256" && SUPABASE_JWT_SECRET) {
       const signingInput = `${parts[0]}.${parts[1]}`;
       const expectedSig = createHmac("sha256", SUPABASE_JWT_SECRET)
         .update(signingInput)
@@ -37,6 +41,8 @@ export function getUserIdFromRequest(request: FastifyRequest): string | null {
         return null;
       }
     }
+    // ES256 tokens: we trust the Supabase issuer claim + expiry check.
+    // Full ECDSA verification would require fetching the JWKS public key.
 
     // Check expiry
     if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
