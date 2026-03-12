@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Shield, Activity, Users, Mail, BarChart3, Clock,
   Plus, Trash2, CheckCircle2, Sparkles, Download, Star, GitFork, Package,
+  RefreshCw, Globe, Loader2,
 } from "lucide-react";
 import { BrowseLogo } from "@/components/BrowseLogo";
 import { Button } from "@/components/ui/button";
@@ -17,8 +18,12 @@ import {
   fetchWaitlist,
   addAdmin,
   removeAdmin,
+  recalculateAuthority,
+  importDomainData,
   type AdminMetrics,
   type WaitlistEntry,
+  type RecalculateResult,
+  type ImportDomainResult,
 } from "@/lib/api/apiKeys";
 
 function timeAgo(dateStr: string): string {
@@ -43,6 +48,10 @@ const Admin = () => {
   const [forbidden, setForbidden] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [addingAdmin, setAddingAdmin] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
+  const [recalcResult, setRecalcResult] = useState<RecalculateResult | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportDomainResult | null>(null);
 
   const loadAll = useCallback(async () => {
     try {
@@ -85,6 +94,32 @@ const Admin = () => {
       loadAll();
     } catch {
       // silently fail
+    }
+  };
+
+  const handleRecalculate = async () => {
+    setRecalculating(true);
+    setRecalcResult(null);
+    try {
+      const result = await recalculateAuthority();
+      setRecalcResult(result);
+    } catch {
+      // silently fail
+    } finally {
+      setRecalculating(false);
+    }
+  };
+
+  const handleImport = async () => {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const result = await importDomainData(10000);
+      setImportResult(result);
+    } catch {
+      // silently fail
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -383,6 +418,76 @@ const Admin = () => {
                       </span>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Domain Authority */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Globe className="w-4 h-4 text-accent" />
+                Domain Authority
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-3">
+                <Button
+                  size="sm"
+                  onClick={handleRecalculate}
+                  disabled={recalculating}
+                >
+                  {recalculating ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                  )}
+                  Recalculate Authority
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleImport}
+                  disabled={importing}
+                >
+                  {importing ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  Import Majestic Million
+                </Button>
+              </div>
+
+              {recalcResult && (
+                <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                  <p className="text-sm font-medium text-accent">
+                    <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+                    Updated {recalcResult.domainsUpdated} domains
+                    {recalcResult.persistedToDB && " (persisted to DB)"}
+                  </p>
+                  {recalcResult.topDomains.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Top domains by verification rate:</p>
+                      {recalcResult.topDomains.map((d) => (
+                        <div key={d.domain} className="flex items-center gap-2 text-xs">
+                          <span className="w-40 truncate">{d.domain}</span>
+                          <span className="text-accent font-medium">{(d.score * 100).toFixed(0)}%</span>
+                          <span className="text-muted-foreground">({d.samples} samples)</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {importResult && (
+                <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                  <p className="text-sm font-medium text-accent">
+                    <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+                    Parsed {importResult.parsed.toLocaleString()} domains, saved {importResult.savedToDB.toLocaleString()} to DB
+                  </p>
                 </div>
               )}
             </CardContent>
