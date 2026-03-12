@@ -17,9 +17,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
 
 const EXAMPLE_PROMPTS = [
-  "How do mRNA vaccines work at the molecular level?",
-  "Solar vs wind energy: cost and efficiency comparison",
-  "What are the latest JWST discoveries?",
+  "How do mRNA vaccines work?",
+  "Solar vs wind energy comparison",
+  "Latest JWST discoveries",
 ];
 
 const TYPEWRITER_QUERIES = [
@@ -271,7 +271,7 @@ const Index = () => {
               <button
                 key={prompt}
                 onClick={() => { setQuery(prompt); handleSearch(prompt); }}
-                className="px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-border text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all whitespace-nowrap"
               >
                 {prompt}
               </button>
