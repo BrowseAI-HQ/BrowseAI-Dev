@@ -6,10 +6,10 @@
   },
   "functions": {
     "api/index.ts": {
-      "maxDuration": 60
+      "maxDuration": 300
     },
     "api/mcp.ts": {
-      "maxDuration": 60
+      "maxDuration": 300
     }
   }
 }

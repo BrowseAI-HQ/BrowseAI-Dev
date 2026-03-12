@@ -156,6 +156,7 @@ export function ApiKeyManager() {
                 <Input
                   id="tavily"
                   type="password"
+                  autoComplete="off"
                   placeholder="tvly-..."
                   value={tavilyKey}
                   onChange={(e) => setTavilyKey(e.target.value)}
@@ -172,6 +173,7 @@ export function ApiKeyManager() {
                 <Input
                   id="openrouter"
                   type="password"
+                  autoComplete="off"
                   placeholder="sk-or-..."
                   value={openrouterKey}
                   onChange={(e) => setOpenrouterKey(e.target.value)}
