@@ -96,6 +96,7 @@ export function ApiKeySettings() {
             </label>
             <Input
               type="password"
+              autoComplete="off"
               placeholder="tvly-..."
               value={tavily}
               onChange={(e) => setTavily(e.target.value)}
@@ -116,6 +117,7 @@ export function ApiKeySettings() {
             </label>
             <Input
               type="password"
+              autoComplete="off"
               placeholder="sk-or-..."
               value={openrouter}
               onChange={(e) => setOpenrouter(e.target.value)}
