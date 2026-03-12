@@ -11,7 +11,6 @@ import { registerAdminRoutes } from "./routes/admin.js";
 import { registerSessionRoutes } from "./routes/session.js";
 import { createSupabaseSessionStore, createNoopSessionStore } from "./services/session.js";
 import { initDomainAuthority } from "./lib/verify.js";
-import { getUserIdFromRequest } from "./lib/auth.js";
 
 export async function buildApp() {
   const env = await loadEnv();
@@ -66,37 +65,7 @@ export async function buildApp() {
     registerAdminRoutes(app, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, store);
   }
 
-  app.get("/debug/auth", async (request) => {
-    const userId = getUserIdFromRequest(request);
-    let keyResolution = "skipped";
-    if (apiKeyService && userId) {
-      try {
-        const resolved = await apiKeyService.resolveByUserId(userId);
-        keyResolution = resolved ? "resolved" : "no keys found";
-      } catch (e: any) {
-        keyResolution = `error: ${e.message}`;
-      }
-    } else if (!apiKeyService) {
-      keyResolution = "apiKeyService is null";
-    } else if (!userId) {
-      keyResolution = "no userId from JWT";
-    }
-    return {
-      userId,
-      apiKeyService: apiKeyService ? "initialized" : "null",
-      keyResolution,
-    };
-  });
-
-  app.get("/health", async () => ({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    apiKeyService: apiKeyService ? "initialized" : "null",
-    encryptionKey: env.API_KEY_ENCRYPTION_KEY ? `set (${env.API_KEY_ENCRYPTION_KEY.length} chars)` : "missing",
-    supabaseUrl: env.SUPABASE_URL ? "set" : "missing",
-    supabaseKey: env.SUPABASE_SERVICE_ROLE_KEY ? "set" : "missing",
-    jwtSecret: process.env.SUPABASE_JWT_SECRET ? "set" : "missing",
-  }));
+  app.get("/health", async () => ({ status: "ok" }));
 
   return app;
 }

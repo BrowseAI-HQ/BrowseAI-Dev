@@ -131,10 +131,14 @@ function bm25BestSentence(
 /**
  * Hybrid verification: tries exact substring match first (fast path),
  * then falls back to BM25 sentence matching (more robust for paraphrases).
+ *
+ * @param bm25Threshold - Adaptive threshold for BM25 match (default 0.35).
+ *   Self-learning engine adjusts this per query type based on observed verification rates.
  */
 function verifyTextInSource(
   claimText: string,
   sourceText: string,
+  bm25Threshold: number = 0.35,
 ): { score: number; matchedSentence: string | null } {
   // Fast path: exact normalized substring match
   const normalizedClaim = normalize(claimText);
@@ -145,7 +149,7 @@ function verifyTextInSource(
 
   // BM25 sentence-level matching
   const { score, sentence } = bm25BestSentence(claimText, sourceText);
-  return { score, matchedSentence: score >= 0.35 ? sentence : null };
+  return { score, matchedSentence: score >= bm25Threshold ? sentence : null };
 }
 
 // ─── Domain Authority ───────────────────────────────────────────────
@@ -321,6 +325,7 @@ function computeConsensus(
   claimText: string,
   pageContents: Map<string, string>,
   sources: BrowseSource[],
+  consensusThreshold: number = 0.2,
 ): { count: number; level: "strong" | "moderate" | "weak" | "none" } {
   const supportingDomains = new Set<string>();
 
@@ -334,7 +339,7 @@ function computeConsensus(
   for (const [url, pageText] of pageContents) {
     if (!pageText) continue;
     const { score } = verifyTextInSource(claimText, pageText);
-    if (score >= 0.2) {
+    if (score >= consensusThreshold) {
       let domain = urlToDomain.get(url);
       if (!domain) {
         try { domain = new URL(url).hostname; } catch { continue; }
@@ -443,7 +448,10 @@ export function verifyEvidence(
   claims: BrowseClaim[],
   sources: BrowseSource[],
   pageContents: Map<string, string>,
+  options?: { bm25Threshold?: number; consensusThreshold?: number },
 ): VerificationResult {
+  const bm25Threshold = options?.bm25Threshold ?? 0.35;
+  const consensusThreshold = options?.consensusThreshold ?? 0.20;
   // Verify sources: check quotes against page text using BM25
   const verifiedSources: VerifiedSource[] = sources.map((source) => {
     const pageText = pageContents.get(source.url) || "";
@@ -453,10 +461,10 @@ export function verifyEvidence(
       return { ...source, verified: false, authority };
     }
 
-    const { score } = verifyTextInSource(source.quote, pageText);
+    const { score } = verifyTextInSource(source.quote, pageText, bm25Threshold);
     return {
       ...source,
-      verified: score >= 0.35,
+      verified: score >= bm25Threshold,
       authority,
     };
   });
@@ -470,13 +478,13 @@ export function verifyEvidence(
         const pageText = pageContents.get(url) || "";
         if (!pageText) continue;
 
-        const { score } = verifyTextInSource(claim.claim, pageText);
+        const { score } = verifyTextInSource(claim.claim, pageText, bm25Threshold);
         bestScore = Math.max(bestScore, score);
       }
     }
 
     // Cross-source consensus (Phase 2)
-    const consensus = computeConsensus(claim.claim, pageContents, sources);
+    const consensus = computeConsensus(claim.claim, pageContents, sources, consensusThreshold);
 
     // Boost verification score based on consensus
     // Multi-source agreement increases confidence in the claim

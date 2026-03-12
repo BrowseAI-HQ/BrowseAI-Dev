@@ -501,6 +501,7 @@ Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
                   <tr><td className="py-2 pr-4 font-mono text-accent">GET /browse/sources/top</td><td className="py-2">Top cited source domains</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">GET /user/stats</td><td className="py-2">Your query stats (authenticated)</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">GET /user/history</td><td className="py-2">Your query history (authenticated)</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/feedback</td><td className="py-2">Submit feedback on a result (good/bad/wrong)</td></tr>
                 </tbody>
               </table>
             </div>
@@ -528,11 +529,12 @@ knowledge = session.knowledge()`}</CodeBlock>
             <h4 className="text-sm font-semibold text-foreground pt-4">MCP Server</h4>
             <CodeBlock label="Setup">{`npx browse-ai setup`}</CodeBlock>
             <p>
-              11 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
+              12 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_open</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_extract</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_answer</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_compare</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_feedback</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_create</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_ask</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_recall</code>,{" "}

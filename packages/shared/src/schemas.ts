@@ -65,3 +65,11 @@ export const RecallSchema = z.object({
   query: z.string().min(1).max(500),
   limit: z.number().int().min(1).max(50).optional().default(10),
 });
+
+// ── Feedback schema ──
+
+export const FeedbackRequestSchema = z.object({
+  resultId: z.string().min(1).max(36),
+  rating: z.enum(["good", "bad", "wrong"]),
+  claimIndex: z.number().int().min(0).optional(),
+});

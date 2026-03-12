@@ -76,8 +76,8 @@ const ROADMAP_ITEMS = [
   },
   {
     phase: "Shipped",
-    title: "Thorough mode & self-improving accuracy",
-    desc: "Auto-retry with rephrased queries when confidence < 60%. Dynamic domain authority with Bayesian cold-start smoothing — every query makes future results more accurate.",
+    title: "Self-learning verification pipeline",
+    desc: "Adaptive BM25 thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query and rating makes future results more accurate. Domain authority with Bayesian smoothing. Thorough mode auto-retries when confidence < 60%.",
     done: true,
   },
   {
@@ -402,7 +402,7 @@ const Developers = () => {
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
                   Install as an MCP server for Claude Desktop, Cursor, or Windsurf. Your AI assistant
-                  gets 11 research tools it can call to verify information.
+                  gets 12 research tools it can call to verify information.
                 </p>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary">
                   <Terminal className="w-4 h-4 text-accent" />

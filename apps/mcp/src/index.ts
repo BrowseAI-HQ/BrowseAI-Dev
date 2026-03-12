@@ -590,6 +590,28 @@ function registerTools(server: McpServer) {
       };
     }
   );
+
+  // --- Feedback Tool ---
+  server.tool(
+    "browse_feedback",
+    "Submit feedback on a search result to improve future accuracy. Helps the self-learning engine tune verification thresholds.",
+    {
+      result_id: z.string().describe("The shareId/resultId from a previous search result"),
+      rating: z.enum(["good", "bad", "wrong"]).describe("Rate the result: 'good' (accurate), 'bad' (not helpful), or 'wrong' (factually incorrect)"),
+      claim_index: z.number().int().min(0).optional().describe("Optional: index of the specific claim that was wrong"),
+    },
+    async ({ result_id, rating, claim_index }) => {
+      const body: Record<string, unknown> = { resultId: result_id, rating };
+      if (claim_index !== undefined) body.claimIndex = claim_index;
+      const result = await apiCall("/browse/feedback", body);
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ recorded: true, message: "Feedback recorded. This helps improve future search accuracy." }, null, 2),
+        }],
+      };
+    }
+  );
 }
 
 // --- MCP Server ---

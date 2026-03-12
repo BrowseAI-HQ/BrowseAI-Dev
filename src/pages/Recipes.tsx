@@ -67,7 +67,7 @@ const RECIPES = [
   },
   {
     title: "MCP Server for AI Assistants",
-    desc: "Give Claude Desktop, Cursor, or Windsurf 11 research tools. Search, open, extract, answer, compare, and session memory — all via MCP.",
+    desc: "Give Claude Desktop, Cursor, or Windsurf 12 research tools. Search, open, extract, answer, compare, feedback, and session memory — all via MCP.",
     file: "npx browse-ai",
     cmd: "npx browse-ai setup",
     tags: ["MCP", "Claude Desktop", "Cursor", "npm"],

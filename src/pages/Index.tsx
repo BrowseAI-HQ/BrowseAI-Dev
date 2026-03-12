@@ -42,6 +42,7 @@ const TOOLS = [
   { name: "browse_session_share", desc: "Share a session publicly for other agents to fork" },
   { name: "browse_session_knowledge", desc: "Export all accumulated claims from a session" },
   { name: "browse_session_fork", desc: "Fork a shared session to continue the research" },
+  { name: "browse_feedback", desc: "Submit feedback to improve future search accuracy" },
 ];
 
 const PIPELINE_STEPS = [
@@ -376,7 +377,7 @@ const Index = () => {
                 { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
                 { phase: "Shipped", text: "Multi-source verification — BM25 claim matching, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
                 { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
-                { phase: "Shipped", text: "Self-improving accuracy — domain authority scores improve over time via Bayesian smoothing, every query makes future results better" },
+                { phase: "Shipped", text: "Self-learning pipeline — adaptive BM25 thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query improves future accuracy" },
                 { phase: "Shipped", text: "Streaming API & retry with backoff — real-time SSE streaming, automatic retry with exponential backoff on all external APIs" },
                 { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
                 { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels for broader evidence coverage" },
@@ -661,7 +662,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">11 Tools for Agents</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">12 Tools for Agents</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               Each tool returns structured JSON with sources. No HTML parsing, no hallucination. Available via MCP and REST API.
             </p>

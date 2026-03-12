@@ -121,6 +121,7 @@ export function computeConfidence(
   consensusScore: number = 0,
   contradictionCount: number = 0,
   queryType?: QueryType,
+  adaptiveWeights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number },
 ): number {
   if (sources.length === 0) return 0.10;
   if (claims.length === 0) return 0.25;
@@ -161,10 +162,15 @@ export function computeConfidence(
   // shouldn't penalize confidence when the answer is clearly correct.
   // Opinion/comparison queries: verification rate stays high because claims
   // are more nuanced and need careful textual evidence.
+  //
+  // Adaptive weights override defaults when the self-learning engine has
+  // accumulated enough data (20+ queries of this type + feedback signals).
   const isFactual = queryType === "factual";
-  const weights = isFactual
-    ? { source: 0.20, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.10, authority: 0.20, consensus: 0.25 }
-    : { source: 0.15, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.25, authority: 0.20, consensus: 0.15 };
+  const weights = adaptiveWeights
+    ? adaptiveWeights
+    : isFactual
+      ? { source: 0.20, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.10, authority: 0.20, consensus: 0.25 }
+      : { source: 0.15, domain: 0.10, grounding: 0.10, depth: 0.05, verification: 0.25, authority: 0.20, consensus: 0.15 };
 
   let raw =
     sourceScore * weights.source +
@@ -382,6 +388,11 @@ export async function extractKnowledge(
   pageTexts?: Map<string, string>,
   queryType?: QueryType,
   sessionContext?: string,
+  adaptiveOptions?: {
+    bm25Threshold?: number;
+    consensusThreshold?: number;
+    weights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number };
+  },
 ): Promise<Omit<BrowseResult, "trace">> {
   const systemPrompt = getExtractionPrompt(queryType);
 
@@ -442,7 +453,10 @@ export async function extractKnowledge(
 
   // Run post-extraction verification if page texts are available
   if (pageTexts && pageTexts.size > 0) {
-    const verification = verifyEvidence(claims, sources, pageTexts);
+    const verification = verifyEvidence(claims, sources, pageTexts, {
+      bm25Threshold: adaptiveOptions?.bm25Threshold,
+      consensusThreshold: adaptiveOptions?.consensusThreshold,
+    });
     return {
       answer: knowledge.answer,
       claims: verification.claims,
@@ -455,6 +469,7 @@ export async function extractKnowledge(
         verification.consensusScore,
         verification.contradictions.length,
         queryType,
+        adaptiveOptions?.weights,
       ),
       contradictions: verification.contradictions.length > 0
         ? verification.contradictions

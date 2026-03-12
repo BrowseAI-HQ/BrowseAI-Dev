@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "../lib/admin.js";
 import type { ResultStore } from "../services/store.js";
 import { setDynamicAuthority } from "../lib/verify.js";
+import { getLearningStats, exportLearningState } from "../lib/learning.js";
 
 const AddAdminSchema = z.object({
   email: z.string().email(),
@@ -39,6 +40,7 @@ export function registerAdminRoutes(
         packageStats,
         users: usersData.users,
         totalUsers: usersData.total,
+        learning: getLearningStats(),
       },
     });
   });
@@ -190,6 +192,20 @@ export function registerAdminRoutes(
       request.log.error(e);
       return reply.status(500).send({ success: false, error: `Import failed: ${e.message}` });
     }
+  });
+
+  // Learning engine state
+  app.get("/admin/learning", async (request, reply) => {
+    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
+    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+
+    return reply.send({
+      success: true,
+      result: {
+        stats: getLearningStats(),
+        state: exportLearningState(),
+      },
+    });
   });
 
   // Remove admin (cannot remove yourself)

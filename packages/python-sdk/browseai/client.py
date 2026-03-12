@@ -176,6 +176,13 @@ class BrowseAI:
         """Get total query count."""
         return self._get("/browse/stats")
 
+    def feedback(self, result_id: str, rating: str, claim_index: int | None = None) -> dict[str, Any]:
+        """Submit feedback on a result. Rating: 'good', 'bad', or 'wrong'."""
+        body: dict[str, Any] = {"resultId": result_id, "rating": rating}
+        if claim_index is not None:
+            body["claimIndex"] = claim_index
+        return self._post("/browse/feedback", body)
+
     # ── Research Memory ──
 
     def session(self, name: str) -> "SessionClient":
@@ -365,6 +372,13 @@ class AsyncBrowseAI:
 
     async def stats(self) -> dict[str, Any]:
         return await self._get("/browse/stats")
+
+    async def feedback(self, result_id: str, rating: str, claim_index: int | None = None) -> dict[str, Any]:
+        """Submit feedback on a result. Rating: 'good', 'bad', or 'wrong'."""
+        body: dict[str, Any] = {"resultId": result_id, "rating": rating}
+        if claim_index is not None:
+            body["claimIndex"] = claim_index
+        return await self._post("/browse/feedback", body)
 
     # ── Research Memory ──
 

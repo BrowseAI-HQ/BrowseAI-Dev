@@ -6,6 +6,13 @@ import { extractKnowledge, rephraseQuery, generateQueryVariant, analyzeQuery } f
 import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
 import { isLowQualityDomain } from "../lib/verify.js";
+import {
+  getAdaptiveBM25Threshold,
+  getAdaptiveConsensusThreshold,
+  getAdaptivePageCount,
+  getAdaptiveWeights,
+  recordQuerySignals,
+} from "../lib/learning.js";
 import { MAX_PAGE_CONTENT_LENGTH } from "@browse/shared";
 import type { BrowseResult, TraceStep } from "@browse/shared";
 import type { CacheService } from "./cache.js";
@@ -156,8 +163,8 @@ async function singlePass(
   const filtered = filterLowQuality(allResults);
   const diverseResults = enforceDomainDiversity(filtered);
 
-  // Adaptive page count based on query type
-  const pageCount = ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
+  // Adaptive page count: learning engine overrides if enough data, else use defaults
+  const pageCount = getAdaptivePageCount(analysis.type) || ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
 
   trace.push({
     step: `Search Web${label}`,
@@ -199,7 +206,13 @@ async function singlePass(
 
   // Phase 5: Extract + verify (with type-aware prompt)
   const llmStart = Date.now();
-  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, sessionContext);
+  // Pass adaptive thresholds from learning engine into extraction + verification
+  const adaptiveOptions = {
+    bm25Threshold: getAdaptiveBM25Threshold(analysis.type),
+    consensusThreshold: getAdaptiveConsensusThreshold(analysis.type),
+    weights: getAdaptiveWeights(analysis.type),
+  };
+  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, sessionContext, adaptiveOptions);
   const llmDuration = Date.now() - llmStart;
 
   // Trace steps
@@ -235,7 +248,7 @@ async function singlePass(
     detail: "OpenRouter",
   });
 
-  return { knowledge, pageTexts };
+  return { knowledge, pageTexts, queryType: analysis.type };
 }
 
 export async function answerQuery(
@@ -257,10 +270,11 @@ export async function answerQuery(
     }
   }
 
+  const queryStart = Date.now();
   const trace: TraceStep[] = [];
 
   // First pass
-  const { knowledge, pageTexts } = await singlePass(query, env, cache, trace, undefined, undefined, undefined, sessionContext);
+  const { knowledge, pageTexts, queryType } = await singlePass(query, env, cache, trace, undefined, undefined, undefined, sessionContext);
 
   // Thorough mode: if confidence is low, rephrase and do a second pass
   if (depth === "thorough" && knowledge.confidence < THOROUGH_CONFIDENCE_THRESHOLD) {
@@ -287,10 +301,43 @@ export async function answerQuery(
 
     const result = { ...best, trace };
     if (cacheKey) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+
+    // Record learning signals (fire-and-forget)
+    try {
+      recordQuerySignals({
+        queryType: queryType,
+        confidence: result.confidence,
+        verificationRate: result.claims.filter((c: any) => c.verified).length / Math.max(result.claims.length, 1),
+        consensusScore: result.claims.filter((c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
+        sourceCount: result.sources.length,
+        claimCount: result.claims.length,
+        contradictionCount: result.contradictions?.length || 0,
+        responseTimeMs: Date.now() - queryStart,
+        depth: "thorough",
+        thoroughImproved: pass2.confidence > knowledge.confidence,
+      });
+    } catch { /* non-critical */ }
+
     return result;
   }
 
   const result = { ...knowledge, trace };
   if (cacheKey) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+
+  // Record learning signals (fire-and-forget)
+  try {
+    recordQuerySignals({
+      queryType: queryType,
+      confidence: result.confidence,
+      verificationRate: result.claims.filter((c: any) => c.verified).length / Math.max(result.claims.length, 1),
+      consensusScore: result.claims.filter((c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
+      sourceCount: result.sources.length,
+      claimCount: result.claims.length,
+      contradictionCount: result.contradictions?.length || 0,
+      responseTimeMs: Date.now() - queryStart,
+      depth,
+    });
+  } catch { /* non-critical */ }
+
   return result;
 }

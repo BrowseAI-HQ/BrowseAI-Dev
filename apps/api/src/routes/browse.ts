@@ -4,6 +4,7 @@ import {
   OpenRequestSchema,
   ExtractRequestSchema,
   AnswerRequestSchema,
+  FeedbackRequestSchema,
 } from "@browse/shared";
 import { search } from "../services/search.js";
 import { openPage } from "../services/scrape.js";
@@ -13,6 +14,7 @@ import { answerQueryStreaming } from "../services/stream.js";
 import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
+import { recordFeedback, applyFeedbackToType } from "../lib/learning.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
@@ -366,18 +368,7 @@ export function registerBrowseRoutes(
     try {
       const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
-      if (limitError) return reply.status(429).send({
-        success: false,
-        error: limitError,
-        _debug: {
-          userId,
-          isOwnKeys,
-          hasAuth: !!request.headers.authorization,
-          hasBaiKey: !!extractBrowseApiKey(request),
-          hasByok: !!(request.headers["x-tavily-key"] || request.headers["x-openrouter-key"]),
-          apiKeyServiceInit: !!apiKeyService,
-        },
-      });
+      if (limitError) return reply.status(429).send({ success: false, error: limitError });
 
       // Set up SSE response
       reply.raw.writeHead(200, {
@@ -484,5 +475,41 @@ export function registerBrowseRoutes(
     if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
     const summary = await store.getAnalyticsSummary();
     return { success: true, result: summary };
+  });
+
+  // User feedback on a result (rate-limited: 10/hour per IP)
+  app.post("/browse/feedback", async (request, reply) => {
+    const parsed = FeedbackRequestSchema.safeParse(request.body);
+    if (!parsed.success)
+      return reply.status(400).send({ success: false, error: zodMessage(parsed.error) });
+
+    // Rate limit feedback: 10/hour per IP to prevent learning poisoning
+    const ip = request.ip || "unknown";
+    const feedbackKey = `feedback:${ip}`;
+    const feedbackCount = parseInt((await cache.get(feedbackKey)) || "0");
+    if (feedbackCount >= 10) {
+      return reply.status(429).send({ success: false, error: "Feedback rate limit exceeded (10/hour)" });
+    }
+    await cache.set(feedbackKey, String(feedbackCount + 1), 3600);
+
+    const { resultId, rating, claimIndex } = parsed.data;
+
+    // Validate resultId exists before recording feedback
+    const stored = await store.get(resultId);
+    if (!stored) {
+      return reply.status(404).send({ success: false, error: "Result not found" });
+    }
+
+    // Record feedback in learning engine
+    recordFeedback({ resultId, rating, claimIndex });
+
+    // Link feedback to query type via Search Web trace step: "N results (...) [factual]"
+    const searchTrace = stored.result.trace?.find(t => t.step.startsWith("Search Web"));
+    const typeMatch = searchTrace?.detail?.match(/\[(\w[\w-]*)\]\s*$/);
+    if (typeMatch) {
+      applyFeedbackToType(typeMatch[1], rating);
+    }
+
+    return { success: true, result: { recorded: true } };
   });
 }

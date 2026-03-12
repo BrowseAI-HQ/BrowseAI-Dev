@@ -36,6 +36,9 @@ extract = client.extract("https://example.com", query="pricing info")
 
 # Compare raw LLM vs evidence-backed
 compare = client.compare("Is Python faster than Rust?")
+
+# Submit feedback to improve accuracy
+client.feedback(result_id=result.share_id, rating="good")
 ```
 
 ## Async
