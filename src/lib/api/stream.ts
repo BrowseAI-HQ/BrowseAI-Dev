@@ -83,6 +83,7 @@ export async function streamAnswer(
   const decoder = new TextDecoder();
   let buffer = "";
   let finalResult: BrowseResult | null = null;
+  let currentEvent = ""; // Persist across chunks so event/data split across reads works
 
   while (true) {
     const { done, value } = await reader.read();
@@ -94,7 +95,6 @@ export async function streamAnswer(
     const lines = buffer.split("\n");
     buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
-    let currentEvent = "";
     for (const line of lines) {
       if (line.startsWith("event: ")) {
         currentEvent = line.slice(7).trim();
