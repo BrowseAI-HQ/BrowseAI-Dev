@@ -102,13 +102,24 @@ export function createApiKeyService(
 
     async list(userId) {
       const res = await supabaseFetch(
-        `/user_api_keys?user_id=eq.${userId}&select=id,api_key_prefix,label,created_at,last_used_at,revoked&order=created_at.desc`
+        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=id,api_key_prefix,label,created_at,last_used_at,revoked&order=created_at.desc`
       );
       if (!res.ok) return [];
       return res.json();
     },
 
     async revoke(userId, keyId) {
+      // First check the key exists and belongs to this user
+      const check = await supabaseFetch(
+        `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}&select=id,revoked`
+      );
+      if (!check.ok) return false;
+      const rows = await check.json();
+      if (!rows.length) return false;
+
+      // Already revoked — idempotent success
+      if (rows[0].revoked) return true;
+
       // Soft delete: mark revoked + wipe encrypted credentials (keep metadata for audit)
       const res = await supabaseFetch(
         `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}`,
