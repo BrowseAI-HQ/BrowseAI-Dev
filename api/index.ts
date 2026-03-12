@@ -20,17 +20,44 @@ function readBody(req: IncomingMessage): Promise<string> {
   });
 }
 
+function setCorsHeaders(req: IncomingMessage, res: ServerResponse) {
+  const origin = req.headers.origin || "";
+  const corsOrigin = origin || process.env.CORS_ORIGIN || "*";
+  res.setHeader("Access-Control-Allow-Origin", corsOrigin);
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Tavily-Key, X-OpenRouter-Key, X-API-Key, Authorization");
+}
+
+// Endpoints that use SSE and need real streaming (not buffered inject)
+const STREAMING_PATHS = ["/browse/answer/stream"];
+
+function isStreamingRequest(url: string): boolean {
+  return STREAMING_PATHS.some((p) => url.includes(p));
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   try {
     const fastify = await getApp();
-
-    // Strip /api prefix to match Fastify route definitions
     const url = (req.url || "").replace(/^\/api/, "") || "/";
 
-    // Read raw body from stream
-    const body = await readBody(req);
+    setCorsHeaders(req, res);
 
-    // Forward headers but remove content-length (Fastify recalculates)
+    if (req.method === "OPTIONS") {
+      res.statusCode = 200;
+      res.end();
+      return;
+    }
+
+    if (isStreamingRequest(url)) {
+      // For SSE endpoints, route through Fastify's real server so reply.raw
+      // writes directly to the Vercel response stream (not buffered).
+      req.url = url;
+      fastify.server.emit("request", req, res);
+      return;
+    }
+
+    // Non-streaming: use inject() (buffered, fine for JSON responses)
+    const body = await readBody(req);
     const headers = { ...req.headers } as Record<string, string>;
     delete headers["content-length"];
     delete headers["transfer-encoding"];
@@ -41,19 +68,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       headers,
       payload: body || undefined,
     });
-
-    // Set CORS headers — allow same-origin and configured origins
-    const origin = req.headers.origin || "";
-    const corsOrigin = origin || process.env.CORS_ORIGIN || "*";
-    res.setHeader("Access-Control-Allow-Origin", corsOrigin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Tavily-Key, X-OpenRouter-Key, X-API-Key, Authorization");
-
-    if (req.method === "OPTIONS") {
-      res.statusCode = 200;
-      res.end();
-      return;
-    }
 
     res.statusCode = response.statusCode;
     for (const [key, value] of Object.entries(response.headers)) {

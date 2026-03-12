@@ -45,7 +45,8 @@ cat > .vercel/output/functions/api.func/.vc-config.json << 'EOF'
   "runtime": "nodejs20.x",
   "handler": "index.js",
   "launcherType": "Nodejs",
-  "maxDuration": 300
+  "maxDuration": 300,
+  "supportsResponseStreaming": true
 }
 EOF
 
