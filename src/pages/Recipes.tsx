@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 import {
   Code2, Terminal, ArrowRight, ExternalLink, Github,
   BookOpen, Layers, Brain, Search, Shield,
@@ -80,6 +81,12 @@ const Recipes = () => {
   const navigate = useNavigate();
 
   return (
+    <>
+    <SEO
+      title="Agent Recipes — Code Examples for AI Research Agents"
+      description="Ready-to-use code recipes for building AI research agents with BrowseAI Dev. Research agents, fact-checkers, competitive analysis, and more."
+      canonical="/recipes"
+    />
     <div className="min-h-screen">
       {/* Nav */}
       <motion.nav
@@ -347,6 +354,7 @@ const Recipes = () => {
         </div>
       </footer>
     </div>
+    </>
   );
 };
 

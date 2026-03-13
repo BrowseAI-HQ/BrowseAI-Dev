@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BrowseAI Dev - Reliable Research Infrastructure for AI Agents</title>
-    <meta name="description" content="Reliable research infrastructure for AI agents. Real-time web search, evidence extraction, and structured citations. Python SDK, MCP & REST API." />
-    <meta name="keywords" content="AI agent tools, MCP server, web search API, research API, evidence-backed search, AI research infrastructure, LLM tools, structured citations, fact verification, Python SDK, Claude MCP, agent framework" />
+    <title>BrowseAI Dev — Research Infra for AI Agents | MCP Server, REST API, Python SDK</title>
+    <meta name="description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores, citation verification, and contradiction detection. MCP server, REST API, Python SDK. Not browse.ai — we're browseai.dev." />
+    <meta name="keywords" content="BrowseAI Dev, browseai.dev, AI agent research, MCP server for AI, web search API, evidence-backed search, AI research infrastructure, LLM citation tool, fact verification API, Python SDK, Claude MCP server, agent framework, confidence scoring, hallucination prevention" />
     <meta name="author" content="BrowseAI Dev" />
     <link rel="canonical" href="https://browseai.dev/" />
 
@@ -15,8 +15,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="BrowseAI Dev - Reliable Research Infrastructure for AI Agents" />
-    <meta property="og:description" content="Reliable research infrastructure for AI agents. Real-time web search with evidence-backed citations. Python SDK, MCP & REST API." />
+    <meta property="og:title" content="BrowseAI Dev — Research Infra for AI Agents" />
+    <meta property="og:description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores and citation verification. MCP server, REST API, Python SDK." />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="BrowseAI Dev" />
     <meta property="og:url" content="https://browseai.dev" />
@@ -26,17 +26,18 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="BrowseAI Dev - Reliable Research Infrastructure for AI Agents" />
-    <meta name="twitter:description" content="Reliable research infrastructure for AI agents. Real-time web search with evidence-backed citations." />
+    <meta name="twitter:title" content="BrowseAI Dev — Research Infra for AI Agents" />
+    <meta name="twitter:description" content="Open source research infrastructure for AI agents. Evidence-backed web search with confidence scores and citation verification." />
     <meta name="twitter:image" content="https://browseai.dev/og-image.png" />
 
-    <!-- Structured Data -->
+    <!-- Structured Data: Software Application -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "BrowseAI Dev",
-      "description": "Reliable research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores. Available as MCP server, REST API, and Python SDK.",
+      "alternateName": ["browseai.dev", "BrowseAI Developer Tools"],
+      "description": "Open source research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores. Available as MCP server, REST API, and Python SDK.",
       "url": "https://browseai.dev",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any",
@@ -48,12 +49,68 @@
       "author": {
         "@type": "Organization",
         "name": "BrowseAI Dev",
-        "url": "https://browseai.dev"
+        "url": "https://browseai.dev",
+        "sameAs": [
+          "https://github.com/BrowseAI-HQ/BrowserAI-Dev",
+          "https://www.npmjs.com/package/browse-ai",
+          "https://pypi.org/project/browseai/",
+          "https://discord.gg/ubAuT4YQsT"
+        ]
       },
       "license": "https://opensource.org/licenses/MIT",
       "codeRepository": "https://github.com/BrowseAI-HQ/BrowserAI-Dev",
       "programmingLanguage": ["TypeScript", "Python"],
-      "keywords": "AI agent, MCP server, web search API, research infrastructure, evidence-backed citations, fact verification, Python SDK"
+      "keywords": "AI agent, MCP server, web search API, research infrastructure, evidence-backed citations, fact verification, Python SDK, confidence scoring, hallucination prevention"
+    }
+    </script>
+
+    <!-- Structured Data: FAQ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is BrowseAI Dev?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "BrowseAI Dev (browseai.dev) is open source research infrastructure for AI agents. It provides real-time web search with evidence-backed citations and confidence scores. Available as an MCP server, REST API, and Python SDK."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is BrowseAI Dev different from browse.ai?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "BrowseAI Dev (browseai.dev) is a completely different product from browse.ai. BrowseAI Dev is open source research infrastructure for AI agents that provides verified, citation-backed answers. browse.ai is a web scraping and monitoring tool. They are unrelated products."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the confidence scoring work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "BrowseAI Dev uses a 7-factor evidence-based confidence algorithm: source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, and consensus score. Unlike LLM self-assessment, scores are computed from real evidence."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What integrations does BrowseAI Dev support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "BrowseAI Dev supports MCP (Model Context Protocol) for Claude and other AI assistants, a REST API for any HTTP client, and a Python SDK (pip install browseai) for Python applications. Install the MCP server with npm: npx browse-ai."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is BrowseAI Dev free and open source?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, BrowseAI Dev is fully open source under the MIT license. The source code is available on GitHub. You can self-host it or use the hosted version at browseai.dev with a free demo tier (5 queries/hour) or bring your own API keys for unlimited usage."
+          }
+        }
+      ]
     }
     </script>
   </head>

@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Search, Layers, Shield, Brain, Zap, AlertTriangle,
@@ -58,6 +59,20 @@ const Docs = () => {
   }, [hash]);
 
   return (
+    <>
+    <SEO
+      title="Documentation — API Reference, Verification Pipeline, Confidence Scoring"
+      description="Complete API docs for BrowseAI Dev. Learn about the verification pipeline, confidence scoring algorithm, thorough mode, domain authority, and how to integrate with MCP, REST API, or Python SDK."
+      canonical="/docs"
+      structuredData={{
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "BrowseAI Dev Documentation",
+        "description": "API reference and technical documentation for BrowseAI Dev research infrastructure.",
+        "url": "https://browseai.dev/docs",
+        "author": { "@type": "Organization", "name": "BrowseAI Dev" },
+      }}
+    />
     <div className="min-h-screen">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
@@ -786,6 +801,7 @@ knowledge = session.knowledge()`}</CodeBlock>
         </div>
       </footer>
     </div>
+    </>
   );
 };
 

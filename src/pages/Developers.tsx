@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 import {
   ArrowRight, GitBranch, Code2, Users, Lightbulb,
   Terminal, Globe, BookOpen, CheckCircle2, Rocket, Heart,
@@ -126,6 +127,12 @@ const Developers = () => {
   const { contributors, loading: contributorsLoading } = useContributors();
 
   return (
+    <>
+    <SEO
+      title="Developers — Contribute to Open Source AI Research Infra"
+      description="Contribute to BrowseAI Dev. Open source research infrastructure for AI agents. See the roadmap, contribution areas, and how to get started."
+      canonical="/developers"
+    />
     <div className="min-h-screen">
       {/* Nav */}
       <motion.nav
@@ -677,6 +684,7 @@ print(result.answer, result.confidence)`}</pre>
         </div>
       </footer>
     </div>
+    </>
   );
 };
 

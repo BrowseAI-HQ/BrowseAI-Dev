@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
@@ -122,6 +123,24 @@ const Index = () => {
   };
 
   return (
+    <>
+    <SEO
+      canonical="/"
+      structuredData={{
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "BrowseAI Dev",
+        "description": "Research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores.",
+        "url": "https://browseai.dev",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Organization", "name": "BrowseAI Dev", "url": "https://browseai.dev" },
+        "license": "https://opensource.org/licenses/MIT",
+        "codeRepository": "https://github.com/BrowseAI-HQ/BrowserAI-Dev",
+        "programmingLanguage": ["TypeScript", "Python"],
+      }}
+    />
     <div className="min-h-screen">
       {/* Nav */}
       <motion.nav
@@ -933,6 +952,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
         </div>
       </footer>
     </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
@@ -133,6 +134,12 @@ const Playground = () => {
   const hasShareId = response?.shareId;
 
   return (
+    <>
+    <SEO
+      title="Playground — Try Evidence-Backed AI Search"
+      description="Try BrowseAI Dev live. Search any topic and get evidence-backed answers with confidence scores, verified claims, and source citations."
+      canonical="/playground"
+    />
     <div className="min-h-screen">
       <nav className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border">
         <div className="flex items-center gap-4">
@@ -491,6 +498,7 @@ const Playground = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
