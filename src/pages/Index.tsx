@@ -137,7 +137,7 @@ const Index = () => {
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "author": { "@type": "Organization", "name": "BrowseAI Dev", "url": "https://browseai.dev" },
         "license": "https://opensource.org/licenses/MIT",
-        "codeRepository": "https://github.com/BrowseAI-HQ/BrowserAI-Dev",
+        "codeRepository": "https://github.com/BrowseAI-HQ/BrowseAI-Dev",
         "programmingLanguage": ["TypeScript", "Python"],
       }}
     />
@@ -173,7 +173,7 @@ const Index = () => {
             </a>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs hidden sm:inline-flex" asChild>
-            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
+            <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4" />
               <span className="ml-1">GitHub</span>
             </a>
@@ -199,7 +199,7 @@ const Index = () => {
               <DropdownMenuItem onClick={() => navigate("/developers")}>Developers</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/recipes")}>Recipes</DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener" className="flex items-center gap-2">
+                <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener" className="flex items-center gap-2">
                   <Star className="w-3.5 h-3.5" /> Star on GitHub
                 </a>
               </DropdownMenuItem>
@@ -318,7 +318,7 @@ const Index = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
           >
             <a
-              href="https://github.com/BrowseAI-HQ/BrowserAI-Dev"
+              href="https://github.com/BrowseAI-HQ/BrowseAI-Dev"
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary border border-border text-sm font-medium hover:border-accent/40 hover:text-accent transition-all w-full sm:w-auto justify-center"
@@ -910,7 +910,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             className="flex flex-col sm:flex-row items-center justify-center gap-3"
           >
             <a
-              href="https://github.com/BrowseAI-HQ/BrowserAI-Dev"
+              href="https://github.com/BrowseAI-HQ/BrowseAI-Dev"
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-secondary border border-border text-sm font-semibold hover:border-accent/40 hover:text-accent transition-all w-full sm:w-auto justify-center"

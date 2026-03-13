@@ -238,8 +238,8 @@ Three options:
 
 MIT licensed. Clone the repo and deploy:
 ```bash
-git clone https://github.com/BrowseAI-HQ/BrowserAI-Dev.git
-cd BrowserAI-Dev
+git clone https://github.com/BrowseAI-HQ/BrowseAI-Dev.git
+cd BrowseAI-Dev
 pnpm install
 pnpm dev
 ```
@@ -252,7 +252,7 @@ Optional: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (persistence).
 - Website: https://browseai.dev
 - Documentation: https://browseai.dev/docs
 - Playground: https://browseai.dev/playground
-- GitHub: https://github.com/BrowseAI-HQ/BrowserAI-Dev
+- GitHub: https://github.com/BrowseAI-HQ/BrowseAI-Dev
 - npm: https://www.npmjs.com/package/browse-ai
 - PyPI: https://pypi.org/project/browseai/
 - Discord: https://discord.gg/ubAuT4YQsT

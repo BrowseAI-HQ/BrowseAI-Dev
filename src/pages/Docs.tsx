@@ -95,7 +95,7 @@ const Docs = () => {
             <span className="hidden sm:inline">Developers</span>
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" asChild>
-            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener">
+            <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener">
               <Github className="w-4 h-4 sm:hidden" />
               <span className="hidden sm:inline">GitHub</span>
             </a>
@@ -793,7 +793,7 @@ knowledge = session.knowledge()`}</CodeBlock>
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/playground")} className="hover:text-foreground transition-colors">Playground</button>
             <button onClick={() => navigate("/developers")} className="hover:text-foreground transition-colors">Developers</button>

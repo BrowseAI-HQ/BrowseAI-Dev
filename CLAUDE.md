@@ -122,7 +122,7 @@ Every time a new feature is implemented, go through this checklist before consid
 ## Links
 
 - **Site:** https://browseai.dev
-- **GitHub:** https://github.com/BrowseAI-HQ/BrowserAI-Dev
+- **GitHub:** https://github.com/BrowseAI-HQ/BrowseAI-Dev
 - **Discord:** https://discord.gg/ubAuT4YQsT
 - **npm:** https://www.npmjs.com/package/browse-ai
 - **PyPI:** https://pypi.org/project/browseai/

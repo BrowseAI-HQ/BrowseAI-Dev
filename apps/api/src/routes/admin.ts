@@ -347,7 +347,7 @@ async function fetchPackageStats(): Promise<{
       })
       .catch(() => null),
     // GitHub stats
-    fetch("https://api.github.com/repos/BrowseAI-HQ/BrowserAI-Dev")
+    fetch("https://api.github.com/repos/BrowseAI-HQ/BrowseAI-Dev")
       .then(async (r) => {
         if (!r.ok) return null;
         const data = await r.json();

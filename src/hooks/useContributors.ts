@@ -29,7 +29,7 @@ export function useContributors() {
       }
     }
 
-    fetch("https://api.github.com/repos/BrowseAI-HQ/BrowserAI-Dev/contributors?per_page=50")
+    fetch("https://api.github.com/repos/BrowseAI-HQ/BrowseAI-Dev/contributors?per_page=50")
       .then((r) => {
         if (!r.ok) throw new Error("GitHub API error");
         return r.json();

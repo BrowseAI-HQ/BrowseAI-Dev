@@ -33,7 +33,7 @@ Not LLM self-assessed. Computed from: source count, domain diversity, claim grou
 ## Links
 - Website: https://browseai.dev
 - Docs: https://browseai.dev/docs
-- GitHub: https://github.com/BrowseAI-HQ/BrowserAI-Dev
+- GitHub: https://github.com/BrowseAI-HQ/BrowseAI-Dev
 - npm: https://www.npmjs.com/package/browse-ai
 - PyPI: https://pypi.org/project/browseai/
 - Discord: https://discord.gg/ubAuT4YQsT

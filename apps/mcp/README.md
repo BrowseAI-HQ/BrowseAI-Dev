@@ -172,7 +172,7 @@ All API calls include automatic retry with exponential backoff on transient fail
 ## Community
 
 - [Discord](https://discord.gg/ubAuT4YQsT)
-- [GitHub](https://github.com/BrowseAI-HQ/BrowserAI-Dev)
+- [GitHub](https://github.com/BrowseAI-HQ/BrowseAI-Dev)
 
 ## License
 

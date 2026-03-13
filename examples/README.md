@@ -35,4 +35,4 @@ BrowseAI Dev is **research infrastructure for AI agents** — every answer comes
 
 - [Documentation](https://browseai.dev/developers)
 - [Discord](https://discord.gg/ubAuT4YQsT)
-- [GitHub](https://github.com/BrowseAI-HQ/BrowserAI-Dev)
+- [GitHub](https://github.com/BrowseAI-HQ/BrowseAI-Dev)

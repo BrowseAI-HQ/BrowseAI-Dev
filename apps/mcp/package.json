@@ -31,11 +31,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BrowseAI-HQ/BrowserAI-Dev.git",
+    "url": "git+https://github.com/BrowseAI-HQ/BrowseAI-Dev.git",
     "directory": "apps/mcp"
   },
   "homepage": "https://browseai.dev",
-  "bugs": "https://github.com/BrowseAI-HQ/BrowserAI-Dev/issues",
+  "bugs": "https://github.com/BrowseAI-HQ/BrowseAI-Dev/issues",
   "bin": {
     "browse-ai": "dist/index.js"
   },

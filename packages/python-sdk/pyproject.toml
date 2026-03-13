@@ -37,5 +37,5 @@ crewai = ["crewai>=0.41.0"]
 [project.urls]
 Homepage = "https://browseai.dev"
 Documentation = "https://browseai.dev/developers"
-Repository = "https://github.com/BrowseAI-HQ/BrowserAI-Dev"
+Repository = "https://github.com/BrowseAI-HQ/BrowseAI-Dev"
 Discord = "https://discord.gg/ubAuT4YQsT"

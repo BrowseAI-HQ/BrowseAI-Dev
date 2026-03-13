@@ -230,8 +230,8 @@ curl -X POST https://browseai.dev/api/browse/answer \
 ### Self-Host
 
 ```sh
-git clone https://github.com/BrowseAI-HQ/BrowserAI-Dev.git
-cd BrowserAI-Dev
+git clone https://github.com/BrowseAI-HQ/BrowseAI-Dev.git
+cd BrowseAI-Dev
 pnpm install
 cp .env.example .env
 # Fill in: SERP_API_KEY, OPENROUTER_API_KEY
@@ -369,7 +369,7 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 ## Community
 
 - [Discord](https://discord.gg/ubAuT4YQsT) — questions, feedback, showcase
-- [GitHub Issues](https://github.com/BrowseAI-HQ/BrowserAI-Dev/issues) — bugs, feature requests
+- [GitHub Issues](https://github.com/BrowseAI-HQ/BrowseAI-Dev/issues) — bugs, feature requests
 
 ## Contributing
 

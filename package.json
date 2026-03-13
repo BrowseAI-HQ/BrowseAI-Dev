@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
-  "repository": "https://github.com/BrowseAI-HQ/BrowserAI-Dev",
+  "repository": "https://github.com/BrowseAI-HQ/BrowseAI-Dev",
   "homepage": "https://browseai.dev",
-  "bugs": "https://github.com/BrowseAI-HQ/BrowserAI-Dev/issues",
+  "bugs": "https://github.com/BrowseAI-HQ/BrowseAI-Dev/issues",
   "scripts": {
     "dev": "concurrently \"pnpm run dev:web\" \"pnpm run dev:api\"",
     "dev:web": "vite",

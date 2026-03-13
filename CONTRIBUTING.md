@@ -5,8 +5,8 @@ Thanks for your interest in contributing! BrowseAI Dev is reliable research infr
 ## Quick Setup
 
 ```bash
-git clone https://github.com/BrowseAI-HQ/BrowserAI-Dev.git
-cd BrowserAI-Dev
+git clone https://github.com/BrowseAI-HQ/BrowseAI-Dev.git
+cd BrowseAI-Dev
 pnpm install
 cp .env.example .env
 # Add your own API keys to .env
@@ -20,7 +20,7 @@ pnpm dev
 ## Project Structure
 
 ```
-BrowserAI-Dev/
+BrowseAI-Dev/
   src/                    # Frontend (React + Vite + shadcn/ui)
     components/           # UI components
     pages/                # Route pages

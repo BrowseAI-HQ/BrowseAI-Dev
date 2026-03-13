@@ -121,7 +121,7 @@ const Privacy = () => {
             <h2 className="text-lg font-semibold">Open Source</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               BrowseAI Dev is open source. You can audit exactly what data we collect and how we process it by reviewing our{" "}
-              <a href="https://github.com/BrowseAI-HQ/BrowserAI-Dev" target="_blank" rel="noopener" className="text-accent hover:underline">
+              <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener" className="text-accent hover:underline">
                 source code
               </a>.
             </p>

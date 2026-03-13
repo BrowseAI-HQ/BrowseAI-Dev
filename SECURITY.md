@@ -12,7 +12,7 @@ If you discover a security vulnerability in BrowseAI Dev, please report it respo
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email security concerns or report via [GitHub Security Advisories](https://github.com/BrowseAI-HQ/BrowserAI-Dev/security/advisories/new).
+Instead, please email security concerns or report via [GitHub Security Advisories](https://github.com/BrowseAI-HQ/BrowseAI-Dev/security/advisories/new).
 
 ### What to include
 
