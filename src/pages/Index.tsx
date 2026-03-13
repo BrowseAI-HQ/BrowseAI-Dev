@@ -228,7 +228,7 @@ const Index = () => {
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors z-10" />
               {!query && (
-                <div className="absolute left-12 right-16 sm:right-36 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base pointer-events-none select-none truncate">
+                <div className="absolute left-12 right-16 sm:right-36 top-1/2 -translate-y-1/2 text-left text-muted-foreground text-sm sm:text-base pointer-events-none select-none truncate">
                   {typedText}<span className="animate-pulse">|</span>
                 </div>
               )}
