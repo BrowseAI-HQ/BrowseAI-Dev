@@ -1,5 +1,6 @@
 import type { BrowseClaim, BrowseSource, Contradiction } from "@browse/shared";
 import type { DomainAuthorityRow } from "../services/store.js";
+import type { CacheService } from "../services/cache.js";
 
 // ─── Text Processing ────────────────────────────────────────────────
 
@@ -345,6 +346,9 @@ export function trackSourceUsefulness(
   }
 
   domainUsefulness.set(d, existing);
+
+  // Auto-persist to Redis periodically
+  maybeAutoPersistDomainIntel();
 }
 
 /**
@@ -472,6 +476,92 @@ export function rerankSources<T extends RerankableResult>(results: T[]): T[] {
 
   scored.sort((a, b) => b.combinedScore - a.combinedScore);
   return scored.map(s => s.result);
+}
+
+// ─── Domain Intelligence Persistence ─────────────────────────────────
+// Persists co-citation + usefulness to Redis so they survive cold starts.
+// Auto-persists every N usefulness updates (piggybacks on inline tracking).
+
+const DOMAIN_INTEL_CACHE_KEY = "domain-intel:state:v1";
+const DOMAIN_INTEL_TTL = 604800; // 7 days
+const DOMAIN_INTEL_PERSIST_INTERVAL = 25; // persist every N usefulness updates
+let domainIntelCache: CacheService | null = null;
+let usefulnessUpdatesSincePersist = 0;
+
+/** Set cache reference for auto-persistence. Called on startup. */
+export function setDomainIntelCache(cache: CacheService): void {
+  domainIntelCache = cache;
+}
+
+/** Export current domain intelligence state for persistence. */
+export function exportDomainIntelState(): {
+  coCitation: Array<[string, number]>;
+  usefulness: Array<[string, { usefulCount: number; totalCount: number; score: number }]>;
+} {
+  return {
+    coCitation: [...coCitationScores.entries()],
+    usefulness: [...domainUsefulness.entries()],
+  };
+}
+
+/** Import domain intelligence state from persistence. */
+export function importDomainIntelState(state: {
+  coCitation?: Array<[string, number]>;
+  usefulness?: Array<[string, { usefulCount: number; totalCount: number; score: number }]>;
+}): { coCitationCount: number; usefulnessCount: number } {
+  let coCitationCount = 0;
+  let usefulnessCount = 0;
+
+  if (state.coCitation) {
+    coCitationScores.clear();
+    for (const [domain, score] of state.coCitation) {
+      coCitationScores.set(domain, score);
+      coCitationCount++;
+    }
+  }
+  if (state.usefulness) {
+    domainUsefulness.clear();
+    for (const [domain, data] of state.usefulness) {
+      domainUsefulness.set(domain, data);
+      usefulnessCount++;
+    }
+  }
+
+  return { coCitationCount, usefulnessCount };
+}
+
+/** Load domain intelligence from Redis. Called on startup. */
+export async function loadDomainIntelState(cache: CacheService): Promise<{ coCitationCount: number; usefulnessCount: number }> {
+  try {
+    const raw = await cache.get(DOMAIN_INTEL_CACHE_KEY);
+    if (!raw) return { coCitationCount: 0, usefulnessCount: 0 };
+    const state = JSON.parse(raw);
+    return importDomainIntelState(state);
+  } catch {
+    return { coCitationCount: 0, usefulnessCount: 0 };
+  }
+}
+
+/** Persist domain intelligence to Redis. */
+export async function persistDomainIntelState(cache?: CacheService): Promise<boolean> {
+  const c = cache || domainIntelCache;
+  if (!c) return false;
+  try {
+    const state = exportDomainIntelState();
+    await c.set(DOMAIN_INTEL_CACHE_KEY, JSON.stringify(state), DOMAIN_INTEL_TTL);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Auto-persist after enough usefulness updates. Fire-and-forget. */
+function maybeAutoPersistDomainIntel(): void {
+  usefulnessUpdatesSincePersist++;
+  if (usefulnessUpdatesSincePersist >= DOMAIN_INTEL_PERSIST_INTERVAL && domainIntelCache) {
+    usefulnessUpdatesSincePersist = 0;
+    persistDomainIntelState().catch(() => { /* non-critical */ });
+  }
 }
 
 // ─── Dynamic Authority (Bayesian smoothing) ─────────────────────────

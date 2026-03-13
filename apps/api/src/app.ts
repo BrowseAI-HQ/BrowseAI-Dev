@@ -10,7 +10,7 @@ import { registerWaitlistRoutes } from "./routes/waitlist.js";
 import { registerAdminRoutes } from "./routes/admin.js";
 import { registerSessionRoutes } from "./routes/session.js";
 import { createSupabaseSessionStore, createNoopSessionStore } from "./services/session.js";
-import { initDomainAuthority } from "./lib/verify.js";
+import { initDomainAuthority, loadDomainIntelState, setDomainIntelCache } from "./lib/verify.js";
 import { loadLearningState, setLearningCache } from "./lib/learning.js";
 
 export async function buildApp() {
@@ -54,6 +54,13 @@ export async function buildApp() {
   const learningTypes = await loadLearningState(cache);
   if (learningTypes > 0) {
     console.log(`Restored learning state for ${learningTypes} query types`);
+  }
+
+  // Restore domain intelligence (co-citation + usefulness) from Redis
+  setDomainIntelCache(cache);
+  const { coCitationCount, usefulnessCount } = await loadDomainIntelState(cache);
+  if (coCitationCount > 0 || usefulnessCount > 0) {
+    console.log(`Restored domain intelligence: ${coCitationCount} co-citation, ${usefulnessCount} usefulness scores`);
   }
 
   const sessionStore =

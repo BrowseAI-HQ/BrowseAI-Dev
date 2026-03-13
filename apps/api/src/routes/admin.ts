@@ -8,6 +8,7 @@ import {
   setCoCitationGraph,
   computeUsefulnessScores,
   setUsefulnessScores,
+  persistDomainIntelState,
 } from "../lib/verify.js";
 import { getLearningStats, exportLearningState } from "../lib/learning.js";
 
@@ -122,6 +123,9 @@ export function registerAdminRoutes(
       }))
     );
     setUsefulnessScores(usefulnessScores);
+
+    // Persist co-citation + usefulness to Redis
+    await persistDomainIntelState();
 
     // Persist dynamic authority to DB
     const dbEntries = dynamicStats.map(d => ({
