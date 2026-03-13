@@ -1,6 +1,6 @@
 # BrowseAI Dev — Full Documentation
 
-> Reliable research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores.
+> Research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores.
 
 ## What Is BrowseAI Dev?
 
