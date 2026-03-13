@@ -55,3 +55,6 @@ packages/python-sdk/browseai/__pycache__/
 .env*.local
 scripts/benchmark-results.json
 scripts/seed-benchmark.ts
+
+# Swag designs (local only)
+swag-designs/

@@ -130,11 +130,18 @@ function bm25BestSentence(
 }
 
 /**
- * Hybrid verification: tries exact substring match first (fast path),
- * then falls back to BM25 sentence matching (more robust for paraphrases).
+ * Hybrid verification: tries exact substring → BM25 → Jaccard token overlap.
+ *
+ * BM25 alone fails on LLM-paraphrased claims because it's purely lexical.
+ * When the LLM says "RAG reduces hallucinations" but the source says
+ * "prevents fabricated answers", BM25 scores near zero despite identical meaning.
+ *
+ * The Jaccard fallback catches these cases: paraphrased claims still share
+ * many content words (e.g., "RAG", "LLM", "accuracy", "retrieval") even when
+ * exact phrasing differs. We use the best sentence's Jaccard overlap as a
+ * secondary signal when BM25 is inconclusive.
  *
  * @param bm25Threshold - Adaptive threshold for BM25 match (default 0.35).
- *   Self-learning engine adjusts this per query type based on observed verification rates.
  */
 function verifyTextInSource(
   claimText: string,
@@ -149,8 +156,40 @@ function verifyTextInSource(
   }
 
   // BM25 sentence-level matching
-  const { score, sentence } = bm25BestSentence(claimText, sourceText);
-  return { score, matchedSentence: score >= bm25Threshold ? sentence : null };
+  const { score: bm25Score, sentence: bm25Sentence } = bm25BestSentence(claimText, sourceText);
+
+  // If BM25 is confident, use it directly
+  if (bm25Score >= bm25Threshold) {
+    return { score: bm25Score, matchedSentence: bm25Sentence };
+  }
+
+  // Jaccard fallback: when BM25 fails (common with LLM paraphrasing),
+  // check token overlap with the best-matching sentences.
+  // This catches claims that share topic words but use different phrasing.
+  const sentences = splitSentences(sourceText);
+  let bestJaccard = 0;
+  let bestJaccardSentence: string | null = null;
+
+  for (const sent of sentences) {
+    const overlap = tokenOverlap(claimText, sent);
+    if (overlap > bestJaccard) {
+      bestJaccard = overlap;
+      bestJaccardSentence = sent;
+    }
+  }
+
+  // Combine BM25 and Jaccard: BM25 is more precise, Jaccard catches paraphrases
+  // Weight: 60% BM25 + 40% Jaccard when BM25 is low
+  const combinedScore = bm25Score >= 0.1
+    ? bm25Score * 0.6 + bestJaccard * 0.4
+    : bestJaccard * 0.7; // Pure Jaccard when BM25 found nothing
+
+  const threshold = bm25Threshold * 0.7; // Lower threshold for hybrid score
+  const matchedSentence = combinedScore >= threshold
+    ? (bm25Sentence || bestJaccardSentence)
+    : null;
+
+  return { score: combinedScore, matchedSentence };
 }
 
 // ─── Domain Authority ───────────────────────────────────────────────
@@ -694,10 +733,11 @@ function computeConsensus(
   }
 
   // Check claim against ALL available page texts (cross-source verification)
+  // Uses the hybrid BM25+Jaccard matcher so paraphrased claims still get consensus credit
   for (const [url, pageText] of pageContents) {
     if (!pageText) continue;
-    const { score } = verifyTextInSource(claimText, pageText);
-    if (score >= consensusThreshold) {
+    const { score } = verifyTextInSource(claimText, pageText, consensusThreshold);
+    if (score >= consensusThreshold * 0.7) { // Slightly relaxed for consensus (multi-source agreement is itself a signal)
       let domain = urlToDomain.get(url);
       if (!domain) {
         try { domain = new URL(url).hostname; } catch { continue; }
