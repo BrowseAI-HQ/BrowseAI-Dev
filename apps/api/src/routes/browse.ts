@@ -57,7 +57,7 @@ async function getRequestEnv(
   cache: CacheService
 ): Promise<{ env: Env; isOwnKeys: boolean; userId: string | null }> {
   // Try to get userId from JWT (for logged-in web users)
-  let userId = getUserIdFromRequest(request);
+  let userId = await getUserIdFromRequest(request);
 
   // Priority 1: BYOK headers
   const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
@@ -79,7 +79,7 @@ async function getRequestEnv(
   if (apiKeyService) {
     const browseKey = extractBrowseApiKey(request);
     if (browseKey) {
-      const cacheKey = `bai_resolve:${browseKey.slice(0, 12)}`;
+      const cacheKey = `bai_resolve:${Buffer.from(browseKey).toString("base64url").slice(0, 32)}`;
       const cached = await cache.get(cacheKey);
 
       let resolved: { userId: string; tavilyKey: string; openrouterKey: string } | null;
@@ -223,7 +223,22 @@ export function registerBrowseRoutes(
         parsed.data.limit
       );
       const client = detectClient(request);
-      if (userId) store.save(parsed.data.query, { answer: "", claims: [], sources: [], confidence: 0, trace: [] }, userId, "search", { client });
+      // Save actual search results so history items aren't blank
+      if (userId) {
+        const browseResult = {
+          answer: "",
+          claims: [],
+          sources: result.results.map((r: any) => ({
+            url: r.url,
+            title: r.title,
+            domain: new URL(r.url).hostname.replace(/^www\./, ""),
+            quote: r.content?.slice(0, 300) || "",
+          })),
+          confidence: 0,
+          trace: [],
+        };
+        store.save(parsed.data.query, browseResult, userId, "search", { client });
+      }
       return { success: true, result };
     } catch (e: any) {
       request.log.error(e);
@@ -448,7 +463,7 @@ export function registerBrowseRoutes(
 
   // User stats (auth required)
   app.get("/user/stats", async (request, reply) => {
-    const userId = getUserIdFromRequest(request);
+    const userId = await getUserIdFromRequest(request);
     if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
     const stats = await store.getUserStats(userId);
     return { success: true, result: stats };
@@ -456,7 +471,7 @@ export function registerBrowseRoutes(
 
   // User query history (auth required)
   app.get("/user/history", async (request, reply) => {
-    const userId = getUserIdFromRequest(request);
+    const userId = await getUserIdFromRequest(request);
     if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
     const history = await store.getUserHistory(userId);
     return { success: true, result: history };
@@ -471,7 +486,7 @@ export function registerBrowseRoutes(
 
   // Analytics summary (auth required)
   app.get("/browse/analytics/summary", async (request, reply) => {
-    const userId = getUserIdFromRequest(request);
+    const userId = await getUserIdFromRequest(request);
     if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
     const summary = await store.getAnalyticsSummary();
     return { success: true, result: summary };

@@ -20,7 +20,7 @@ async function getRequestEnv(
   apiKeyService: ApiKeyService | null,
   cache: CacheService
 ): Promise<{ env: Env; userId: string | null }> {
-  let userId = getUserIdFromRequest(request);
+  let userId = await getUserIdFromRequest(request);
 
   const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
   const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
@@ -40,7 +40,7 @@ async function getRequestEnv(
     const xApiKey = request.headers["x-api-key"] as string | undefined;
     const browseKey = xApiKey?.startsWith("bai_") ? xApiKey : null;
     if (browseKey) {
-      const cacheKey = `bai_resolve:${browseKey.slice(0, 12)}`;
+      const cacheKey = `bai_resolve:${Buffer.from(browseKey).toString("base64url").slice(0, 32)}`;
       const cached = await cache.get(cacheKey);
       const resolved = cached ? JSON.parse(cached) : await apiKeyService.resolve(browseKey);
       if (resolved && !cached) await cache.set(cacheKey, JSON.stringify(resolved), 60);

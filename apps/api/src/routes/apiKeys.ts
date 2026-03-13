@@ -2,8 +2,8 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import type { ApiKeyService } from "../services/apiKeys.js";
 
-function requireAuth(request: FastifyRequest): string {
-  const userId = getUserIdFromRequest(request);
+async function requireAuth(request: FastifyRequest): Promise<string> {
+  const userId = await getUserIdFromRequest(request);
   if (!userId) {
     throw { statusCode: 401, message: "Authentication required" };
   }
@@ -15,7 +15,7 @@ export function registerApiKeyRoutes(
   apiKeyService: ApiKeyService
 ) {
   app.post("/api-keys", async (request, reply) => {
-    const userId = requireAuth(request);
+    const userId = await requireAuth(request);
 
     const body = request.body as {
       tavily_key?: string;
@@ -51,7 +51,7 @@ export function registerApiKeyRoutes(
   });
 
   app.get("/api-keys", async (request, reply) => {
-    const userId = requireAuth(request);
+    const userId = await requireAuth(request);
 
     try {
       const keys = await apiKeyService.list(userId);
@@ -63,7 +63,7 @@ export function registerApiKeyRoutes(
   });
 
   app.delete("/api-keys/:id", async (request, reply) => {
-    const userId = requireAuth(request);
+    const userId = await requireAuth(request);
     const { id } = request.params as { id: string };
 
     try {
