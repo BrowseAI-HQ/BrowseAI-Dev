@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
-  Shield, Globe, Copy, Check, Code2, ChevronDown, ChevronUp,
-  GitCompare, ExternalLink,
+  Globe, Copy, Check, Code2, ChevronDown, ChevronUp, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,63 +39,6 @@ const EXAMPLES: Record<string, string[]> = {
     "Should AI development be paused?",
   ],
 };
-
-// ── Agent use-case snippets ─────────────────────────────────────────
-
-const AGENT_SNIPPETS = [
-  {
-    title: "Research Agent",
-    desc: "Multi-step research with persistent memory",
-    code: `from browseai import BrowseAI
-
-client = BrowseAI()
-
-# Create a research session
-session = client.create_session(topic="AI Safety")
-
-# Ask multiple questions — each builds on prior knowledge
-r1 = session.ask("What is RLHF?")
-r2 = session.ask("How does constitutional AI differ?")
-r3 = session.ask("What are the open problems?")
-
-# Export accumulated knowledge
-knowledge = session.knowledge()
-print(f"{len(knowledge.claims)} verified claims across {len(knowledge.sources)} sources")`,
-  },
-  {
-    title: "Fact-Checker Agent",
-    desc: "Verify claims and detect contradictions",
-    code: `result = client.answer(
-  "Is organic food healthier than conventional?",
-  depth="thorough"
-)
-
-print(f"Confidence: {result.confidence:.0%}")
-
-for claim in result.claims:
-  status = "Verified" if claim.verified else "Unverified"
-  print(f"  [{status}] {claim.claim}")
-  print(f"    Consensus: {claim.consensus_level} ({claim.consensus_count} sources)")
-
-if result.contradictions:
-  print(f"\\nContradictions found:")
-  for c in result.contradictions:
-    print(f"  {c.claim_a} vs {c.claim_b}")`,
-  },
-  {
-    title: "Competitive Analysis",
-    desc: "Compare raw LLM vs evidence-backed answers",
-    code: `comparison = client.compare("How does React compare to Vue.js?")
-
-print(f"Raw LLM: {comparison.raw_llm.sources} sources, no confidence")
-print(f"Evidence-backed: {comparison.evidence_backed.sources} sources, "
-      f"{comparison.evidence_backed.confidence:.0%} confidence")
-
-# Evidence-backed answer includes verified claims
-for claim in comparison.evidence_backed.claim_details:
-  print(f"  [{claim.consensus_level}] {claim.claim}")`,
-  },
-];
 
 // ── Confidence color helper ─────────────────────────────────────────
 
@@ -450,69 +392,9 @@ const Playground = () => {
           </div>
         )}
 
-        {/* ── Agent Use Cases (shown when no response) ── */}
-        {!response && !loading && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-6 pt-4">
-            <div className="text-center space-y-2">
-              <h2 className="text-lg font-semibold">How Agents Use BrowseAI</h2>
-              <p className="text-sm text-muted-foreground">Copy these patterns into your agent code</p>
-            </div>
-
-            <div className="grid gap-4">
-              {AGENT_SNIPPETS.map((snippet) => (
-                <AgentSnippet key={snippet.title} {...snippet} />
-              ))}
-            </div>
-          </motion.div>
-        )}
       </div>
     </div>
   );
 };
-
-// ── Agent snippet component ─────────────────────────────────────────
-
-function AgentSnippet({ title, desc, code }: { title: string; desc: string; code: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="rounded-xl bg-card border border-border overflow-hidden">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <Code2 className="w-4 h-4 text-accent" />
-          <div className="text-left">
-            <span className="text-sm font-medium">{title}</span>
-            <span className="text-xs text-muted-foreground ml-2">{desc}</span>
-          </div>
-        </div>
-        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-      </button>
-
-      {expanded && (
-        <div className="relative border-t border-border">
-          <button
-            onClick={copyCode}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10"
-          >
-            {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-          </button>
-          <pre className="p-4 overflow-x-auto text-xs font-mono text-secondary-foreground leading-relaxed">
-            {code}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default Playground;
