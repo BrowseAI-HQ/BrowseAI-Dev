@@ -22,7 +22,20 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
 User-agent: *
 Allow: /
 
 Sitemap: https://browseai.dev/sitemap.xml
+
+# AI-readable documentation
+# llms.txt: https://browseai.dev/llms.txt
+# llms-full.txt: https://browseai.dev/llms-full.txt
