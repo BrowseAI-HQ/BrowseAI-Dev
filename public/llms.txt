@@ -1,0 +1,42 @@
+# BrowseAI Dev
+
+> Reliable research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores.
+
+BrowseAI Dev gives AI agents structured, verifiable web research. Unlike chat-based search engines, it returns JSON with extracted claims, cited sources, confidence scores, and contradiction detection — designed for programmatic evaluation by agents.
+
+## Available As
+- MCP Server: `npx browse-ai` (12 tools)
+- REST API: `https://browseai.dev/api/browse/*`
+- Python SDK: `pip install browseai`
+
+## Key Capabilities
+- **Search**: Web search returning ranked results
+- **Answer**: Full pipeline — search, fetch, extract claims, verify, cite, score confidence
+- **Extract**: Structured claim extraction from any URL
+- **Compare**: Side-by-side raw LLM vs evidence-backed answer
+- **Research Sessions**: Persistent multi-query sessions with knowledge accumulation
+- **Feedback**: Submit result feedback to improve future accuracy
+
+## Verification Pipeline
+1. Web search (Tavily API)
+2. Page fetch and parse
+3. Claim extraction (Gemini 2.5 Flash)
+4. BM25 sentence-level verification
+5. Cross-source consensus detection
+6. Contradiction detection
+7. Domain authority scoring (10,000+ domains, Bayesian dynamic blending)
+8. 7-factor evidence-based confidence score
+
+## Confidence Score
+Not LLM self-assessed. Computed from: source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score. Contradiction penalty applied.
+
+## Links
+- Website: https://browseai.dev
+- Docs: https://browseai.dev/docs
+- GitHub: https://github.com/BrowseAI-HQ/BrowserAI-Dev
+- npm: https://www.npmjs.com/package/browse-ai
+- PyPI: https://pypi.org/project/browseai/
+- Discord: https://discord.gg/ubAuT4YQsT
+
+## Optional
+- [Full documentation](https://browseai.dev/llms-full.txt)
