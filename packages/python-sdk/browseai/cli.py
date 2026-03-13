@@ -16,9 +16,9 @@ def cmd_setup(args: argparse.Namespace) -> None:
     print()
     print("  browseai setup")
     print("  ==============")
-    print("  Configure the BrowseAI Python SDK\n")
+    print("  Configure the BrowseAI Dev Python SDK\n")
 
-    api_key = input("  BrowseAI API key (leave blank to use your own keys): ").strip()
+    api_key = input("  BrowseAI Dev API key (leave blank to use your own keys):").strip()
 
     config: dict[str, str] = {}
 

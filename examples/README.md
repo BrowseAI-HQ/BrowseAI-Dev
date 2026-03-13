@@ -1,6 +1,6 @@
-# BrowseAI Examples
+# BrowseAI Dev Examples
 
-Agent recipes showing how to use BrowseAI as the research layer for AI agents.
+Agent recipes showing how to use BrowseAI Dev as the research layer for AI agents.
 
 ## Quick Start
 
@@ -15,8 +15,8 @@ pip install browseai
 | [research-agent.py](research-agent.py) | Simple research agent with citations and confidence scores |
 | [code-research-agent.py](code-research-agent.py) | Agent that researches libraries and docs before writing code |
 | [hallucination-detector.py](hallucination-detector.py) | Compare raw LLM answers vs evidence-backed answers |
-| [langchain-agent.py](langchain-agent.py) | Drop BrowseAI into a LangChain agent pipeline |
-| [crewai-research-team.py](crewai-research-team.py) | Multi-agent research team with CrewAI + BrowseAI |
+| [langchain-agent.py](langchain-agent.py) | Drop BrowseAI Dev into a LangChain agent pipeline |
+| [crewai-research-team.py](crewai-research-team.py) | Multi-agent research team with CrewAI + BrowseAI Dev |
 
 ## How it works
 

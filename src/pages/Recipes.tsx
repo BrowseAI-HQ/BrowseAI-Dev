@@ -294,7 +294,7 @@ const Recipes = () => {
             <div className="mt-6 space-y-3">
               <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
                 <p className="text-sm text-muted-foreground">
-                  <span className="text-foreground font-medium">Option 1 — BrowseAI API key:</span>{" "}
+                  <span className="text-foreground font-medium">Option 1 — BrowseAI Dev API key:</span>{" "}
                   Log in at <a href="https://browseai.dev" className="text-accent hover:underline">browseai.dev</a>, get a <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">bai_xxx</code> key,
                   and use it everywhere. One key, all tools, no setup.
                 </p>
@@ -302,7 +302,7 @@ const Recipes = () => {
               <div className="p-4 rounded-xl bg-card border border-border">
                 <p className="text-sm text-muted-foreground">
                   <span className="text-foreground font-medium">Option 2 — Bring Your Own Keys:</span>{" "}
-                  Pass your Tavily and OpenRouter keys directly. No BrowseAI account needed.
+                  Pass your Tavily and OpenRouter keys directly. No BrowseAI Dev account needed.
                 </p>
               </div>
             </div>

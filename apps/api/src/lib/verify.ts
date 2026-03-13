@@ -472,7 +472,7 @@ export interface RerankableResult {
 }
 
 /**
- * Rerank search results using BrowseAI's domain intelligence.
+ * Rerank search results using BrowseAI Dev's domain intelligence.
  *
  * Combines:
  * - Original search score (from Tavily/Brave) — 40%

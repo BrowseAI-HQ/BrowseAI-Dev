@@ -74,7 +74,7 @@ Events: `trace` (progress), `sources` (discovered early), `result` (final answer
 
 Persistent research sessions that accumulate knowledge across multiple queries. Later queries recall prior knowledge — faster, cheaper, more coherent.
 
-> **Sessions require a BrowseAI API key** (`api_key="bai_xxx"`) for identity and ownership. BYOK clients (`tavily_key`/`openrouter_key` only) can use search/answer but cannot create or access sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
+> **Sessions require a BrowseAI Dev API key** (`api_key="bai_xxx"`) for identity and ownership. BYOK clients (`tavily_key`/`openrouter_key` only) can use search/answer but cannot create or access sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ```python
 from browseai import BrowseAI

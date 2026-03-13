@@ -49,7 +49,7 @@ const Terms = () => {
             <h2 className="text-lg font-semibold">4. API Keys & Usage</h2>
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
               <li>You may use your own API keys (BYOK) for unlimited access at no cost.</li>
-              <li>BrowseAI API keys (bai_xxx) are personal and should not be shared publicly.</li>
+              <li>BrowseAI Dev API keys (bai_xxx) are personal and should not be shared publicly.</li>
               <li>Demo access is limited to 5 queries per hour per IP address.</li>
               <li>We reserve the right to revoke API keys that are abused or used in violation of these terms.</li>
             </ul>

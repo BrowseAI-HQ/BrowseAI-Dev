@@ -152,7 +152,7 @@ export function ApiKeySettings() {
                 >
                   Save to your account
                 </button>{" "}
-                and get a single BrowseAI API key.
+                and get a single BrowseAI Dev API key.
               </p>
             </div>
           )}

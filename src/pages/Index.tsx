@@ -667,7 +667,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
   -H "X-OpenRouter-Key: sk-or-xxx" \\
   -d '{"query": "What causes aurora borealis?"}'
 
-# Or with a BrowseAI API key
+# Or with a BrowseAI Dev API key
 curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: bai_your_key" \\
@@ -823,7 +823,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               <ul className="space-y-2.5 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Research Sessions — persistent memory across queries</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI API key (one key for everything)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI Dev API key (one key for everything)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Usage analytics</li>
               </ul>

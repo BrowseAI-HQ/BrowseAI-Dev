@@ -35,7 +35,7 @@ async function getRequestEnv(
     };
   }
 
-  // BrowseAI API key resolution
+  // BrowseAI Dev API key resolution
   if (apiKeyService) {
     const xApiKey = request.headers["x-api-key"] as string | undefined;
     const browseKey = xApiKey?.startsWith("bai_") ? xApiKey : null;
@@ -51,7 +51,7 @@ async function getRequestEnv(
           userId,
         };
       }
-      throw { statusCode: 401, message: "Invalid BrowseAI API key." };
+      throw { statusCode: 401, message: "Invalid BrowseAI Dev API key." };
     }
   }
 

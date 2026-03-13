@@ -39,7 +39,7 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
 
   const res = await fetchWithRetry(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; BrowseAI/1.0)",
+      "User-Agent": "Mozilla/5.0 (compatible; BrowseAI-Dev/1.0)",
       Accept: "text/html,application/xhtml+xml",
     },
     signal: AbortSignal.timeout(10000),

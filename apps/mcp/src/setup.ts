@@ -38,7 +38,7 @@ export async function runSetup() {
 `);
 
   const browseKey = await ask(
-    "  BrowseAI API key (leave blank to use your own Tavily + OpenRouter keys): "
+    "  BrowseAI Dev API key (leave blank to use your own Tavily + OpenRouter keys):"
   );
 
   let mcpEnv: Record<string, string>;

@@ -339,7 +339,7 @@ const Developers = () => {
             </div>
             <div className="space-y-6 text-muted-foreground leading-relaxed">
               <p className="text-lg">
-                I built BrowseAI because I was tired of AI making things up.
+                I built BrowseAI Dev because I was tired of AI making things up.
               </p>
               <p>
                 As a developer using AI assistants daily, I kept running into the same problem: the AI would confidently
@@ -360,10 +360,10 @@ const Developers = () => {
                 is real or hallucinated, you end up manually verifying everything anyway. That defeats the purpose.
               </p>
               <p>
-                BrowseAI takes a different approach: <span className="text-foreground font-medium">every answer goes through a verification pipeline</span>.
+                BrowseAI Dev takes a different approach: <span className="text-foreground font-medium">every answer goes through a verification pipeline</span>.
                 It searches the real web, fetches real pages, extracts real quotes, and links every claim back to its source.
                 If it can't find evidence, it says so. Now when I tell my AI agents to research something,
-                they can use BrowseAI to actually verify their findings against real sources before writing a single line of code.
+                they can use BrowseAI Dev to actually verify their findings against real sources before writing a single line of code.
               </p>
               <p>
                 This is open source because research infrastructure for AI shouldn't be owned by one company.

@@ -63,7 +63,7 @@ const Privacy = () => {
             <h2 className="text-lg font-semibold">How We Use Your Information</h2>
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
               <li>To provide and maintain the BrowseAI Dev service</li>
-              <li>To generate and manage your BrowseAI API keys</li>
+              <li>To generate and manage your BrowseAI Dev API keys</li>
               <li>To cache search results and improve response times</li>
               <li>To display your query history and usage statistics</li>
               <li>To improve the product based on aggregate usage patterns</li>

@@ -1,5 +1,5 @@
 """
-Hallucination Detector — BrowseAI Example
+Hallucination Detector — BrowseAI Dev Example
 
 Compare what a raw LLM says vs what evidence-backed research says.
 See the difference between hallucinated answers and verified ones.

@@ -220,7 +220,7 @@ curl -X POST https://browseai.dev/api/browse/answer \
   -H "X-OpenRouter-Key: sk-or-xxx" \
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'
 
-# With a BrowseAI API key
+# With a BrowseAI Dev API key
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer bai_xxx" \
@@ -245,10 +245,10 @@ Three ways to authenticate:
 | Method | How | Limits |
 |--------|-----|--------|
 | **BYOK** (recommended) | Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers | Unlimited, free (search/answer only — no sessions) |
-| **BrowseAI API Key** | Pass `Authorization: Bearer bai_xxx` | Unlimited + sessions, sharing, forking |
+| **BrowseAI Dev API Key** | Pass `Authorization: Bearer bai_xxx` | Unlimited + sessions, sharing, forking |
 | **Demo** | No auth needed | 5 queries/hour per IP |
 
-Get a BrowseAI API key from the [dashboard](https://browseai.dev/dashboard) — it bundles your Tavily + OpenRouter keys into one key for CLI, MCP, and API use.
+Get a BrowseAI Dev API key from the [dashboard](https://browseai.dev/dashboard) — it bundles your Tavily + OpenRouter keys into one key for CLI, MCP, and API use.
 
 ## Project Structure
 
@@ -338,7 +338,7 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 | [research-agent.py](examples/research-agent.py) | Simple research agent with citations |
 | [code-research-agent.py](examples/code-research-agent.py) | Research libraries/docs before writing code |
 | [hallucination-detector.py](examples/hallucination-detector.py) | Compare raw LLM vs evidence-backed answers |
-| [langchain-agent.py](examples/langchain-agent.py) | BrowseAI as a LangChain tool |
+| [langchain-agent.py](examples/langchain-agent.py) | BrowseAI Dev as a LangChain tool |
 | [crewai-research-team.py](examples/crewai-research-team.py) | Multi-agent research team with CrewAI |
 | [research-session.py](examples/research-session.py) | Research sessions with persistent memory |
 

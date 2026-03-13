@@ -285,7 +285,7 @@ Then: "How is entanglement used in computing?" — prior findings are recalled a
             <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
               <h4 className="text-sm font-semibold text-foreground mb-1">API key required</h4>
               <p className="text-xs">
-                Sessions require a BrowseAI API key (<code className="bg-secondary px-1 rounded">bai_xxx</code>) for identity and ownership.
+                Sessions require a BrowseAI Dev API key (<code className="bg-secondary px-1 rounded">bai_xxx</code>) for identity and ownership.
                 BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions.
                 Get a free key at <a href="https://browseai.dev/dashboard" className="text-accent hover:underline">browseai.dev/dashboard</a>.
                 For MCP, set <code className="bg-secondary px-1 rounded">BROWSE_API_KEY</code> env var.
@@ -602,7 +602,7 @@ knowledge = session.knowledge()`}</CodeBlock>
                   <tr><td className="py-2 pr-4">Accuracy over time</td><td className="py-2 pr-4 text-accent">Gets smarter with every query</td><td className="py-2">Same accuracy forever</td></tr>
                   <tr><td className="py-2 pr-4">Updates</td><td className="py-2 pr-4 text-accent">Automatic — new algorithms, domains, features</td><td className="py-2">Manual git pull</td></tr>
                   <tr><td className="py-2 pr-4">Infrastructure</td><td className="py-2 pr-4 text-accent">Zero ops — we handle scaling, uptime, monitoring</td><td className="py-2">You manage everything</td></tr>
-                  <tr><td className="py-2 pr-4">API key management</td><td className="py-2 pr-4 text-accent">One BrowseAI key bundles all services</td><td className="py-2">Manage Tavily + OpenRouter keys yourself</td></tr>
+                  <tr><td className="py-2 pr-4">API key management</td><td className="py-2 pr-4 text-accent">One BrowseAI Dev key bundles all services</td><td className="py-2">Manage Tavily + OpenRouter keys yourself</td></tr>
                   <tr><td className="py-2 pr-4">Pro features (coming)</td><td className="py-2 pr-4 text-accent">Multi-model verification, priority queue, 15+ sources</td><td className="py-2">Not available</td></tr>
                 </tbody>
               </table>
@@ -628,7 +628,7 @@ knowledge = session.knowledge()`}</CodeBlock>
           {/* Query Tips */}
           <Section id="query-tips" title="Query Tips" icon={Search}>
             <p>
-              BrowseAI classifies queries into types and optimizes each differently.
+              BrowseAI Dev classifies queries into types and optimizes each differently.
               Here's how to get the best results for each type:
             </p>
 
@@ -691,7 +691,7 @@ knowledge = session.knowledge()`}</CodeBlock>
               },
               {
                 type: "Opinion / Nuanced",
-                desc: "Topics with multiple valid perspectives. BrowseAI searches more sources and highlights contradictions.",
+                desc: "Topics with multiple valid perspectives. BrowseAI Dev searches more sources and highlights contradictions.",
                 good: [
                   "Is nuclear energy safe and should it be expanded to fight climate change?",
                   "What are the arguments for and against universal basic income?",
@@ -701,7 +701,7 @@ knowledge = session.knowledge()`}</CodeBlock>
                   "Is nuclear good?",
                   "UBI opinions",
                 ],
-                tip: "Frame as a balanced question. BrowseAI will surface contradictions and multiple viewpoints automatically.",
+                tip: "Frame as a balanced question. BrowseAI Dev will surface contradictions and multiple viewpoints automatically.",
               },
             ].map((item) => (
               <div key={item.type} className="p-4 rounded-xl bg-card border border-border space-y-3">
@@ -772,7 +772,7 @@ knowledge = session.knowledge()`}</CodeBlock>
                 a: "Sessions give your agents persistent memory across multiple research queries. Create a session, ask questions within it, and each query automatically stores verified claims. Follow-up queries recall prior findings before searching, building deeper understanding over time. Vague follow-ups like 'How does this work?' are automatically contextualized using the session's accumulated knowledge.",
               },
               {
-                q: "What LLM does BrowseAI use?",
+                q: "What LLM does BrowseAI Dev use?",
                 a: "Google Gemini 2.5 Flash via OpenRouter. The model extracts claims and generates answers. All verification (BM25, consensus, domain authority, contradictions) happens in code — not in the LLM.",
               },
             ].map((item) => (

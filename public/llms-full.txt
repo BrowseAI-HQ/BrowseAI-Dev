@@ -231,7 +231,7 @@ result = await async_client.answer("query")
 
 Three options:
 1. **BYOK (Bring Your Own Keys)**: Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers — unlimited usage
-2. **BrowseAI API Key**: Get a `bai_xxx` key from the dashboard — usage tracked per key
+2. **BrowseAI Dev API Key**: Get a `bai_xxx` key from the dashboard — usage tracked per key
 3. **Demo mode**: No auth needed — 5 queries/hour per IP
 
 ## Self-Hosting

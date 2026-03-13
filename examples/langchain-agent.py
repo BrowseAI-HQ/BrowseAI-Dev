@@ -1,7 +1,7 @@
 """
-LangChain Research Agent — BrowseAI Example
+LangChain Research Agent — BrowseAI Dev Example
 
-Drop BrowseAI into a LangChain agent as a research tool.
+Drop BrowseAI Dev into a LangChain agent as a research tool.
 The agent gets evidence-backed web research capabilities.
 
 Usage:
@@ -18,7 +18,7 @@ from browseai.integrations.langchain import (
     BrowseAIExtractTool,
 )
 
-# BrowseAI tools — agent gets evidence-backed research
+# BrowseAI Dev tools — agent gets evidence-backed research
 tools = [
     BrowseAISearchTool(api_key="bai_xxx"),     # Web search
     BrowseAIAskTool(api_key="bai_xxx"),         # Full research pipeline

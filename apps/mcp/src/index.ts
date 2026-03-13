@@ -55,7 +55,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_session_knowledge  Export all knowledge from a session
 
   Quick Setup:
-    Option A: Use a BrowseAI API key (one key for everything)
+    Option A: Use a BrowseAI Dev API key (one key for everything)
       1. Sign in at https://browseai.dev and generate an API key
       2. Run: npx browse-ai setup
       3. Restart Claude Desktop
@@ -109,7 +109,7 @@ function getEnvKeys() {
   ${!OPENROUTER_API_KEY ? "  OPENROUTER_API_KEY - Get one at https://openrouter.ai" : "  OPENROUTER_API_KEY - Set"}
 
   Quick fix: run 'npx browse-ai setup' to configure automatically.
-  Or use a BrowseAI API key: BROWSE_API_KEY=bai_xxx npx browse-ai
+  Or use a BrowseAI Dev API key: BROWSE_API_KEY=bai_xxx npx browse-ai
 `);
     process.exit(1);
   }
@@ -167,7 +167,7 @@ async function fetchPage(url: string) {
 
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; BrowseAI/1.0)",
+      "User-Agent": "Mozilla/5.0 (compatible; BrowseAI-Dev/1.0)",
       Accept: "text/html,application/xhtml+xml",
     },
     signal: AbortSignal.timeout(10000),
@@ -484,7 +484,7 @@ function registerTools(server: McpServer) {
     { name: z.string().describe("Name for the session (e.g. 'wasm-research', 'react-comparison')") },
     async ({ name }) => {
       if (!API_MODE) {
-        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key. Set BROWSE_API_KEY to use sessions." }] };
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI Dev API key. Set BROWSE_API_KEY to use sessions." }] };
       }
       const result = await apiCall("/session", { name });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
@@ -501,7 +501,7 @@ function registerTools(server: McpServer) {
     },
     async ({ session_id, query, depth }) => {
       if (!API_MODE) {
-        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI Dev API key." }] };
       }
       const result = await apiCall(`/session/${session_id}/ask`, { query, depth: depth || "fast" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
@@ -518,7 +518,7 @@ function registerTools(server: McpServer) {
     },
     async ({ session_id, query, limit }) => {
       if (!API_MODE) {
-        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI Dev API key." }] };
       }
       const result = await apiCall(`/session/${session_id}/recall`, { query, limit: limit ?? 10 });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
@@ -533,7 +533,7 @@ function registerTools(server: McpServer) {
     },
     async ({ session_id }) => {
       if (!API_MODE) {
-        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI Dev API key." }] };
       }
       const result = await apiCall(`/session/${session_id}/share`, {});
       const shareUrl = `https://browseai.dev/session/share/${result.shareId}`;
@@ -555,7 +555,7 @@ function registerTools(server: McpServer) {
     },
     async ({ session_id, limit }) => {
       if (!API_MODE) {
-        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI Dev API key." }] };
       }
       const res = await fetch(`${BROWSE_API_URL}/session/${session_id}/knowledge?limit=${limit ?? 50}`, {
         headers: { "X-API-Key": BROWSE_API_KEY! },
@@ -574,7 +574,7 @@ function registerTools(server: McpServer) {
     },
     async ({ share_id }) => {
       if (!API_MODE) {
-        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI API key." }] };
+        return { content: [{ type: "text", text: "Research Memory requires a BrowseAI Dev API key." }] };
       }
       const result = await apiCall(`/session/share/${share_id}/fork`, {});
       return {

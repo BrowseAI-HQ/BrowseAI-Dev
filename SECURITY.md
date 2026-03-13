@@ -41,5 +41,5 @@ Instead, please email security concerns or report via [GitHub Security Advisorie
 When using BYOK mode, your Tavily and OpenRouter keys are:
 - Sent via request headers (`X-Tavily-Key`, `X-OpenRouter-Key`)
 - Used only for that single request
-- Never stored on BrowseAI servers
-- If stored via BrowseAI API key, encrypted with AES-256-GCM before storage
+- Never stored on BrowseAI Dev servers
+- If stored via BrowseAI Dev API key, encrypted with AES-256-GCM before storage

@@ -1,7 +1,7 @@
 """
-CrewAI Research Team — BrowseAI Example
+CrewAI Research Team — BrowseAI Dev Example
 
-A multi-agent research team using CrewAI + BrowseAI.
+A multi-agent research team using CrewAI + BrowseAI Dev.
 One agent researches, another analyzes and summarizes.
 
 Usage:
@@ -12,7 +12,7 @@ Usage:
 from crewai import Agent, Task, Crew
 from browseai.integrations.crewai import BrowseAITool
 
-# BrowseAI as a CrewAI tool
+# BrowseAI Dev as a CrewAI tool
 browse_tool = BrowseAITool(api_key="bai_xxx")
 
 # Agent 1: Researcher — finds evidence-backed information

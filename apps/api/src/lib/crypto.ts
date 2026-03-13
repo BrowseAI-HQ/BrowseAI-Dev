@@ -4,7 +4,7 @@ const API_KEY_PREFIX = "bai_";
 const API_KEY_RANDOM_BYTES = 16; // 16 bytes = 32 hex chars
 
 /**
- * Generate a new BrowseAI API key: bai_ + 32 random hex chars.
+ * Generate a new BrowseAI Dev API key: bai_ + 32 random hex chars.
  * Returns the plaintext (shown once), SHA-256 hash (stored), and prefix (for display).
  */
 export function generateApiKey(): { plaintext: string; hash: string; prefix: string } {

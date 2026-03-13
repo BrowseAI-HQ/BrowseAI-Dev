@@ -47,7 +47,7 @@ function extractBrowseApiKey(request: FastifyRequest): string | null {
 /**
  * Resolve request environment. Priority:
  * 1. BYOK headers (X-Tavily-Key, X-OpenRouter-Key)
- * 2. BrowseAI API key (bai_xxx) → resolve to stored keys
+ * 2. BrowseAI Dev API key (bai_xxx) → resolve to stored keys
  * 3. Default env keys
  */
 async function getRequestEnv(
@@ -75,7 +75,7 @@ async function getRequestEnv(
     };
   }
 
-  // Priority 2: BrowseAI API key
+  // Priority 2: BrowseAI Dev API key
   if (apiKeyService) {
     const browseKey = extractBrowseApiKey(request);
     if (browseKey) {
@@ -106,7 +106,7 @@ async function getRequestEnv(
       }
 
       // Key was provided but could not be resolved — don't silently fall back
-      throw { statusCode: 401, message: "Invalid BrowseAI API key. Check your key or generate a new one in Settings." };
+      throw { statusCode: 401, message: "Invalid BrowseAI Dev API key. Check your key or generate a new one in Settings." };
     }
   }
 

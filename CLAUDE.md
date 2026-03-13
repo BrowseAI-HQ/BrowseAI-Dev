@@ -38,7 +38,7 @@ npx pnpm --filter browse-ai build  # Build MCP only
 - **Thorough mode:** `depth: "thorough"` auto-retries with rephrased query when first-pass confidence < 60%. Available across API, MCP, and Python SDK.
 - **Caching:** Upstash Redis (via Vercel KV) with smart TTL (time-sensitive queries get shorter TTL). Falls back to in-memory if KV env vars not set. Cache key includes depth param.
 - **Demo rate limit:** 5/hour per IP for unauthenticated users. BYOK headers (`X-Tavily-Key`, `X-OpenRouter-Key`) bypass it.
-- **API keys:** Users can bring their own keys via headers, or use a BrowseAI API key (`bai_xxx` prefix), or fall back to server-side keys with demo limits.
+- **API keys:** Users can bring their own keys via headers, or use a BrowseAI Dev API key (`bai_xxx` prefix), or fall back to server-side keys with demo limits.
 
 ## Environment variables
 
@@ -102,7 +102,7 @@ Every time a new feature is implemented, go through this checklist before consid
 
 ### 3. Documentation (if feature is user-facing)
 - [ ] `README.md` — Update feature list, verification pipeline description, API examples
-- [ ] `src/pages/Index.tsx` — Landing page pipeline steps, "Why BrowseAI" section, example JSON output
+- [ ] `src/pages/Index.tsx` — Landing page pipeline steps, "Why BrowseAI Dev" section, example JSON output
 - [ ] `src/pages/Developers.tsx` — Roadmap items (mark Done/update descriptions), code examples
 - [ ] `apps/mcp/README.md` — MCP tool docs if tool params changed
 - [ ] `packages/python-sdk/README.md` — Python SDK usage examples if method signatures changed
