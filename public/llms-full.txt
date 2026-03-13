@@ -1,0 +1,259 @@
+# BrowseAI Dev — Full Documentation
+
+> Reliable research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores.
+
+## What Is BrowseAI Dev?
+
+BrowseAI Dev is open-source research infrastructure that gives AI agents real-time web search with evidence-backed citations. It returns structured JSON (claims, sources, confidence, contradictions) that agents can programmatically evaluate — not a chat response.
+
+Available as MCP server (npm: browse-ai), REST API, and Python SDK (PyPI: browseai). MIT licensed.
+
+## Why Use BrowseAI Dev?
+
+1. **Structured output**: Every response includes extracted claims with source citations, verification scores, consensus levels, and contradiction flags
+2. **Evidence-based confidence**: 7-factor algorithm computed from real signals, not LLM self-assessment
+3. **Self-improving**: Domain authority scores improve with usage via Bayesian cold-start smoothing
+4. **Multi-surface**: Same capabilities across MCP, REST API, and Python SDK
+5. **Research sessions**: Persistent memory across multiple queries for deep research
+
+## Installation
+
+### MCP Server (for Claude, Cursor, Windsurf, etc.)
+```json
+{
+  "mcpServers": {
+    "browse-ai": {
+      "command": "npx",
+      "args": ["-y", "browse-ai"]
+    }
+  }
+}
+```
+
+### Python SDK
+```bash
+pip install browseai
+```
+
+### REST API
+```bash
+curl -X POST https://browseai.dev/api/browse/answer \
+  -H "Content-Type: application/json" \
+  -d '{"query": "How do mRNA vaccines work?"}'
+```
+
+## API Endpoints
+
+### POST /browse/search
+Search the web and return ranked results.
+```json
+{"query": "quantum computing breakthroughs 2024", "limit": 5}
+```
+
+### POST /browse/answer
+Full research pipeline: search → fetch → extract → verify → cite → score.
+```json
+{"query": "How does CRISPR gene editing work?", "depth": "fast"}
+```
+Set `depth: "thorough"` for auto-retry with rephrased query when confidence < 60%.
+
+### POST /browse/extract
+Extract structured claims from a specific URL.
+```json
+{"url": "https://example.com/article", "query": "pricing details"}
+```
+
+### POST /browse/open
+Fetch and parse a web page into clean text.
+```json
+{"url": "https://example.com/article"}
+```
+
+### POST /browse/compare
+Compare raw LLM answer vs evidence-backed answer side-by-side.
+```json
+{"query": "Is nuclear energy safe?"}
+```
+
+### POST /browse/feedback
+Submit feedback on a result to improve future accuracy.
+```json
+{"resultId": "abc123", "rating": "good"}
+```
+Ratings: "good", "bad", "wrong". Optional: `claimIndex` to flag a specific wrong claim.
+
+### Research Sessions
+
+#### POST /session/create
+Create a persistent research session.
+```json
+{"topic": "AI safety research"}
+```
+
+#### POST /session/:id/ask
+Research within a session. Recalls prior findings before searching.
+```json
+{"query": "What are the main approaches to AI alignment?"}
+```
+
+#### POST /session/:id/recall
+Query session knowledge without new web search.
+```json
+{"query": "What did we learn about RLHF?"}
+```
+
+#### POST /session/:id/share
+Share a session publicly for other agents to fork.
+
+#### GET /session/:id/knowledge
+Export all accumulated claims from a session.
+
+#### POST /session/fork/:shareId
+Fork a shared session to continue the research.
+
+## Response Format
+
+### Answer Response
+```json
+{
+  "answer": "mRNA vaccines work by...",
+  "claims": [
+    {
+      "claim": "mRNA vaccines use lipid nanoparticles for delivery",
+      "sources": ["https://nature.com/...", "https://pubmed.ncbi.nlm.nih.gov/..."],
+      "verified": true,
+      "verificationScore": 0.82,
+      "consensusCount": 3,
+      "consensusLevel": "strong"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://nature.com/...",
+      "title": "mRNA Vaccine Technology",
+      "domain": "nature.com",
+      "quote": "The lipid nanoparticle encapsulates...",
+      "verified": true,
+      "authority": 0.95
+    }
+  ],
+  "confidence": 0.78,
+  "contradictions": [],
+  "trace": [
+    {"step": "search", "duration_ms": 450},
+    {"step": "fetch", "duration_ms": 1200},
+    {"step": "extract", "duration_ms": 800},
+    {"step": "verify", "duration_ms": 50},
+    {"step": "answer", "duration_ms": 600}
+  ]
+}
+```
+
+## Verification Pipeline
+
+1. **Web Search** — Tavily API searches for relevant pages
+2. **Page Fetch** — Downloads and parses pages into clean text
+3. **Claim Extraction** — Gemini 2.5 Flash extracts structured claims with source attribution
+4. **BM25 Verification** — Sentence-level matching verifies each claim against source text
+5. **Cross-Source Consensus** — Claims found in multiple sources get higher consensus scores
+6. **Contradiction Detection** — Identifies conflicting claims across sources
+7. **Domain Authority** — 10,000+ domains scored across 5 tiers with Bayesian dynamic blending
+8. **Confidence Score** — 7-factor evidence-based score (not LLM self-assessed)
+
+### Confidence Score Factors
+- Source count (15%)
+- Domain diversity (10%)
+- Claim grounding ratio (10%)
+- Citation depth (5%)
+- Verification rate (25%)
+- Domain authority average (20%)
+- Consensus score (15%)
+- Contradiction penalty applied when conflicts detected
+
+### Domain Authority Tiers
+- Tier 1 (0.95): Government, academic institutions (gov, edu, who.int, nature.com)
+- Tier 2 (0.85): Major news, established reference (reuters.com, wikipedia.org, bbc.com)
+- Tier 3 (0.70): Quality tech/science publications (arxiv.org, techcrunch.com)
+- Tier 4 (0.50): General web, blogs, forums
+- Tier 5 (0.30): Content farms, low-quality aggregators
+
+Dynamic scores improve over time using Bayesian cold-start smoothing from real verification data.
+
+## MCP Tools (12 total)
+
+| Tool | Description |
+|------|-------------|
+| browse_search | Search the web for information |
+| browse_open | Fetch and parse a web page |
+| browse_extract | Extract structured claims from a URL |
+| browse_answer | Full pipeline: search + extract + cite |
+| browse_compare | Compare raw LLM vs evidence-backed |
+| browse_session_create | Create a research session |
+| browse_session_ask | Research within a session |
+| browse_session_recall | Query session knowledge |
+| browse_session_share | Share a session publicly |
+| browse_session_knowledge | Export session claims |
+| browse_session_fork | Fork a shared session |
+| browse_feedback | Submit result feedback |
+
+## Python SDK
+
+```python
+from browseai import BrowseAI
+
+client = BrowseAI()
+
+# Simple answer
+result = client.answer("How does CRISPR work?")
+print(f"Confidence: {result.confidence}")
+for claim in result.claims:
+    print(f"  [{claim.consensus_level}] {claim.claim}")
+
+# Thorough mode
+result = client.answer("Latest quantum computing breakthroughs", depth="thorough")
+
+# Research session
+session = client.create_session(topic="AI Safety")
+r1 = session.ask("What is RLHF?")
+r2 = session.ask("How does constitutional AI differ?")
+knowledge = session.knowledge()
+
+# Feedback
+client.feedback(result_id="abc123", rating="good")
+
+# Async
+from browseai import AsyncBrowseAI
+async_client = AsyncBrowseAI()
+result = await async_client.answer("query")
+```
+
+## Authentication
+
+Three options:
+1. **BYOK (Bring Your Own Keys)**: Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers — unlimited usage
+2. **BrowseAI API Key**: Get a `bai_xxx` key from the dashboard — usage tracked per key
+3. **Demo mode**: No auth needed — 5 queries/hour per IP
+
+## Self-Hosting
+
+MIT licensed. Clone the repo and deploy:
+```bash
+git clone https://github.com/BrowseAI-HQ/BrowserAI-Dev.git
+cd BrowserAI-Dev
+pnpm install
+pnpm dev
+```
+
+Required env vars: `SERP_API_KEY` (Tavily), `OPENROUTER_API_KEY` (LLM).
+Optional: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (persistence).
+
+## Links
+
+- Website: https://browseai.dev
+- Documentation: https://browseai.dev/docs
+- Playground: https://browseai.dev/playground
+- GitHub: https://github.com/BrowseAI-HQ/BrowserAI-Dev
+- npm: https://www.npmjs.com/package/browse-ai
+- PyPI: https://pypi.org/project/browseai/
+- Discord: https://discord.gg/ubAuT4YQsT
+- License: MIT
