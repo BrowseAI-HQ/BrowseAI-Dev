@@ -38,6 +38,8 @@ export interface ResultStore {
   }>;
   /** Compute per-domain verification stats from stored query results */
   getDomainStats(limit?: number): Promise<DomainStats[]>;
+  /** Fetch recent results with full result JSONB (for co-citation, usefulness computation) */
+  getRecentResults(limit?: number): Promise<{ query: string; result: BrowseResult }[]>;
   /** Load all domain authority rows from DB */
   loadDomainAuthority(): Promise<DomainAuthorityRow[]>;
   /** Upsert domain authority rows (for imports and dynamic score updates) */
@@ -153,6 +155,14 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         .map(([domain, count]) => ({ domain, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
+    },
+
+    async getRecentResults(limit = 5000): Promise<{ query: string; result: BrowseResult }[]> {
+      const res = await supabaseFetch(
+        `/browse_results?select=query,result&limit=${limit}&order=created_at.desc`
+      );
+      if (!res.ok) return [];
+      return res.json();
     },
 
     async loadDomainAuthority(): Promise<DomainAuthorityRow[]> {
@@ -315,6 +325,7 @@ export function createNoopStore(): ResultStore {
     async getTopSources() { return []; },
     async getAnalyticsSummary() { return { totalQueries: 0, queriesToday: 0, avgConfidence: null, avgResponseTimeMs: null, cacheHitRate: null }; },
     async getDomainStats() { return []; },
+    async getRecentResults() { return []; },
     async loadDomainAuthority() { return []; },
     async saveDomainAuthority() { return 0; },
     async updateDomainScores() {},

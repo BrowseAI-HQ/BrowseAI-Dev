@@ -2,7 +2,13 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requireAdmin } from "../lib/admin.js";
 import type { ResultStore } from "../services/store.js";
-import { setDynamicAuthority } from "../lib/verify.js";
+import {
+  setDynamicAuthority,
+  computeCoCitationGraph,
+  setCoCitationGraph,
+  computeUsefulnessScores,
+  setUsefulnessScores,
+} from "../lib/verify.js";
 import { getLearningStats, exportLearningState } from "../lib/learning.js";
 
 const AddAdminSchema = z.object({
@@ -84,22 +90,40 @@ export function registerAdminRoutes(
     return reply.send({ success: true, message: "Admin added" });
   });
 
-  // Recalculate dynamic domain authority from stored query results
+  // Recalculate all domain intelligence from stored query results
+  // This computes: dynamic authority, co-citation graph, and source usefulness
   app.post("/admin/recalculate-authority", async (request, reply) => {
     const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
     if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
 
+    // Fetch raw results for co-citation and usefulness computation
+    const rawResults = await store.getRecentResults(5000);
+
+    // 1. Dynamic domain authority (existing)
     const domainStats = await store.getDomainStats(5000);
     const dynamicStats = domainStats.map(s => ({
       domain: s.domain,
       verificationRate: s.verificationRate,
       sampleCount: s.totalClaims,
     }));
-
-    // Update in-memory
     setDynamicAuthority(dynamicStats);
 
-    // Persist to DB so dynamic scores survive restarts
+    // 2. Co-citation graph (PageRank alternative)
+    const coCitationGraph = computeCoCitationGraph(
+      rawResults.map(r => ({ sources: r.result.sources || [] }))
+    );
+    setCoCitationGraph(coCitationGraph);
+
+    // 3. Source usefulness (click signal alternative)
+    const usefulnessScores = computeUsefulnessScores(
+      rawResults.map(r => ({
+        sources: r.result.sources || [],
+        claims: r.result.claims || [],
+      }))
+    );
+    setUsefulnessScores(usefulnessScores);
+
+    // Persist dynamic authority to DB
     const dbEntries = dynamicStats.map(d => ({
       domain: d.domain,
       dynamic_score: Math.round(d.verificationRate * 100) / 100,
@@ -107,16 +131,32 @@ export function registerAdminRoutes(
     }));
     const persisted = await store.saveDomainAuthority(dbEntries);
 
+    // Top co-cited domains
+    const topCoCited = [...coCitationGraph.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([domain, score]) => ({ domain, coCitationScore: score }));
+
+    // Top useful domains
+    const topUseful = [...usefulnessScores.entries()]
+      .sort((a, b) => b[1].score - a[1].score)
+      .slice(0, 10)
+      .map(([domain, data]) => ({ domain, usefulness: Math.round(data.score * 100) / 100, samples: data.totalCount }));
+
     return reply.send({
       success: true,
       result: {
         domainsUpdated: dynamicStats.length,
+        coCitationDomains: coCitationGraph.size,
+        usefulnessDomains: usefulnessScores.size,
         persistedToDB: persisted,
         topDomains: dynamicStats.slice(0, 10).map(d => ({
           domain: d.domain,
           score: d.verificationRate,
           samples: d.sampleCount,
         })),
+        topCoCited,
+        topUseful,
       },
     });
   });

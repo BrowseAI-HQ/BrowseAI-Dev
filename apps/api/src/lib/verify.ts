@@ -211,6 +211,269 @@ export async function initDomainAuthority(
   }
 }
 
+// ─── Co-Citation Graph (PageRank alternative) ───────────────────────
+// When two domains appear together in query results and both verify well,
+// they reinforce each other's trust. Domains that frequently co-occur
+// with high-authority domains earn a co-citation boost.
+
+const coCitationScores = new Map<string, number>();
+
+/** Get the co-citation boost for a domain (0–0.15 range). */
+export function getCoCitationBoost(domain: string): number {
+  const d = domain.toLowerCase().replace(/^www\./, "");
+  return coCitationScores.get(d) || 0;
+}
+
+/**
+ * Compute co-citation scores from stored query results.
+ * For each query result, we look at which domains appeared together
+ * and which had verified claims. Domains that co-occur with high-authority
+ * domains AND both verify well get a mutual boost.
+ *
+ * This is our alternative to Google's link graph / PageRank.
+ */
+export function computeCoCitationGraph(
+  results: Array<{ sources: Array<{ domain: string; verified?: boolean; authority?: number }> }>
+): Map<string, number> {
+  // Step 1: Build co-occurrence counts + joint verification rates
+  const coOccurrence = new Map<string, Map<string, { count: number; bothVerified: number }>>();
+
+  for (const result of results) {
+    if (!result.sources || result.sources.length < 2) continue;
+
+    const domains = [...new Set(result.sources.map(s => s.domain.toLowerCase().replace(/^www\./, "")))];
+    const verifiedDomains = new Set(
+      result.sources.filter(s => s.verified).map(s => s.domain.toLowerCase().replace(/^www\./, ""))
+    );
+
+    // Count pairwise co-occurrences
+    for (let i = 0; i < domains.length; i++) {
+      for (let j = i + 1; j < domains.length; j++) {
+        const a = domains[i], b = domains[j];
+        const bothVerified = verifiedDomains.has(a) && verifiedDomains.has(b);
+
+        // a → b
+        if (!coOccurrence.has(a)) coOccurrence.set(a, new Map());
+        const aMap = coOccurrence.get(a)!;
+        const ab = aMap.get(b) || { count: 0, bothVerified: 0 };
+        ab.count++;
+        if (bothVerified) ab.bothVerified++;
+        aMap.set(b, ab);
+
+        // b → a
+        if (!coOccurrence.has(b)) coOccurrence.set(b, new Map());
+        const bMap = coOccurrence.get(b)!;
+        const ba = bMap.get(a) || { count: 0, bothVerified: 0 };
+        ba.count++;
+        if (bothVerified) ba.bothVerified++;
+        bMap.set(a, ba);
+      }
+    }
+  }
+
+  // Step 2: Compute co-citation score per domain
+  // Score = weighted average of co-occurring domain authorities × joint verification rate
+  const scores = new Map<string, number>();
+
+  for (const [domain, neighbors] of coOccurrence) {
+    let totalWeight = 0;
+    let weightedScore = 0;
+
+    for (const [neighbor, stats] of neighbors) {
+      if (stats.count < 2) continue; // Need at least 2 co-occurrences
+
+      const neighborAuth = getStaticAuthority(neighbor);
+      const jointVerifRate = stats.bothVerified / stats.count;
+      const weight = stats.count; // More co-occurrences = stronger signal
+
+      weightedScore += neighborAuth * jointVerifRate * weight;
+      totalWeight += weight;
+    }
+
+    if (totalWeight > 0) {
+      // Scale to 0–0.15 range (co-citation is a boost, not the main signal)
+      const raw = weightedScore / totalWeight;
+      scores.set(domain, Math.round(Math.min(0.15, raw * 0.2) * 1000) / 1000);
+    }
+  }
+
+  return scores;
+}
+
+/** Update the co-citation graph cache. Called by admin recalculation. */
+export function setCoCitationGraph(scores: Map<string, number>): void {
+  coCitationScores.clear();
+  for (const [domain, score] of scores) {
+    coCitationScores.set(domain, score);
+  }
+}
+
+// ─── Source Usefulness Tracking (Click Signal Alternative) ───────────
+// Tracks which domains consistently produce verified, high-consensus claims.
+// Over time, domains with high usefulness are more likely to provide
+// good evidence — similar to click-through signals but for agents.
+
+const domainUsefulness = new Map<string, { usefulCount: number; totalCount: number; score: number }>();
+
+/** Get the usefulness score for a domain (0–1). */
+export function getDomainUsefulness(domain: string): number {
+  const d = domain.toLowerCase().replace(/^www\./, "");
+  return domainUsefulness.get(d)?.score || 0;
+}
+
+/**
+ * Update usefulness tracking for a domain after a query.
+ * A source is "useful" if it produced at least one verified claim
+ * with moderate+ consensus.
+ */
+export function trackSourceUsefulness(
+  domain: string,
+  hadVerifiedClaim: boolean,
+  hadConsensus: boolean,
+): void {
+  const d = domain.toLowerCase().replace(/^www\./, "");
+  const existing = domainUsefulness.get(d) || { usefulCount: 0, totalCount: 0, score: 0 };
+
+  existing.totalCount++;
+  if (hadVerifiedClaim && hadConsensus) {
+    existing.usefulCount++;
+  }
+
+  // Usefulness = verified+consensus rate, with minimum 5 samples
+  if (existing.totalCount >= 5) {
+    existing.score = existing.usefulCount / existing.totalCount;
+  }
+
+  domainUsefulness.set(d, existing);
+}
+
+/**
+ * Compute usefulness scores from stored results (batch, for recalculation).
+ */
+export function computeUsefulnessScores(
+  results: Array<{
+    sources: Array<{ domain: string; url: string }>;
+    claims: Array<{ sources?: string[]; verified?: boolean; consensusLevel?: string }>;
+  }>
+): Map<string, { usefulCount: number; totalCount: number; score: number }> {
+  const stats = new Map<string, { usefulCount: number; totalCount: number }>();
+
+  for (const result of results) {
+    if (!result.sources || !result.claims) continue;
+
+    // Build URL → domain map
+    const urlDomain = new Map<string, string>();
+    for (const s of result.sources) {
+      urlDomain.set(s.url, s.domain.toLowerCase().replace(/^www\./, ""));
+    }
+
+    // For each domain, check if it contributed a verified+consensus claim
+    const domainUseful = new Map<string, boolean>();
+    const domainSeen = new Set<string>();
+
+    for (const s of result.sources) {
+      domainSeen.add(s.domain.toLowerCase().replace(/^www\./, ""));
+    }
+
+    for (const claim of result.claims) {
+      if (!claim.sources) continue;
+      const isUseful = claim.verified === true &&
+        (claim.consensusLevel === "strong" || claim.consensusLevel === "moderate");
+
+      for (const url of claim.sources) {
+        const domain = urlDomain.get(url);
+        if (domain && isUseful) {
+          domainUseful.set(domain, true);
+        }
+      }
+    }
+
+    // Update stats
+    for (const domain of domainSeen) {
+      const entry = stats.get(domain) || { usefulCount: 0, totalCount: 0 };
+      entry.totalCount++;
+      if (domainUseful.get(domain)) entry.usefulCount++;
+      stats.set(domain, entry);
+    }
+  }
+
+  // Compute scores
+  const scored = new Map<string, { usefulCount: number; totalCount: number; score: number }>();
+  for (const [domain, s] of stats) {
+    if (s.totalCount >= 3) { // Minimum sample threshold
+      scored.set(domain, { ...s, score: s.usefulCount / s.totalCount });
+    }
+  }
+  return scored;
+}
+
+/** Bulk-set usefulness scores (from recalculation). */
+export function setUsefulnessScores(
+  scores: Map<string, { usefulCount: number; totalCount: number; score: number }>
+): void {
+  domainUsefulness.clear();
+  for (const [domain, data] of scores) {
+    domainUsefulness.set(domain, data);
+  }
+}
+
+// ─── Source Reranking (Perplexity-style) ─────────────────────────────
+// After search results come back, rerank them using our domain intelligence
+// before fetching pages. Better sources get fetched first = better answers.
+
+export interface RerankableResult {
+  url: string;
+  title: string;
+  score: number; // Original search score
+  [key: string]: unknown;
+}
+
+/**
+ * Rerank search results using BrowseAI's domain intelligence.
+ *
+ * Combines:
+ * - Original search score (from Tavily/Brave) — 40%
+ * - Domain authority (static + dynamic Bayesian) — 30%
+ * - Source usefulness (verified+consensus track record) — 20%
+ * - Co-citation boost (frequently co-occurs with trusted domains) — 10%
+ *
+ * This is our alternative to Perplexity's LLM reranking — zero extra
+ * API calls, uses our accumulated intelligence instead.
+ */
+export function rerankSources<T extends RerankableResult>(results: T[]): T[] {
+  if (results.length <= 1) return results;
+
+  // Normalize search scores to 0-1
+  const maxScore = Math.max(...results.map(r => r.score));
+  const minScore = Math.min(...results.map(r => r.score));
+  const scoreRange = maxScore - minScore || 1;
+
+  const scored = results.map(r => {
+    let domain: string;
+    try {
+      domain = new URL(r.url).hostname.replace(/^www\./, "");
+    } catch {
+      return { result: r, combinedScore: r.score };
+    }
+
+    const normalizedSearch = (r.score - minScore) / scoreRange;
+    const authority = getDomainAuthority(domain);
+    const usefulness = getDomainUsefulness(domain);
+    const coCitation = getCoCitationBoost(domain);
+
+    const combinedScore =
+      normalizedSearch * 0.40 +
+      authority * 0.30 +
+      usefulness * 0.20 +
+      coCitation * (1 / 0.15) * 0.10; // Normalize co-citation from 0-0.15 to 0-1, then weight
+
+    return { result: r, combinedScore };
+  });
+
+  scored.sort((a, b) => b.combinedScore - a.combinedScore);
+  return scored.map(s => s.result);
+}
+
 // ─── Dynamic Authority (Bayesian smoothing) ─────────────────────────
 
 const dynamicAuthority = new Map<string, { dynamicScore: number; sampleCount: number }>();
@@ -275,23 +538,28 @@ function getStaticAuthority(domain: string): number {
 }
 
 /**
- * Get domain authority score (0–1) with Bayesian cold-start smoothing.
+ * Get domain authority score (0–1) with Bayesian cold-start smoothing
+ * and co-citation boost.
  *
- * Formula: blended = (static * PRIOR_WEIGHT + dynamic * sampleCount) / (PRIOR_WEIGHT + sampleCount)
+ * Formula: blended = (static * PRIOR_WEIGHT + dynamic * sampleCount) / (PRIOR_WEIGHT + sampleCount) + coCitation
  */
 export function getDomainAuthority(domain: string): number {
   const d = domain.toLowerCase().replace(/^www\./, "");
   const staticScore = getStaticAuthority(d);
 
+  let base: number;
   const dynamic = dynamicAuthority.get(d);
   if (!dynamic || dynamic.sampleCount < 3) {
-    return staticScore;
+    base = staticScore;
+  } else {
+    base = (staticScore * PRIOR_WEIGHT + dynamic.dynamicScore * dynamic.sampleCount)
+      / (PRIOR_WEIGHT + dynamic.sampleCount);
   }
 
-  const blended = (staticScore * PRIOR_WEIGHT + dynamic.dynamicScore * dynamic.sampleCount)
-    / (PRIOR_WEIGHT + dynamic.sampleCount);
+  // Add co-citation boost (0–0.15): domains that co-occur with trusted, verified domains
+  const coCitation = getCoCitationBoost(d);
 
-  return Math.round(blended * 100) / 100;
+  return Math.round(Math.min(1, base + coCitation) * 100) / 100;
 }
 
 // ─── Consensus Scoring (Phase 2) ────────────────────────────────────

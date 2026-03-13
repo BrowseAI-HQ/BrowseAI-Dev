@@ -5,7 +5,7 @@ import { openPage } from "./scrape.js";
 import { extractKnowledge, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
 import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
-import { isLowQualityDomain } from "../lib/verify.js";
+import { isLowQualityDomain, rerankSources, trackSourceUsefulness } from "../lib/verify.js";
 import {
   getAdaptiveBM25Threshold,
   getAdaptiveConsensusThreshold,
@@ -163,23 +163,26 @@ async function singlePass(
   const filtered = filterLowQuality(allResults);
   const diverseResults = enforceDomainDiversity(filtered);
 
+  // Rerank using domain intelligence (authority + usefulness + co-citation)
+  const rerankedResults = rerankSources(diverseResults);
+
   // Adaptive page count: learning engine overrides if enough data, else use defaults
   const pageCount = getAdaptivePageCount(analysis.type) || ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
 
   trace.push({
     step: `Search Web${label}`,
     duration_ms: Date.now() - searchStart,
-    detail: `${diverseResults.length} results (${allResults.length} raw → ${filtered.length} quality → diverse) [${analysis.type}]${searchDetail}`,
+    detail: `${rerankedResults.length} results (${allResults.length} raw → ${filtered.length} quality → diverse → reranked) [${analysis.type}]${searchDetail}`,
   });
 
-  if (diverseResults.length === 0) {
+  if (rerankedResults.length === 0) {
     throw new Error("No search results found");
   }
 
-  // Phase 4: Fetch pages (adaptive count)
+  // Phase 4: Fetch pages (adaptive count, best sources first thanks to reranking)
   const scrapeStart = Date.now();
   const pages = await Promise.allSettled(
-    diverseResults.slice(0, pageCount).map((r) => openPage(r.url, cache))
+    rerankedResults.slice(0, pageCount).map((r) => openPage(r.url, cache))
   );
   const successfulPages = pages
     .filter(
@@ -190,14 +193,14 @@ async function singlePass(
   trace.push({
     step: `Fetch Pages${label}`,
     duration_ms: Date.now() - scrapeStart,
-    detail: `${successfulPages.length} pages (Readability)`,
+    detail: `${successfulPages.length} pages (Readability, reranked)`,
   });
 
   // Build content + merge page texts
   const pageTexts = new Map<string, string>(existingPageTexts || []);
   const pageContents = successfulPages
     .map((p, i) => {
-      const url = diverseResults[i]?.url || "";
+      const url = rerankedResults[i]?.url || "";
       const content = p.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
       pageTexts.set(url, content);
       return `[Source ${i + 1}] URL: ${url}\nTitle: ${p.title}\n\n${content}`;
@@ -247,6 +250,28 @@ async function singlePass(
     duration_ms: Math.round(llmDuration * 0.35),
     detail: "OpenRouter",
   });
+
+  // Track source usefulness (fire-and-forget, inline learning)
+  try {
+    const urlDomain = new Map<string, string>();
+    for (const s of knowledge.sources) urlDomain.set(s.url, s.domain);
+
+    const domainUseful = new Map<string, { verified: boolean; consensus: boolean }>();
+    for (const claim of knowledge.claims) {
+      for (const url of claim.sources || []) {
+        const domain = urlDomain.get(url);
+        if (!domain) continue;
+        const d = domain.toLowerCase().replace(/^www\./, "");
+        const existing = domainUseful.get(d) || { verified: false, consensus: false };
+        if ((claim as any).verified) existing.verified = true;
+        if ((claim as any).consensusLevel === "strong" || (claim as any).consensusLevel === "moderate") existing.consensus = true;
+        domainUseful.set(d, existing);
+      }
+    }
+    for (const [domain, u] of domainUseful) {
+      trackSourceUsefulness(domain, u.verified, u.consensus);
+    }
+  } catch { /* non-critical */ }
 
   return { knowledge, pageTexts, queryType: analysis.type };
 }
