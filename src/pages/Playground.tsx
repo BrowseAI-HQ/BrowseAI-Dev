@@ -42,12 +42,6 @@ const EXAMPLES: Record<string, string[]> = {
 
 // ── Confidence color helper ─────────────────────────────────────────
 
-function confidenceColor(c: number): string {
-  if (c >= 0.75) return "text-green-400";
-  if (c >= 0.55) return "text-yellow-400";
-  return "text-red-400";
-}
-
 function confidenceBg(c: number): string {
   if (c >= 0.75) return "bg-green-400/10 border-green-400/30 text-green-400";
   if (c >= 0.55) return "bg-yellow-400/10 border-yellow-400/30 text-yellow-400";
@@ -391,7 +385,6 @@ const Playground = () => {
             )}
           </div>
         )}
-
       </div>
     </div>
   );
