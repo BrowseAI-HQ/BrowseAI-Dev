@@ -1,4 +1,4 @@
-# BrowseAI Dev — 30s Launch Video Script
+# BrowseAI Dev — 20s Launch Video Script
 
 ## Story Arc
 
@@ -8,24 +8,22 @@ Hallucination -> Confidently wrong -> Trust lost -> BrowseAI Dev -> Every agent 
 
 ## Audience Emotion
 
-1. "Oh no, I've been there" (0-8s)
-2. "Wait, what's this?" (8-11s)
-3. "It works with everything I use" (11-23s)
-4. "I can install this right now" (23-30s)
+1. "Oh no, I've been there" (0-7s)
+2. "Wait, what's this?" (7-9s)
+3. "It works with everything I use" (9-16s)
+4. "I can install this right now" (16-20s)
 
 ---
 
-## Beat 1: Agents Hallucinate (0-3s)
+## Beat 1: Agents Hallucinate (0-2s)
 
 **Visual:** AI agent answers a question with 3 citation links. Links flash red one by one — fake URLs, papers that don't exist.
 
 **Text:** `Your AI agent just made this up.`
 
-**Audio:** Soft typing sounds, then a warning buzz as each link turns red.
-
 ---
 
-## Beat 2: Confidently Wrong, Everywhere (3-6s)
+## Beat 2: Confidently Wrong, Everywhere (2-5s)
 
 **Visual:** Quick 1-second flashes:
 1. Customer-facing chatbot confidently recommends a wrong drug interaction. User trusts it.
@@ -40,7 +38,7 @@ Each looks polished and professional. The agents aren't glitching — they're *c
 
 ---
 
-## Beat 3: Trust Lost (6-8s)
+## Beat 3: Trust Lost (5-7s)
 
 **Visual:** Developer manually googling to verify AI output. Sprint board tickets moving back to "To Do." Slack message: "We can't trust the AI output anymore."
 
@@ -50,9 +48,9 @@ Each looks polished and professional. The agents aren't glitching — they're *c
 
 ---
 
-## Beat 4: The Shift (8-11s)
+## Beat 4: The Shift (7-9s)
 
-**Visual:** Hard cut. Black. Silence. BrowseAI Dev logo fades in with a quiet green glow. Tagline types in below: "Reliable Research Infrastructure for AI Agents."
+**Visual:** Hard cut. Black. Silence. BrowseAI Dev logo fades in with a quiet green glow.
 
 **Text:** `What if every agent could verify first?`
 
@@ -60,18 +58,18 @@ Each looks polished and professional. The agents aren't glitching — they're *c
 
 ---
 
-## Beat 5: Every Agent Gets Superpowers (11-23s)
+## Beat 5: Every Agent Gets Superpowers (9-16s)
 
-**Visual:** Grid of agent icons — Claude, Cursor, Codex, Copilot, LangChain, CrewAI — all grey. One by one, each lights up green (~2s per agent). As each activates, a primary feature label pulses beside it, then a secondary feature flashes briefly (0.3s):
+**Visual:** Grid of agent icons — Claude, Cursor, Codex, Copilot, LangChain, CrewAI — all grey. One by one, each lights up green. As each activates, a feature label pulses beside it:
 
-| Agent | Primary Feature | Secondary Feature |
-|-------|----------------|-------------------|
-| Claude | `Evidence-backed answers` | `Source verification` |
-| Cursor | `7-factor confidence scoring` | `Domain authority (10K+ domains)` |
-| Codex | `Claim extraction` | `BM25 sentence matching` |
-| Copilot | `Contradiction detection` | `Cross-source consensus` |
-| LangChain | `Thorough mode auto-retry` | `Smart caching` |
-| CrewAI | `Research sessions` | `Knowledge sharing & forking` |
+| Agent | Feature |
+|-------|---------|
+| Claude | `Evidence-backed answers` |
+| Cursor | `7-factor confidence scoring` |
+| Codex | `Source verification` |
+| Copilot | `Contradiction detection` |
+| LangChain | `Thorough mode auto-retry` |
+| CrewAI | `Research sessions` |
 
 All agents glowing green — a constellation of powered-up agents.
 
@@ -81,17 +79,17 @@ All agents glowing green — a constellation of powered-up agents.
 
 ---
 
-## Beat 6: CTA (23-30s)
+## Beat 6: CTA (16-20s)
 
-**Visual:** Constellation shrinks to background. Terminal foreground, three lines type in rapid cascade with feature badges:
+**Visual:** Constellation shrinks to background. Terminal foreground, three lines type in rapid cascade:
 
 ```
-$ npx browse-ai setup                              MCP · works with 42+ agents
-$ pip install browseai                              Python SDK · async + sync
-$ npx skills add BrowseAI-HQ/browseAIDev_Skills     Skills · 4 ready-made workflows
+$ npx browse-ai setup                              MCP
+$ pip install browseai                              Python
+$ npx skills add BrowseAI-HQ/browseAIDev_Skills     Skills
 ```
 
-Agent icons fade in below in a row. GitHub stars counter animates up. Final frame holds.
+Agent icons fade in below in a row. Final frame holds.
 
 **Text:** `Give every agent research superpowers.`
 
@@ -103,20 +101,11 @@ Agent icons fade in below in a row. GitHub stars counter animates up. Final fram
 
 ## Beat Sheet Summary
 
-| Time | Beat | Text Overlay | Features Shown |
-|------|------|-------------|----------------|
-| 0-3s | Agents hallucinate | Your AI agent just made this up. | — |
-| 3-6s | Confidently wrong everywhere | Confident. Authoritative. Wrong. | — |
-| 6-8s | Trust lost, rework | Hours lost. Trust broken. | — |
-| 8-11s | BrowseAI Dev logo + tagline | What if every agent could verify first? | — |
-| 11-23s | Agents light up with features | Every agent. Verified research. Real sources. | 12 features (6 primary + 6 secondary) |
-| 23-30s | Install commands + CTA | Give every agent research superpowers. | MCP (42+ agents), Python SDK, Skills (4 workflows) |
-
----
-
-## Production Notes
-
-- **Total features shown:** 15 (12 in Beat 5 grid + 3 install surfaces in Beat 6)
-- **Pacing:** Beats 1-4 are fast cuts (problem setup). Beat 5 slows down to let each feature register. Beat 6 is actionable.
-- **Color palette:** Red/orange for problem beats (1-3), black for transition (4), green for solution beats (5-6)
-- **Key difference from 20s version:** Extra 10s allows each agent in Beat 5 to hold for ~2s instead of ~1s, letting both primary and secondary features register. Beat 4 gets room for the tagline. Beat 6 gets feature badges on install lines.
+| Time | Beat | Text Overlay |
+|------|------|-------------|
+| 0-2s | Agents hallucinate | Your AI agent just made this up. |
+| 2-5s | Confidently wrong everywhere | Confident. Authoritative. Wrong. |
+| 5-7s | Trust lost, rework | Hours lost. Trust broken. |
+| 7-9s | BrowseAI Dev logo | What if every agent could verify first? |
+| 9-16s | Agents light up with features | Every agent. Verified research. Real sources. |
+| 16-20s | Install commands + CTA | Give every agent research superpowers. |
