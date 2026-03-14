@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
   Globe, Copy, Check, Code2, ChevronDown, ChevronUp, ExternalLink,
-  ThumbsUp, ThumbsDown, Brain, FileText,
+  ThumbsUp, ThumbsDown, Brain, FileText, Beaker,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +48,51 @@ const EXAMPLES: Record<string, string[]> = {
   ],
 };
 
+// ── Tutorial scenarios ───────────────────────────────────────────────
+
+const TUTORIAL_SCENARIOS = [
+  {
+    name: "Fact Check",
+    desc: "Verify a claim with thorough mode",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "Did NASA confirm water on Mars in 2024?",
+    tutorial: "fact-checker-bot",
+  },
+  {
+    name: "Is This True?",
+    desc: "Quick confidence check on any statement",
+    tab: "answer" as const,
+    depth: "fast" as const,
+    query: "Drinking 8 glasses of water a day is necessary for health",
+    tutorial: "is-this-true",
+  },
+  {
+    name: "Settle a Debate",
+    desc: "Compare two opposing claims",
+    tab: "compare" as const,
+    depth: "fast" as const,
+    query: "Is remote work more productive than office work?",
+    tutorial: "debate-settler",
+  },
+  {
+    name: "Verify Docs",
+    desc: "Check if a claim in documentation is accurate",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "Python is the most popular programming language in 2026",
+    tutorial: "docs-verifier",
+  },
+  {
+    name: "Research Brief",
+    desc: "Deep research with contradictions",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "What are the health effects of intermittent fasting? Include any contradictions.",
+    tutorial: "podcast-prep",
+  },
+];
+
 const PLACEHOLDERS: Record<string, string> = {
   answer: "Ask a research question…",
   search: "Enter a search query…",
@@ -77,6 +122,19 @@ const Playground = () => {
   const [showRawJson, setShowRawJson] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedbackSent, setFeedbackSent] = useState<string | null>(null);
+  const [showScenarios, setShowScenarios] = useState(false);
+
+  const runScenario = (scenario: typeof TUTORIAL_SCENARIOS[number]) => {
+    setActiveTab(scenario.tab);
+    setDepth(scenario.depth);
+    setInput(scenario.query);
+    setShowScenarios(false);
+    setResponse(null);
+    setShowRawJson(false);
+    setFeedbackSent(null);
+    // Delay run slightly so tab/depth state settles
+    setTimeout(() => run(scenario.query), 50);
+  };
 
   const run = async (overrideInput?: string) => {
     const q = overrideInput || input;
@@ -165,6 +223,54 @@ const Playground = () => {
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
+        {/* Try an Example scenario */}
+        <div className="relative">
+          <button
+            onClick={() => setShowScenarios(!showScenarios)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card hover:border-accent/40 transition-colors text-sm"
+          >
+            <Beaker className="w-3.5 h-3.5 text-accent" />
+            <span className="text-muted-foreground">Try an example</span>
+            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${showScenarios ? "rotate-180" : ""}`} />
+          </button>
+
+          {showScenarios && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute z-20 top-12 left-0 w-full sm:w-[500px] bg-card border border-border rounded-xl shadow-lg overflow-hidden"
+            >
+              {TUTORIAL_SCENARIOS.map((scenario) => (
+                <button
+                  key={scenario.name}
+                  onClick={() => runScenario(scenario)}
+                  className="w-full flex items-start gap-3 p-4 hover:bg-secondary/50 transition-colors text-left border-b border-border last:border-0"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{scenario.name}</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5">
+                        {scenario.tab === "compare" ? "compare" : scenario.depth}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{scenario.desc}</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1 font-mono truncate">"{scenario.query}"</p>
+                  </div>
+                  <a
+                    href={`https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/${scenario.tutorial}`}
+                    target="_blank"
+                    rel="noopener"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xs text-muted-foreground hover:text-accent transition-colors shrink-0 mt-1"
+                  >
+                    <Code2 className="w-3.5 h-3.5" />
+                  </a>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </div>
+
         {/* Tabs + Input */}
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setResponse(null); setShowRawJson(false); setFeedbackSent(null); }}>
           <TabsList className="bg-secondary flex-wrap h-auto gap-1 p-1">
