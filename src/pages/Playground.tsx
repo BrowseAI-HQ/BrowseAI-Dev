@@ -52,6 +52,30 @@ const EXAMPLES: Record<string, string[]> = {
 
 const TUTORIAL_SCENARIOS = [
   {
+    name: "Coding Agent",
+    desc: "Research before writing code",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "What's the best Python library for building WebSocket servers?",
+    tutorial: "coding-agent",
+  },
+  {
+    name: "Support Agent",
+    desc: "Verify answers before responding",
+    tab: "answer" as const,
+    depth: "fast" as const,
+    query: "How does GDPR affect data storage for SaaS products?",
+    tutorial: "support-agent",
+  },
+  {
+    name: "Content Research",
+    desc: "Deep research with statistics and contradictions",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "What is the current state of AI in healthcare? Include statistics and contradictions.",
+    tutorial: "content-agent",
+  },
+  {
     name: "Fact Check",
     desc: "Verify a claim with thorough mode",
     tab: "answer" as const,
@@ -60,36 +84,12 @@ const TUTORIAL_SCENARIOS = [
     tutorial: "fact-checker-bot",
   },
   {
-    name: "Is This True?",
-    desc: "Quick confidence check on any statement",
-    tab: "answer" as const,
-    depth: "fast" as const,
-    query: "Drinking 8 glasses of water a day is necessary for health",
-    tutorial: "is-this-true",
-  },
-  {
-    name: "Settle a Debate",
+    name: "Compare Outputs",
     desc: "Compare two opposing claims",
     tab: "compare" as const,
     depth: "fast" as const,
     query: "Is remote work more productive than office work?",
-    tutorial: "debate-settler",
-  },
-  {
-    name: "Verify Docs",
-    desc: "Check if a claim in documentation is accurate",
-    tab: "answer" as const,
-    depth: "thorough" as const,
-    query: "Python is the most popular programming language in 2026",
-    tutorial: "docs-verifier",
-  },
-  {
-    name: "Research Brief",
-    desc: "Deep research with contradictions",
-    tab: "answer" as const,
-    depth: "thorough" as const,
-    query: "What are the health effects of intermittent fasting? Include any contradictions.",
-    tutorial: "podcast-prep",
+    tutorial: "research-session",
   },
 ];
 

@@ -500,34 +500,34 @@ print(result.answer, result.confidence)`}</pre>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
                 {
+                  title: "Coding Agent",
+                  desc: "Researches before writing code. Never recommends deprecated libraries.",
+                  tags: ["Python SDK", "Thorough Mode", "Code Research"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/coding-agent",
+                },
+                {
+                  title: "Support Agent",
+                  desc: "Verifies answers before responding. Escalates when confidence is low.",
+                  tags: ["Fast Mode", "Confidence", "Escalation"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/support-agent",
+                },
+                {
+                  title: "Content Agent",
+                  desc: "Writes blog posts where every stat has a citation and confidence score.",
+                  tags: ["Thorough Mode", "Citations", "Writing"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/content-agent",
+                },
+                {
                   title: "Fact-Checker Bot",
-                  desc: "Discord bot that verifies any claim with !verify and shows evidence vs hallucination with !compare.",
+                  desc: "Discord bot that verifies any claim with evidence.",
                   tags: ["Discord", "Thorough Mode", "Compare"],
                   link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/fact-checker-bot",
                 },
                 {
-                  title: "Is This True?",
-                  desc: "Minimal web app — paste any sentence, get a confidence score, sources, and contradictions. One input, one answer.",
-                  tags: ["FastAPI", "Web App", "Shareable"],
-                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/is-this-true",
-                },
-                {
-                  title: "Debate Settler",
-                  desc: "Two claims go in, evidence decides the winner. Side-by-side comparison with scoring breakdown.",
-                  tags: ["CLI", "Thorough Mode", "Contradictions"],
-                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/debate-settler",
-                },
-                {
-                  title: "Docs Verifier",
-                  desc: "Verify every factual claim in your README or docs. Flags outdated stats and wrong assertions. CI-friendly.",
-                  tags: ["CI/CD", "Extract", "Automation"],
-                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/docs-verifier",
-                },
-                {
-                  title: "Podcast Prep",
-                  desc: "Research brief builder — give it a guest and topic, get verified facts, contradictions, and suggested questions.",
-                  tags: ["Sessions", "Recall", "Async"],
-                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/podcast-prep",
+                  title: "Research Session",
+                  desc: "Multi-turn research that builds knowledge over time.",
+                  tags: ["Sessions", "Recall", "Multi-turn"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/research-session",
                 },
                 {
                   title: "More Coming Soon",
