@@ -52,6 +52,30 @@ const EXAMPLES: Record<string, string[]> = {
 
 const TUTORIAL_SCENARIOS = [
   {
+    name: "Coding Agent",
+    desc: "Research before writing code",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "What's the best Python library for building WebSocket servers?",
+    tutorial: "coding-agent",
+  },
+  {
+    name: "Support Agent",
+    desc: "Verify answers before responding",
+    tab: "answer" as const,
+    depth: "fast" as const,
+    query: "How does GDPR affect data storage for SaaS products?",
+    tutorial: "support-agent",
+  },
+  {
+    name: "Content Research",
+    desc: "Deep research with statistics and contradictions",
+    tab: "answer" as const,
+    depth: "thorough" as const,
+    query: "What is the current state of AI in healthcare? Include statistics and contradictions.",
+    tutorial: "content-agent",
+  },
+  {
     name: "Fact Check",
     desc: "Verify a claim with thorough mode",
     tab: "answer" as const,

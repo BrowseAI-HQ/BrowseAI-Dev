@@ -500,6 +500,24 @@ print(result.answer, result.confidence)`}</pre>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
                 {
+                  title: "Coding Agent",
+                  desc: "Researches before writing code. Never recommends deprecated libraries.",
+                  tags: ["Python SDK", "Thorough Mode", "Code Research"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/coding-agent",
+                },
+                {
+                  title: "Support Agent",
+                  desc: "Verifies answers before responding. Escalates when confidence is low.",
+                  tags: ["Fast Mode", "Confidence", "Escalation"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/support-agent",
+                },
+                {
+                  title: "Content Agent",
+                  desc: "Writes blog posts where every stat has a citation and confidence score.",
+                  tags: ["Thorough Mode", "Citations", "Writing"],
+                  link: "https://github.com/BrowseAI-HQ/BrowseAI-Dev/tree/main/examples/content-agent",
+                },
+                {
                   title: "Fact-Checker Bot",
                   desc: "Discord bot that verifies any claim with !verify and shows evidence vs hallucination with !compare.",
                   tags: ["Discord", "Thorough Mode", "Compare"],
