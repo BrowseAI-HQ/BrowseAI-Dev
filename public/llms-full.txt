@@ -255,5 +255,6 @@ Optional: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (persistence).
 - GitHub: https://github.com/BrowseAI-HQ/BrowseAI-Dev
 - npm: https://www.npmjs.com/package/browse-ai
 - PyPI: https://pypi.org/project/browseai/
+- Agent Skills: https://github.com/BrowseAI-HQ/browseAIDev_Skills
 - Discord: https://discord.gg/ubAuT4YQsT
 - License: MIT

@@ -169,6 +169,16 @@ All API calls include automatic retry with exponential backoff on transient fail
 - **AI**: OpenRouter (100+ models)
 - **Protocol**: Model Context Protocol (MCP)
 
+## Agent Skills
+
+Pre-built skills that teach coding agents when to use BrowseAI Dev tools:
+
+```bash
+npx skills add BrowseAI-HQ/browseAIDev_Skills
+```
+
+Skills work with Claude Code, Codex CLI, Gemini CLI, Cursor, and more. [View skills →](https://github.com/BrowseAI-HQ/browseAIDev_Skills)
+
 ## Community
 
 - [Discord](https://discord.gg/ubAuT4YQsT)

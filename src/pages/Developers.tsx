@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
 import {
-  ArrowRight, GitBranch, Code2, Users, Lightbulb,
+  ArrowRight, GitBranch, Code2, Users, Lightbulb, Sparkles,
   Terminal, Globe, BookOpen, CheckCircle2, Rocket, Heart,
   ExternalLink, Shield, Brain, Layers, Trophy, GitCommitHorizontal, Github,
 } from "lucide-react";
@@ -577,6 +577,55 @@ print(result.answer, result.confidence)`}</pre>
                 </div>
               ))}
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Agent Skills */}
+      <section className="py-24 px-6 border-t border-border">
+        <div className="max-w-3xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <div className="flex items-center gap-2 mb-6">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider">Agent Skills</h2>
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Teach your agents to research</h3>
+            <p className="text-muted-foreground mb-8">
+              Pre-built skills that teach AI coding agents when and how to use BrowseAI Dev. Works with Claude Code, Codex, Gemini CLI, Cursor, and more.
+            </p>
+
+            <div className="px-4 py-3 rounded-lg bg-secondary mb-8">
+              <code className="text-sm font-mono text-muted-foreground">npx skills add BrowseAI-HQ/browseAIDev_Skills</code>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              {[
+                { name: "browse-research", desc: "Evidence-backed answers with citations and confidence scores" },
+                { name: "browse-fact-check", desc: "Compare raw LLM vs evidence-backed, verify claims" },
+                { name: "browse-extract", desc: "Structured claim extraction from any URL" },
+                { name: "browse-sessions", desc: "Multi-query research with persistent knowledge" },
+              ].map((skill) => (
+                <a
+                  key={skill.name}
+                  href={`https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/${skill.name}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="p-4 rounded-xl bg-card border border-border hover:border-accent/40 transition-colors"
+                >
+                  <span className="text-sm font-semibold text-foreground block mb-1">{skill.name}</span>
+                  <span className="text-xs text-muted-foreground">{skill.desc}</span>
+                </a>
+              ))}
+            </div>
+
+            <a
+              href="https://github.com/BrowseAI-HQ/browseAIDev_Skills"
+              target="_blank"
+              rel="noopener"
+              className="text-sm text-accent hover:underline"
+            >
+              View all skills on GitHub →
+            </a>
           </motion.div>
         </div>
       </section>

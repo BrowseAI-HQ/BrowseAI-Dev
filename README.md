@@ -366,6 +366,23 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 - **Python SDK**: httpx, Pydantic
 - **Database**: Supabase (PostgreSQL)
 
+## Agent Skills
+
+Pre-built skills that teach AI coding agents (Claude Code, Codex, Cursor, etc.) when and how to use BrowseAI Dev:
+
+```bash
+npx skills add BrowseAI-HQ/browseAIDev_Skills
+```
+
+| Skill | What it does |
+|-------|-------------|
+| [browse-research](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-research) | Evidence-backed answers with citations and confidence |
+| [browse-fact-check](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-fact-check) | Compare raw LLM vs evidence-backed, verify claims |
+| [browse-extract](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-extract) | Structured claim extraction from URLs |
+| [browse-sessions](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-sessions) | Multi-query research with persistent knowledge |
+
+[View all skills →](https://github.com/BrowseAI-HQ/browseAIDev_Skills)
+
 ## Community
 
 - [Discord](https://discord.gg/ubAuT4YQsT) — questions, feedback, showcase
