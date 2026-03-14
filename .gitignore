@@ -56,5 +56,9 @@ packages/python-sdk/browseai/__pycache__/
 scripts/benchmark-results.json
 scripts/seed-benchmark.ts
 
+# Agent Skills (local install)
+.agents/
+skills-lock.json
+
 # Swag designs (local only)
 swag-designs/
