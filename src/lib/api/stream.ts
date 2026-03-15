@@ -26,15 +26,6 @@ export type StreamEvent =
   | { type: "error"; data: { error: string } }
   | { type: "done" };
 
-function getUserKeyHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {};
-  const tavily = localStorage.getItem("browse_tavily_key");
-  const openrouter = localStorage.getItem("browse_openrouter_key");
-  if (tavily) headers["X-Tavily-Key"] = tavily;
-  if (openrouter) headers["X-OpenRouter-Key"] = openrouter;
-  return headers;
-}
-
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.access_token) {
@@ -54,15 +45,12 @@ export async function streamAnswer(
   onEvent: (event: StreamEvent) => void,
 ): Promise<BrowseResult> {
   const authHeaders = await getAuthHeaders();
-  // Logged-in users use their stored keys (via backend) — don't send BYOK headers
-  const isLoggedIn = !!authHeaders.Authorization;
-  const keyHeaders = isLoggedIn ? {} : getUserKeyHeaders();
+  // UI never sends BYOK headers — users sign in (stored keys + premium) or use demo
 
   const res = await fetch(`${API_BASE}/browse/answer/stream`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...keyHeaders,
       ...authHeaders,
     },
     body: JSON.stringify({ query, depth }),
@@ -140,7 +128,6 @@ export async function streamAnswer(
 
   (window as any).posthog?.capture("browse_query", {
     tool: "/browse/answer/stream",
-    byok: !!localStorage.getItem("browse_tavily_key"),
   });
 
   return finalResult;
