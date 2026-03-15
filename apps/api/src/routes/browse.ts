@@ -49,9 +49,13 @@ function extractBrowseApiKey(request: FastifyRequest): string | null {
 
 /**
  * Resolve request environment. Priority:
- * 1. BYOK headers (X-Tavily-Key, X-OpenRouter-Key)
- * 2. BrowseAI Dev API key (bai_xxx) → resolve to stored keys
- * 3. Default env keys
+ * 1. Explicit bai_ key in header → resolve to stored keys + premium features
+ * 2. Signed-in user with stored keys → stored keys + premium features
+ * 3. BYOK headers (X-Tavily-Key, X-OpenRouter-Key) → their keys, no premium
+ * 4. Demo → server keys, 5/hr, no premium
+ *
+ * If a bai_ user's stored keys fail (exhausted limits etc.), fall to demo (5/hr, no premium).
+ * We never subsidize bai_ users with server keys.
  */
 async function getRequestEnv(
   request: FastifyRequest,
@@ -62,27 +66,7 @@ async function getRequestEnv(
   // Try to get userId from JWT (for logged-in web users)
   let userId = await getUserIdFromRequest(request);
 
-  // Priority 1: BYOK headers
-  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
-  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
-
-  if (tavilyKey || openrouterKey) {
-    return {
-      env: {
-        ...env,
-        ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
-        ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
-        // BYOK users don't get premium features (NLI, Brave) — those are bai_ key perks
-        HF_API_KEY: undefined,
-        BRAVE_API_KEY: undefined,
-      },
-      isOwnKeys: true,
-      userId,
-      hasBaiKey: false,
-    };
-  }
-
-  // Priority 2: BrowseAI Dev API key
+  // Priority 1: Explicit bai_ key in header (X-API-Key or Authorization: Bearer bai_xxx)
   if (apiKeyService) {
     const browseKey = extractBrowseApiKey(request);
     if (browseKey) {
@@ -119,9 +103,9 @@ async function getRequestEnv(
     }
   }
 
-  // Priority 3: Auto-resolve stored keys for signed-in users
-  // When a user has saved API keys (via dashboard), use them automatically
-  // so they don't hit the demo limit on the website UI
+  // Priority 2: Signed-in user with stored keys (bai_ key holder using the website UI)
+  // Their stored Tavily/OpenRouter keys are used, with premium features enabled.
+  // This takes precedence over BYOK headers — bai_ users always use their stored keys.
   if (apiKeyService && userId) {
     try {
       const userCacheKey = `user_keys:${userId}`;
@@ -151,22 +135,39 @@ async function getRequestEnv(
         };
       }
     } catch (e) {
-      // Decryption or DB failure — fall through to server keys (no demo limit for authenticated users)
+      // Decryption or DB failure — fall through, don't use server keys for bai_ users
       console.warn("Auto-resolve stored keys failed for user", userId, e);
     }
   }
 
-  // Priority 4: Default env (demo users — no premium features)
-  // Authenticated users (valid JWT) bypass demo limits even when using server keys
-  const isAuthenticated = !!userId;
+  // Priority 3: BYOK headers (no bai_ key, no stored keys)
+  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
+  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
+
+  if (tavilyKey || openrouterKey) {
+    return {
+      env: {
+        ...env,
+        ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
+        ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
+        // BYOK users don't get premium features — those are bai_ key perks
+        HF_API_KEY: undefined,
+        BRAVE_API_KEY: undefined,
+      },
+      isOwnKeys: true,
+      userId,
+      hasBaiKey: false,
+    };
+  }
+
+  // Priority 4: Demo (server keys, 5/hr rate limit, no premium features)
   return {
     env: {
       ...env,
-      // Demo/unauthenticated users don't get NLI or Brave — those cost us money
       HF_API_KEY: undefined,
       BRAVE_API_KEY: undefined,
     },
-    isOwnKeys: isAuthenticated,
+    isOwnKeys: false,
     userId,
     hasBaiKey: false,
   };

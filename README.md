@@ -21,7 +21,7 @@ Agent → BrowseAI Dev → Internet → Verified answers + sources
 search → fetch pages → extract claims → build evidence graph → cited answer
 ```
 
-Every answer goes through a 6-step verification pipeline. No hallucination. Every claim is backed by a real source.
+Every answer goes through a multi-step verification pipeline. No hallucination. Every claim is backed by a real source.
 
 ### Verification & Confidence Scoring
 
@@ -70,13 +70,13 @@ Events: `trace` (progress), `sources` (discovered early), `result` (final answer
 
 ### Retry with Backoff
 
-All external API calls (Tavily search, OpenRouter LLM, Brave search, page fetching) automatically retry on transient failures (429 rate limits, 5xx server errors) with exponential backoff and jitter. Auth errors (401/403) fail immediately — no wasted retries.
+All external API calls (search providers, LLM, page fetching) automatically retry on transient failures (429 rate limits, 5xx server errors) with exponential backoff and jitter. Auth errors (401/403) fail immediately — no wasted retries.
 
 ### Research Memory (Sessions)
 
 Persistent research sessions that accumulate knowledge across multiple queries. Later queries automatically recall prior verified claims, building deeper understanding over time.
 
-> **Sessions require a BrowseAI Dev API key (`bai_xxx`)** for identity and ownership. BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions. Get a free key at [browseai.dev/dashboard](https://browseai.dev/dashboard). For MCP, set `BROWSE_API_KEY` env var. For Python SDK, pass `api_key="bai_xxx"`. For REST API, use `Authorization: Bearer bai_xxx`.
+> **Sessions require a BrowseAI Dev API key (`bai_xxx`)** for identity and ownership. BYOK users can use search/answer but cannot use sessions. Get a free key at [browseai.dev/dashboard](https://browseai.dev/dashboard). For MCP, set `BROWSE_API_KEY` env var. For Python SDK, pass `api_key="bai_xxx"`. For REST API, use `Authorization: Bearer bai_xxx`.
 
 ```python
 # Python SDK
@@ -365,11 +365,12 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 ## Tech Stack
 
 - **API**: Node.js, TypeScript, Fastify, Zod
-- **Search**: Tavily API
+- **Search**: Multi-provider (parallel search across sources)
 - **Parsing**: @mozilla/readability + linkedom
 - **AI**: Gemini 2.5 Flash via OpenRouter
 - **Caching**: Redis or in-memory with intelligent TTL (time-sensitive queries get shorter TTL)
 - **Frontend**: React, Tailwind CSS, shadcn/ui, Framer Motion
+- **Verification**: Hybrid BM25 + NLI semantic entailment
 - **MCP**: @modelcontextprotocol/sdk
 - **Python SDK**: httpx, Pydantic
 - **Database**: Supabase (PostgreSQL)

@@ -407,7 +407,7 @@ const Index = () => {
                 { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
                 { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims and entities, build reusable queryable knowledge" },
-                { phase: "In Progress", text: "Premium verification tier — NLI reranking, multi-provider search, and consistency checking for API key users" },
+                { phase: "Shipped", text: "Premium verification tier — NLI reranking, multi-provider search, and consistency checking gated behind API keys. Free users get BM25 verification." },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Coming Soon", text: "Fine-tuned verification model — custom model trained on 10K+ production examples for per-domain calibration" },
                 { phase: "Coming Soon", text: "Enterprise search adapters — plug into Elasticsearch, Confluence, or any custom endpoint with zero data retention" },
@@ -586,8 +586,10 @@ const Index = () => {
               </div>
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2"><span className="text-orange-400 mt-0.5">-</span> No real sources, hallucinated citations</li>
+                <li className="flex items-start gap-2"><span className="text-orange-400 mt-0.5">-</span> No verification — can't tell fact from fiction</li>
                 <li className="flex items-start gap-2"><span className="text-orange-400 mt-0.5">-</span> Unknown reliability, no confidence signal</li>
                 <li className="flex items-start gap-2"><span className="text-orange-400 mt-0.5">-</span> Stale training data, can't access current info</li>
+                <li className="flex items-start gap-2"><span className="text-orange-400 mt-0.5">-</span> Single pass, no depth control</li>
                 <li className="flex items-start gap-2"><span className="text-orange-400 mt-0.5">-</span> Claims mixed into unstructured text</li>
               </ul>
             </motion.div>
@@ -600,8 +602,10 @@ const Index = () => {
               <ul className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Real URLs with quoted evidence</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Hybrid BM25 + NLI verified claims against source text</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Atomic claim decomposition — compound facts split and verified independently</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score, auto-calibrated from feedback)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough mode — auto-retries with rephrased queries for higher accuracy</li>
               </ul>
             </motion.div>
           </div>
@@ -797,6 +801,8 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "POST", path: "/browse/extract", desc: "Extract claims from a page" },
               { method: "POST", path: "/browse/answer", desc: "Full pipeline with citations" },
               { method: "POST", path: "/browse/compare", desc: "Raw LLM vs evidence-backed" },
+              { method: "POST", path: "/browse/answer/stream", desc: "Streaming SSE (real-time progress)" },
+              { method: "POST", path: "/browse/feedback", desc: "Submit accuracy feedback" },
               { method: "GET", path: "/browse/share/:id", desc: "Get a shared result" },
               { method: "GET", path: "/browse/stats", desc: "Total queries answered" },
               { method: "GET", path: "/browse/sources/top", desc: "Top cited sources" },

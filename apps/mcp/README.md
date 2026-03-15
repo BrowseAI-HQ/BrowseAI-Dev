@@ -111,7 +111,7 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 
 | Tool | Description |
 |------|-------------|
-| `browse_search` | Search the web via Tavily |
+| `browse_search` | Search the web via multi-provider search |
 | `browse_open` | Fetch and parse a page into clean text |
 | `browse_extract` | Extract structured knowledge from a page |
 | `browse_answer` | Full pipeline: search + extract + cite. Supports `depth: "thorough"` for auto-retry |
@@ -122,8 +122,9 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 | `browse_session_share` | Share a session publicly (returns share URL) |
 | `browse_session_knowledge` | Export all claims from a session |
 | `browse_session_fork` | Fork a shared session to continue the research |
+| `browse_feedback` | Submit accuracy feedback on a result |
 
-> **Note:** Session tools (`browse_session_*`) require a BrowseAI Dev API key (`bai_xxx`) for identity and ownership. Set `BROWSE_API_KEY` in your env config. BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
+> **Note:** Session tools (`browse_session_*`) require a BrowseAI Dev API key (`bai_xxx`) for identity and ownership. Set `BROWSE_API_KEY` in your env config. BYOK users can use search/answer but cannot use sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ## Example
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -10,6 +12,16 @@ class BrowseSource(BaseModel):
     title: str
     domain: str
     quote: str
+    verified: bool | None = None
+    authority: float | None = None
+
+
+class NLIScore(BaseModel):
+    """NLI semantic entailment score."""
+    entailment: float
+    contradiction: float
+    neutral: float
+    label: Literal["entailment", "neutral", "contradiction"]
 
 
 class BrowseClaim(BaseModel):
@@ -18,7 +30,8 @@ class BrowseClaim(BaseModel):
     verified: bool | None = None
     verification_score: float | None = Field(None, alias="verificationScore")
     consensus_count: int | None = Field(None, alias="consensusCount")
-    consensus_level: str | None = Field(None, alias="consensusLevel")
+    consensus_level: Literal["strong", "moderate", "weak", "none"] | None = Field(None, alias="consensusLevel")
+    nli_score: NLIScore | None = Field(None, alias="nliScore")
 
     model_config = {"populate_by_name": True}
 
@@ -33,6 +46,7 @@ class Contradiction(BaseModel):
     claim_a: str = Field(alias="claimA")
     claim_b: str = Field(alias="claimB")
     topic: str
+    nli_confidence: float | None = Field(None, alias="nliConfidence")
 
     model_config = {"populate_by_name": True}
 
@@ -51,12 +65,12 @@ class BrowseResult(BaseModel):
 
 class SearchProviderConfig(BaseModel):
     """Enterprise search provider configuration."""
-    type: str  # "tavily" | "brave" | "elasticsearch" | "confluence" | "custom"
+    type: Literal["tavily", "brave", "elasticsearch", "confluence", "custom"]
     endpoint: str | None = None
     auth_header: str | None = Field(None, alias="authHeader")
     index: str | None = None
     space_key: str | None = Field(None, alias="spaceKey")
-    data_retention: str | None = Field("normal", alias="dataRetention")
+    data_retention: Literal["normal", "none"] | None = Field("normal", alias="dataRetention")
 
     model_config = {"populate_by_name": True}
 
