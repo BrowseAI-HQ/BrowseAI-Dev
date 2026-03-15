@@ -508,7 +508,9 @@ print(result.answer, result.confidence)`}</pre>
                 <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: bai_your_key" \\
-  -d '{"query": "What causes aurora borealis?"}'`}</pre>
+  -d '{"query": "What causes aurora borealis?", "depth": "deep"}'
+
+# depth: "fast" (default) | "thorough" | "deep"`}</pre>
               </div>
             </div>
           </motion.div>

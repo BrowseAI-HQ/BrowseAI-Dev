@@ -143,7 +143,8 @@ function enforceDomainDiversity(results: SearchResult[], maxPerDomain: number = 
 
   // Results should already be sorted by score from Tavily
   for (const r of results) {
-    const domain = new URL(r.url).hostname.replace(/^www\./, "");
+    let domain: string;
+    try { domain = new URL(r.url).hostname.replace(/^www\./, ""); } catch { continue; }
     const count = domainCounts.get(domain) || 0;
     if (count < maxPerDomain) {
       diverse.push(r);
@@ -314,15 +315,18 @@ export async function singlePass(
 
   // Phase 4: Fetch pages (adaptive count, best sources first thanks to reranking)
   const scrapeStart = Date.now();
+  const pagesToFetch = rerankedResults.slice(0, pageCount);
   const pages = await Promise.allSettled(
-    rerankedResults.slice(0, pageCount).map((r) => openPage(r.url, cache))
+    pagesToFetch.map((r) => openPage(r.url, cache))
   );
-  const successfulPages = pages
-    .filter(
-      (p): p is PromiseFulfilledResult<Awaited<ReturnType<typeof openPage>>> =>
-        p.status === "fulfilled"
-    )
-    .map((p) => p.value.page);
+  // Track URL alongside each successful page to avoid index misalignment
+  const successfulPages: { page: Awaited<ReturnType<typeof openPage>>["page"]; url: string }[] = [];
+  for (let i = 0; i < pages.length; i++) {
+    const p = pages[i];
+    if (p.status === "fulfilled") {
+      successfulPages.push({ page: p.value.page, url: pagesToFetch[i].url });
+    }
+  }
   trace.push({
     step: `Fetch Pages${label}`,
     duration_ms: Date.now() - scrapeStart,
@@ -332,11 +336,11 @@ export async function singlePass(
   // Build content + merge page texts
   const pageTexts = new Map<string, string>(existingPageTexts || []);
   const pageContents = successfulPages
-    .map((p, i) => {
-      const url = rerankedResults[i]?.url || "";
-      const content = p.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
+    .map((entry, i) => {
+      const url = entry.url;
+      const content = entry.page.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
       pageTexts.set(url, content);
-      return `[Source ${i + 1}] URL: ${url}\nTitle: ${p.title}\n\n${content}`;
+      return `[Source ${i + 1}] URL: ${url}\nTitle: ${entry.page.title}\n\n${content}`;
     })
     .join("\n\n---\n\n");
 

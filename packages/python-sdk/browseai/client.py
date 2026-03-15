@@ -278,7 +278,7 @@ class SessionClient:
 
     def knowledge(self, *, limit: int = 50) -> list[KnowledgeEntry]:
         """Export all knowledge entries from this session."""
-        data = self._client._get(f"/session/{self.id}/knowledge")
+        data = self._client._get(f"/session/{self.id}/knowledge?limit={limit}")
         return [KnowledgeEntry(**e) for e in data.get("entries", [])]
 
     def share(self) -> dict:
@@ -488,7 +488,7 @@ class AsyncSessionClient:
 
     async def knowledge(self, *, limit: int = 50) -> list[KnowledgeEntry]:
         """Export all knowledge entries from this session."""
-        data = await self._client._get(f"/session/{self.id}/knowledge")
+        data = await self._client._get(f"/session/{self.id}/knowledge?limit={limit}")
         return [KnowledgeEntry(**e) for e in data.get("entries", [])]
 
     async def share(self) -> dict:

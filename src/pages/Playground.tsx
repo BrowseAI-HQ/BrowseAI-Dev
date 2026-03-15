@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
@@ -115,6 +115,22 @@ const TUTORIAL_SCENARIOS = [
     query: "What are the health effects of intermittent fasting? Include any contradictions.",
     tutorial: "podcast-prep",
   },
+  {
+    name: "Deep Reasoning",
+    desc: "Multi-step agentic research with gap analysis",
+    tab: "answer" as const,
+    depth: "deep" as const,
+    query: "What was before the Big Bang? Compare leading cosmological theories with evidence for and against each.",
+    tutorial: "deep-reasoning",
+  },
+  {
+    name: "Deep Investigation",
+    desc: "Iterative follow-up searches to fill knowledge gaps",
+    tab: "answer" as const,
+    depth: "deep" as const,
+    query: "What is the current scientific consensus on dark matter vs modified gravity theories?",
+    tutorial: "deep-investigation",
+  },
 ];
 
 const PLACEHOLDERS: Record<string, string> = {
@@ -124,6 +140,50 @@ const PLACEHOLDERS: Record<string, string> = {
   extract: "Enter a URL to extract claims from…",
   compare: "Compare raw LLM vs evidence-backed…",
 };
+
+// ── Pipeline animation for loading state ─────────────────────────────
+
+const PIPELINE_STEPS = {
+  fast: ["Search Web", "Fetch Pages", "Extract Claims", "Verify Evidence", "Generate Answer"],
+  thorough: ["Search Web", "Fetch Pages", "Extract & Verify", "Rephrase Query", "Second Pass", "Select Best"],
+  deep: ["Initial Search", "Extract Claims", "Gap Analysis", "Follow-up Search", "Merge Knowledge", "Final Verification"],
+};
+
+function PipelineSteps({ depth }: { depth: "fast" | "thorough" | "deep" }) {
+  const steps = PIPELINE_STEPS[depth];
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % steps.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [steps.length]);
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
+      {steps.map((step, i) => (
+        <motion.span
+          key={step}
+          animate={{
+            opacity: i <= activeStep ? 1 : 0.3,
+            scale: i === activeStep ? 1.05 : 1,
+          }}
+          transition={{ duration: 0.3 }}
+          className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
+            i < activeStep
+              ? "text-emerald-400 border-emerald-500/30"
+              : i === activeStep
+              ? "text-accent border-accent/40"
+              : "text-muted-foreground border-border"
+          }`}
+        >
+          {i < activeStep ? "✓" : i === activeStep ? "●" : "○"} {step}
+        </motion.span>
+      ))}
+    </div>
+  );
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -357,12 +417,29 @@ const Playground = () => {
           ))}
         </Tabs>
 
-        {/* Loading indicator */}
+        {/* Loading indicator with pipeline animation */}
         {loading && (
-          <div className="flex items-center justify-center gap-3 py-12 text-muted-foreground">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm">Running pipeline…</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center gap-4 py-12"
+          >
+            <div className="relative">
+              <Loader2 className="w-8 h-8 text-accent animate-spin" />
+              <div className="absolute inset-0 w-8 h-8 rounded-full bg-accent/10 animate-ping" />
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <motion.span
+                key={depth}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-sm font-medium text-accent"
+              >
+                {depth === "deep" ? "Deep reasoning" : depth === "thorough" ? "Thorough analysis" : "Researching"}…
+              </motion.span>
+              <PipelineSteps depth={depth} />
+            </div>
+          </motion.div>
         )}
 
         {/* Error */}

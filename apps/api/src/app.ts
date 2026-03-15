@@ -44,28 +44,22 @@ export async function buildApp() {
       ? createApiKeyService(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env.API_KEY_ENCRYPTION_KEY)
       : null;
 
-  // Load domain authority from DB into memory (falls back to minimal TLD defaults if unavailable)
-  const domainCount = await initDomainAuthority(store);
-  if (domainCount > 0) {
-    console.log(`Loaded ${domainCount} domain authority entries from DB`);
-  }
-
-  // Restore self-learning state from Redis (survives serverless cold starts)
+  // Initialize all state in parallel (domain authority, learning, calibration)
   setLearningCache(cache);
-  const learningTypes = await loadLearningState(cache);
-  if (learningTypes > 0) {
-    console.log(`Restored learning state for ${learningTypes} query types`);
-  }
-
-  // Restore domain intelligence (co-citation + usefulness) from Redis
   setDomainIntelCache(cache);
-  const { coCitationCount, usefulnessCount } = await loadDomainIntelState(cache);
-  if (coCitationCount > 0 || usefulnessCount > 0) {
-    console.log(`Restored domain intelligence: ${coCitationCount} co-citation, ${usefulnessCount} usefulness scores`);
-  }
 
-  // Load confidence calibration from feedback data (auto-adjusts over time)
-  const calibrationBuckets = await store.getCalibrationData();
+  const [domainCount, learningTypes, domainIntel, calibrationBuckets] = await Promise.all([
+    initDomainAuthority(store),
+    loadLearningState(cache),
+    loadDomainIntelState(cache),
+    store.getCalibrationData(),
+  ]);
+
+  if (domainCount > 0) console.log(`Loaded ${domainCount} domain authority entries from DB`);
+  if (learningTypes > 0) console.log(`Restored learning state for ${learningTypes} query types`);
+  if (domainIntel.coCitationCount > 0 || domainIntel.usefulnessCount > 0) {
+    console.log(`Restored domain intelligence: ${domainIntel.coCitationCount} co-citation, ${domainIntel.usefulnessCount} usefulness scores`);
+  }
   if (calibrationBuckets.length > 0) {
     setCalibrationData(calibrationBuckets);
     const totalFeedback = calibrationBuckets.reduce((sum, b) => sum + b.count, 0);

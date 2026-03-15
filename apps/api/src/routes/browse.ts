@@ -96,18 +96,8 @@ async function getRequestEnv(
   if (apiKeyService) {
     const browseKey = extractBrowseApiKey(request);
     if (browseKey) {
-      const cacheKey = `bai_resolve:${Buffer.from(browseKey).toString("base64url").slice(0, 32)}`;
-      const cached = await cache.get(cacheKey);
-
-      let resolved: { userId: string; tavilyKey: string; openrouterKey: string } | null;
-      if (cached) {
-        resolved = JSON.parse(cached);
-      } else {
-        resolved = await apiKeyService.resolve(browseKey);
-        if (resolved) {
-          await cache.set(cacheKey, JSON.stringify(resolved), 60);
-        }
-      }
+      // Resolve on every request — don't cache decrypted secrets in Redis
+      const resolved = await apiKeyService.resolve(browseKey);
 
       if (resolved) {
         userId = resolved.userId;
@@ -140,18 +130,8 @@ async function getRequestEnv(
   // This takes precedence over BYOK headers — bai_ users always use their stored keys.
   if (apiKeyService && userId) {
     try {
-      const userCacheKey = `user_keys:${userId}`;
-      const cached = await cache.get(userCacheKey);
-
-      let resolved: { tavilyKey: string; openrouterKey: string } | null;
-      if (cached) {
-        resolved = JSON.parse(cached);
-      } else {
-        resolved = await apiKeyService.resolveByUserId(userId);
-        if (resolved) {
-          await cache.set(userCacheKey, JSON.stringify(resolved), 60);
-        }
-      }
+      // Resolve on every request — don't cache decrypted secrets in Redis
+      const resolved = await apiKeyService.resolveByUserId(userId);
 
       if (resolved) {
         // Check daily premium quota — graceful fallback when exceeded
@@ -504,10 +484,13 @@ export function registerBrowseRoutes(
 
       const result = await answerQueryStreaming(parsed.data.query, reqEnv, cache, emit, streamDepth);
 
+      // Respect dataRetention from searchProvider config
+      const noRetention = parsed.data.searchProvider?.dataRetention === "none";
+
       // Save to store and include shareId in done event
       const client = detectClient(request);
       const cacheHit = result.trace?.[0]?.step === "Cache Hit";
-      const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
+      const shareId = noRetention ? undefined : await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
 
       // Increment premium quota counter (fire-and-forget) if premium was used
       // Deep mode counts as 3x

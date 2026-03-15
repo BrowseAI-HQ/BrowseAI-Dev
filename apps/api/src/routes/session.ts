@@ -45,10 +45,7 @@ async function getRequestEnv(
     const xApiKey = request.headers["x-api-key"] as string | undefined;
     const browseKey = xApiKey?.startsWith("bai_") ? xApiKey : null;
     if (browseKey) {
-      const cacheKey = `bai_resolve:${Buffer.from(browseKey).toString("base64url").slice(0, 32)}`;
-      const cached = await cache.get(cacheKey);
-      const resolved = cached ? JSON.parse(cached) : await apiKeyService.resolve(browseKey);
-      if (resolved && !cached) await cache.set(cacheKey, JSON.stringify(resolved), 60);
+      const resolved = await apiKeyService.resolve(browseKey);
       if (resolved) {
         userId = resolved.userId;
         const quota = await checkPremiumQuota(resolved.userId, cache);
@@ -71,18 +68,7 @@ async function getRequestEnv(
   // Priority 2: Auto-resolve stored keys for signed-in users
   if (apiKeyService && userId) {
     try {
-      const userCacheKey = `user_keys:${userId}`;
-      const cached = await cache.get(userCacheKey);
-
-      let resolved: { tavilyKey: string; openrouterKey: string } | null;
-      if (cached) {
-        resolved = JSON.parse(cached);
-      } else {
-        resolved = await apiKeyService.resolveByUserId(userId);
-        if (resolved) {
-          await cache.set(userCacheKey, JSON.stringify(resolved), 60);
-        }
-      }
+      const resolved = await apiKeyService.resolveByUserId(userId);
 
       if (resolved) {
         const quota = await checkPremiumQuota(userId, cache);
@@ -152,12 +138,16 @@ export function registerSessionRoutes(
     }
   });
 
-  // Get session details
+  // Get session details (owner only — use /session/share/:shareId for public access)
   app.get("/session/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     try {
+      const { userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const session = await sessionStore.getSession(id);
       if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
+      if (session.userId && session.userId !== userId) {
+        return reply.status(403).send({ success: false, error: "Not authorized to access this session" });
+      }
       return { success: true, result: session };
     } catch (e: any) {
       request.log.error(e);
@@ -178,10 +168,17 @@ export function registerSessionRoutes(
     }
   });
 
-  // Delete session
+  // Delete session (owner only)
   app.delete("/session/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     try {
+      const { userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      if (!userId) return reply.status(401).send({ success: false, error: "Authentication required" });
+      const session = await sessionStore.getSession(id);
+      if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
+      if (session.userId && session.userId !== userId) {
+        return reply.status(403).send({ success: false, error: "Not authorized to delete this session" });
+      }
       await sessionStore.deleteSession(id);
       return { success: true };
     } catch (e: any) {
@@ -190,7 +187,7 @@ export function registerSessionRoutes(
     }
   });
 
-  // Ask with session context — the core Research Memory endpoint
+  // Ask with session context — the core Research Memory endpoint (owner only)
   app.post("/session/:id/ask", async (request, reply) => {
     const { id } = request.params as { id: string };
     const parsed = SessionAskSchema.safeParse(request.body);
@@ -198,10 +195,13 @@ export function registerSessionRoutes(
       return reply.status(400).send({ success: false, error: zodMessage(parsed.error) });
 
     try {
+      const { env: reqEnv, userId, premiumActive } = await getRequestEnv(request, env, apiKeyService, cache);
+
       const session = await sessionStore.getSession(id);
       if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
-
-      const { env: reqEnv, userId, premiumActive } = await getRequestEnv(request, env, apiKeyService, cache);
+      if (session.userId && session.userId !== userId) {
+        return reply.status(403).send({ success: false, error: "Not authorized to access this session" });
+      }
 
       // Phase 1: Recall existing knowledge relevant to this query
       const recallStart = Date.now();
@@ -314,14 +314,18 @@ export function registerSessionRoutes(
     }
   });
 
-  // Export all knowledge from a session
+  // Export all knowledge from a session (owner only — use /session/share/:shareId for public)
   app.get("/session/:id/knowledge", async (request, reply) => {
     const { id } = request.params as { id: string };
     const { limit } = request.query as { limit?: string };
 
     try {
+      const { userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const session = await sessionStore.getSession(id);
       if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
+      if (session.userId && session.userId !== userId) {
+        return reply.status(403).send({ success: false, error: "Not authorized to access this session" });
+      }
 
       const entries = await sessionStore.getKnowledge(id, limit ? parseInt(limit) : 50);
       return {
@@ -338,12 +342,17 @@ export function registerSessionRoutes(
     }
   });
 
-  // Share a session — creates a public share link
+  // Share a session — creates a public share link (owner only)
   app.post("/session/:id/share", async (request, reply) => {
     const { id } = request.params as { id: string };
     try {
+      const { userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      if (!userId) return reply.status(401).send({ success: false, error: "Authentication required" });
       const session = await sessionStore.getSession(id);
       if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
+      if (session.userId && session.userId !== userId) {
+        return reply.status(403).send({ success: false, error: "Not authorized to share this session" });
+      }
 
       const shareId = await sessionStore.shareSession(id);
       return { success: true, result: { shareId } };

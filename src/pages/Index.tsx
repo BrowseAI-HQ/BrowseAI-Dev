@@ -83,7 +83,7 @@ const Index = () => {
   const handleSearch = (q?: string) => {
     const searchQuery = q || query;
     if (!searchQuery.trim()) return;
-    const depthParam = depth === "thorough" ? "&depth=thorough" : "";
+    const depthParam = depth !== "fast" ? `&depth=${depth}` : "";
     navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}${depthParam}`);
   };
 

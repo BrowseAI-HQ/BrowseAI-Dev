@@ -21,7 +21,8 @@ import { openPage } from "./scrape.js";
 import { streamAnswer, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
 import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
-import { isLowQualityDomain } from "../lib/verify.js";
+import { isLowQualityDomain, rerankSources } from "../lib/verify.js";
+import { getAdaptivePageCount } from "../lib/learning.js";
 import { MAX_PAGE_CONTENT_LENGTH } from "@browse/shared";
 import type { BrowseResult, TraceStep } from "@browse/shared";
 import type { CacheService } from "./cache.js";
@@ -56,7 +57,8 @@ function enforceDomainDiversity(results: SearchResult[], maxPerDomain: number = 
   const domainCounts = new Map<string, number>();
   const diverse: SearchResult[] = [];
   for (const r of results) {
-    const domain = new URL(r.url).hostname.replace(/^www\./, "");
+    let domain: string;
+    try { domain = new URL(r.url).hostname.replace(/^www\./, ""); } catch { continue; }
     const count = domainCounts.get(domain) || 0;
     if (count < maxPerDomain) {
       diverse.push(r);
@@ -86,31 +88,6 @@ function emitTrace(trace: TraceStep[], emit: SSEWriter, step: TraceStep) {
   emit("trace", step);
 }
 
-/** Emit verification trace steps from knowledge result. */
-function emitVerificationSteps(
-  knowledge: Omit<BrowseResult, "trace">,
-  llmDuration: number,
-  trace: TraceStep[],
-  emit: SSEWriter,
-  label = "",
-) {
-  const suffix = label ? ` (${label})` : "";
-  const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;
-  const strongConsensus = knowledge.claims.filter(
-    (c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
-  ).length;
-  const contradictionCount = knowledge.contradictions?.length || 0;
-
-  emitTrace(trace, emit, { step: `Extract Claims${suffix}`, duration_ms: Math.round(llmDuration * 0.30), detail: `${knowledge.claims.length} claims` });
-  emitTrace(trace, emit, { step: `Verify Evidence${suffix}`, duration_ms: Math.round(llmDuration * 0.15), detail: `${verifiedCount}/${knowledge.claims.length} verified` });
-  emitTrace(trace, emit, {
-    step: `Cross-Source Consensus${suffix}`,
-    duration_ms: Math.round(llmDuration * 0.10),
-    detail: `${strongConsensus}/${knowledge.claims.length} agreement${contradictionCount > 0 ? `, ${contradictionCount} contradiction${contradictionCount > 1 ? "s" : ""}` : ""}`,
-  });
-  emitTrace(trace, emit, { step: `Build Evidence Graph${suffix}`, duration_ms: Math.round(llmDuration * 0.10), detail: `${knowledge.sources.length} sources` });
-  emitTrace(trace, emit, { step: `Generate Answer${suffix}`, duration_ms: Math.round(llmDuration * 0.35), detail: "OpenRouter" });
-}
 
 /**
  * Run a single streaming pass: search → fetch → stream answer → verify.
@@ -187,44 +164,53 @@ async function streamingSinglePass(
   }
 
   const filtered = filterLowQuality(allResults);
-  let diverseResults = enforceDomainDiversity(filtered);
+  const diverseResults = enforceDomainDiversity(filtered);
+
+  // Domain intelligence reranking (authority + usefulness + co-citation)
+  let rerankedResults = rerankSources(diverseResults);
 
   // Neural re-rank (premium)
   let neuralLabel = "";
-  if (env.HF_API_KEY && diverseResults.length > 1) {
+  if (env.HF_API_KEY && rerankedResults.length > 1) {
     const { crossEncoderRerank } = await import("../lib/reranker.js");
-    const ceResult = await crossEncoderRerank(query, diverseResults, env.HF_API_KEY);
+    const ceResult = await crossEncoderRerank(query, rerankedResults, env.HF_API_KEY);
     if (ceResult.reranked) {
-      diverseResults = ceResult.results;
+      rerankedResults = ceResult.results;
       neuralLabel = " → neural";
     }
   }
 
-  const pageCount = ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
+  const pageCount = getAdaptivePageCount(analysis.type) || ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
 
   emitTrace(trace, emit, {
     step: `Search Web${suffix}`,
     duration_ms: Date.now() - searchStart,
-    detail: `${diverseResults.length} results [${analysis.type}]${searchDetail}${neuralLabel}`,
+    detail: `${rerankedResults.length} results [${analysis.type}]${searchDetail}${neuralLabel}`,
   });
 
-  if (diverseResults.length === 0) {
+  if (rerankedResults.length === 0) {
     throw new Error("No search results found");
   }
 
   // Emit sources early
-  emit("sources", diverseResults.slice(0, pageCount).map((r) => ({ url: r.url, title: r.title })));
+  emit("sources", rerankedResults.slice(0, pageCount).map((r) => ({ url: r.url, title: r.title })));
 
   // Phase 2: Fetch pages
   const scrapeStart = Date.now();
-  emit("trace", { step: "Fetching", duration_ms: 0, detail: `Loading ${Math.min(pageCount, diverseResults.length)} pages${suffix}...` });
+  emit("trace", { step: "Fetching", duration_ms: 0, detail: `Loading ${Math.min(pageCount, rerankedResults.length)} pages${suffix}...` });
 
+  const pagesToFetch = rerankedResults.slice(0, pageCount);
   const pages = await Promise.allSettled(
-    diverseResults.slice(0, pageCount).map((r) => openPage(r.url, cache))
+    pagesToFetch.map((r) => openPage(r.url, cache))
   );
-  const successfulPages = pages
-    .filter((p): p is PromiseFulfilledResult<Awaited<ReturnType<typeof openPage>>> => p.status === "fulfilled")
-    .map((p) => p.value.page);
+  // Track URL alongside each successful page to avoid index misalignment
+  const successfulPages: { page: Awaited<ReturnType<typeof openPage>>["page"]; url: string }[] = [];
+  for (let i = 0; i < pages.length; i++) {
+    const p = pages[i];
+    if (p.status === "fulfilled") {
+      successfulPages.push({ page: p.value.page, url: pagesToFetch[i].url });
+    }
+  }
 
   emitTrace(trace, emit, {
     step: `Fetch Pages${suffix}`,
@@ -235,11 +221,11 @@ async function streamingSinglePass(
   // Build content
   const pageTexts = new Map<string, string>(existingPageTexts || []);
   const pageContents = successfulPages
-    .map((p, i) => {
-      const url = diverseResults[i]?.url || "";
-      const content = p.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
+    .map((entry, i) => {
+      const url = entry.url;
+      const content = entry.page.content.slice(0, MAX_PAGE_CONTENT_LENGTH);
       pageTexts.set(url, content);
-      return `[Source ${i + 1}] URL: ${url}\nTitle: ${p.title}\n\n${content}`;
+      return `[Source ${i + 1}] URL: ${url}\nTitle: ${entry.page.title}\n\n${content}`;
     })
     .join("\n\n---\n\n");
 
@@ -247,16 +233,51 @@ async function streamingSinglePass(
   const llmStart = Date.now();
   emit("trace", { step: "Generating Answer", duration_ms: 0, detail: `Streaming answer${suffix}...` });
 
+  // Track phase timings for real-time trace emission
+  let phaseStart = Date.now();
+  const phaseHandler = (phase: "extract_claims" | "verify_evidence" | "consensus" | "build_graph" | "done") => {
+    const now = Date.now();
+    const elapsed = now - phaseStart;
+    phaseStart = now;
+
+    switch (phase) {
+      case "extract_claims":
+        emitTrace(trace, emit, { step: `Generate Answer${suffix}`, duration_ms: elapsed, detail: "OpenRouter" });
+        emit("trace", { step: "Analyzing", duration_ms: 0, detail: `Extracting claims${suffix}...` });
+        break;
+      case "verify_evidence":
+        emitTrace(trace, emit, { step: `Extract Claims${suffix}`, duration_ms: elapsed, detail: "Structured extraction" });
+        emit("trace", { step: "Analyzing", duration_ms: 0, detail: `Verifying evidence${suffix}...` });
+        break;
+      case "done": {
+        emitTrace(trace, emit, { step: `Verify Evidence${suffix}`, duration_ms: elapsed, detail: "BM25 + consensus + authority" });
+        break;
+      }
+    }
+  };
+
   const knowledge = await streamAnswer(
     query, pageContents, env.OPENROUTER_API_KEY,
     (token) => emit("token", { text: token }),
     pageTexts, analysis.type, {
       hfApiKey: env.HF_API_KEY,
     },
+    phaseHandler,
   );
   const llmDuration = Date.now() - llmStart;
 
-  emitVerificationSteps(knowledge, llmDuration, trace, emit, label);
+  // Emit final summary steps (with actual claim/source counts now available)
+  const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;
+  const strongConsensus = knowledge.claims.filter(
+    (c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
+  ).length;
+  const contradictionCount = knowledge.contradictions?.length || 0;
+  emitTrace(trace, emit, {
+    step: `Cross-Source Consensus${suffix}`,
+    duration_ms: 0,
+    detail: `${strongConsensus}/${knowledge.claims.length} agreement${contradictionCount > 0 ? `, ${contradictionCount} contradiction${contradictionCount > 1 ? "s" : ""}` : ""}`,
+  });
+  emitTrace(trace, emit, { step: `Build Evidence Graph${suffix}`, duration_ms: 0, detail: `${knowledge.sources.length} sources` });
 
   return { knowledge, pageTexts, queryType: analysis.type };
 }

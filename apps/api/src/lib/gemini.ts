@@ -187,28 +187,9 @@ export function computeConfidence(
     raw = Math.max(0, raw - contradictionCount * 0.05);
   }
 
-  // Factual query boost: settled facts with evidence and no contradictions
-  // deserve higher confidence — paraphrasing shouldn't penalize clearly correct answers.
-  if (queryType === "factual" && contradictionCount === 0) {
-    // Well-grounded with some verification → high confidence floor
-    if (sources.length >= 2 && groundingScore >= 0.5 && verificationRate >= 0.3) {
-      raw = Math.max(raw, 0.80);
-    }
-    // Consensus across sources is a strong signal
-    if (consensusScore >= 0.5 && sources.length >= 3) {
-      raw = Math.max(raw, 0.75);
-    }
-    // Multiple diverse sources with good grounding but low verification
-    // (common for well-known topics where LLM paraphrases heavily)
-    // The sources exist and are cited — that alone deserves a reasonable floor
-    if (sources.length >= 3 && groundingScore >= 0.7 && uniqueDomains >= 3) {
-      raw = Math.max(raw, 0.65);
-    }
-    // Even 2 sources with strong grounding shouldn't score below 55%
-    if (sources.length >= 2 && groundingScore >= 0.5) {
-      raw = Math.max(raw, 0.55);
-    }
-  }
+  // No hard-coded confidence floors — let the 7-factor weighted score
+  // determine confidence naturally. The weights already account for
+  // query type differences (factual vs opinion).
 
   // Scale to 0.10–0.97 range
   const scaled = 0.10 + raw * 0.87;
@@ -666,6 +647,7 @@ export async function streamAnswer(
     weights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number };
     hfApiKey?: string;
   },
+  onPhase?: (phase: "extract_claims" | "verify_evidence" | "consensus" | "build_graph" | "done") => void,
 ): Promise<Omit<BrowseResult, "trace">> {
   const systemPrompt = getExtractionPrompt(queryType);
 
@@ -739,7 +721,7 @@ export async function streamAnswer(
   }
 
   // Phase B: Extract claims + sources (non-streamed, tool call)
-  // Use the already-generated answer as context so the LLM just needs to extract structured data
+  onPhase?.("extract_claims");
   const extractRes = await fetchWithRetry(LLM_ENDPOINT, {
     method: "POST",
     headers: {
@@ -801,11 +783,13 @@ export async function streamAnswer(
 
   // Run verification if page texts are available
   if (pageTexts && pageTexts.size > 0) {
+    onPhase?.("verify_evidence");
     const verification = await verifyEvidence(claims, sources, pageTexts, {
       bm25Threshold: adaptiveOptions?.bm25Threshold,
       consensusThreshold: adaptiveOptions?.consensusThreshold,
       hfApiKey: adaptiveOptions?.hfApiKey,
     });
+    onPhase?.("done");
     return {
       answer: fullAnswer,
       claims: verification.claims,

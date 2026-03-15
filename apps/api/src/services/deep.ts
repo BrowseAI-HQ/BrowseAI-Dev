@@ -285,16 +285,22 @@ export async function answerQueryDeep(
       break;
     }
 
-    // Run follow-up searches
-    for (const followUpQuery of gaps.followUpQueries) {
-      previousQueries.push(followUpQuery);
+    // Run follow-up searches in parallel
+    previousQueries.push(...gaps.followUpQueries);
 
-      try {
-        const { knowledge: followUp, pageTexts: newPageTexts } = await singlePass(
-          followUpQuery, env, cache, trace, allPageTexts,
-          `step ${step}`, undefined, undefined, options,
-        );
-        flushTrace();
+    const followUpResults = await Promise.allSettled(
+      gaps.followUpQueries.map((q) =>
+        singlePass(q, env, cache, trace, allPageTexts, `step ${step}`, undefined, undefined, options)
+      )
+    );
+    flushTrace();
+
+    for (let qi = 0; qi < followUpResults.length; qi++) {
+      const result = followUpResults[qi];
+      const followUpQuery = gaps.followUpQueries[qi];
+
+      if (result.status === "fulfilled") {
+        const { knowledge: followUp, pageTexts: newPageTexts } = result.value;
 
         // Merge knowledge
         allClaims = mergeClaims(allClaims, followUp.claims);
@@ -322,8 +328,7 @@ export async function answerQueryDeep(
         if (emit) {
           emit("reasoning_step", reasoningSteps[reasoningSteps.length - 1]);
         }
-      } catch {
-        // Follow-up search failed — continue with what we have
+      } else {
         trace.push({
           step: `Follow-up Failed (step ${step})`,
           duration_ms: 0,

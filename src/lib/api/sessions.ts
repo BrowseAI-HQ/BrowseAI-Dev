@@ -92,7 +92,7 @@ export async function deleteSession(id: string): Promise<void> {
   return authFetch(`/session/${id}`, { method: "DELETE" });
 }
 
-export async function sessionAsk(id: string, query: string, depth?: "fast" | "thorough"): Promise<SessionAskResult> {
+export async function sessionAsk(id: string, query: string, depth?: "fast" | "thorough" | "deep"): Promise<SessionAskResult> {
   return authFetch(`/session/${id}/ask`, {
     method: "POST",
     body: JSON.stringify({ query, ...(depth && { depth }) }),
