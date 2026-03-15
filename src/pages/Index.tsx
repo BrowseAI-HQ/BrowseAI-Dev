@@ -891,7 +891,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             {/* No account */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border flex flex-col">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account Needed</h3>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-2.5 text-sm flex-1">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 queries/hour on website</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BM25 keyword verification</li>
@@ -925,23 +925,29 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             </motion.div>
 
             {/* Pro */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-card border border-border relative overflow-hidden flex flex-col">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-card border border-yellow-500/20 relative overflow-hidden flex flex-col">
               <div className="absolute top-3 right-3">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20">
-                  <Sparkles className="w-3 h-3 text-accent" />
-                  <span className="text-[10px] font-semibold text-accent">Coming Soon</span>
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/30">
+                  <Sparkles className="w-3 h-3 text-yellow-400" />
+                  <span className="text-[10px] font-semibold text-yellow-400">Coming Soon</span>
                 </div>
               </div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Pro</h3>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Unlimited premium verification</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> No quotas, no fallback</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Managed keys — no BYOK needed</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> 15+ sources per query</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Multi-model verification</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Priority queue &amp; webhooks</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Team seats &amp; shared access</li>
+              <ul className="space-y-2.5 text-sm text-muted-foreground flex-1">
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Unlimited premium verification</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> No quotas, no fallback</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Managed keys — no BYOK needed</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> 15+ sources per query</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Multi-model verification</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Priority queue &amp; webhooks</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Team seats &amp; shared access</li>
               </ul>
+              <button
+                onClick={() => document.getElementById("waitlist-form")?.scrollIntoView({ behavior: "smooth" })}
+                className="mt-4 w-full inline-flex items-center justify-center text-xs font-medium rounded-md border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 h-8 px-3 transition-colors"
+              >
+                Join waitlist
+              </button>
             </motion.div>
           </div>
 
@@ -956,19 +962,27 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               </div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Enterprise</h3>
               <p className="text-xs text-muted-foreground mb-3">The adapter architecture is built. Gauging demand before we ship.</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 mb-4">
                 <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Search adapters — Elasticsearch, Confluence, custom</div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Zero data retention mode</div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Full verification on your data</div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Your data never leaves your system</div>
               </div>
+              <div className="text-center">
+                <button
+                  onClick={() => document.getElementById("waitlist-form")?.scrollIntoView({ behavior: "smooth" })}
+                  className="inline-flex items-center justify-center text-xs font-medium rounded-md border border-blue-400/30 text-blue-400 hover:bg-blue-400/10 h-8 px-3 transition-colors"
+                >
+                  Join waitlist
+                </button>
+              </div>
             </motion.div>
           </div>
 
-          {/* Pro waitlist */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="max-w-md mx-auto text-center space-y-4">
+          {/* Waitlist form */}
+          <motion.div id="waitlist-form" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="max-w-md mx-auto text-center space-y-4 scroll-mt-20">
             <p className="text-sm text-muted-foreground">
-              Want Pro? Join the waitlist — we&apos;ll let you know when it&apos;s ready.
+              Interested in Pro or Enterprise? Join the waitlist — we&apos;ll let you know when it&apos;s ready.
             </p>
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
