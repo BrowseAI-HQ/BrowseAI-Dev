@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Loader2, Circle, Globe, FileText, Brain, Shield, GitMerge, Sparkles, Search, ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
 import type { TraceEvent, SourcePreview } from "@/lib/api/stream";
@@ -197,83 +197,40 @@ const PIPELINE_STEPS = {
   thorough: ["Search Web", "Fetch Pages", "Extract & Verify", "Rephrase Query", "Second Pass", "Select Best"],
 };
 
-/** Map trace event names to which pipeline pill they complete. */
-const PILL_TRIGGERS: Record<string, Record<string, number>> = {
-  fast: {
-    "Search Web": 0,
-    "Fetch Pages": 1,
-    "Extract Claims": 2,
-    "Verify Evidence": 3,
-    "Generate Answer": 4,
-    "Build Evidence Graph": 4,
-  },
-  thorough: {
-    "Search Web": 0,
-    "Fetch Pages": 1,
-    "Build Evidence Graph": 2,
-    "Rephrase Query": 3,
-    "Select Best Result": 5,
-  },
-};
-
-function PipelinePills({ depth, steps, done }: { depth: "fast" | "thorough"; steps: TraceEvent[]; done: boolean }) {
+function PipelinePills({ depth, done }: { depth: "fast" | "thorough"; done: boolean }) {
   const pills = PIPELINE_STEPS[depth];
-  const triggers = PILL_TRIGGERS[depth];
+  const [activeStep, setActiveStep] = useState(0);
 
-  // Compute how far along we are based on real trace events
-  const completedIdx = useMemo(() => {
-    if (done) return pills.length - 1;
-    let maxCompleted = -1;
-    for (const s of steps) {
-      const baseName = s.step.replace(/\s*\(.*\)$/, "");
-      const idx = triggers[s.step] ?? triggers[baseName];
-      if (idx !== undefined && idx > maxCompleted) maxCompleted = idx;
-      // For thorough pass 2, mark "Second Pass" as active/complete
-      if (s.step.includes("(pass 2)") && 4 > maxCompleted) maxCompleted = 4;
-    }
-    return maxCompleted;
-  }, [steps, done, pills.length, triggers]);
-
-  // If no trace events yet, cycle with a timer (same as Playground)
-  const [timerStep, setTimerStep] = useState(0);
-  const hasRealSteps = completedIdx >= 0;
-
+  // Pure timer-based cycling — same as Playground
   useEffect(() => {
-    if (hasRealSteps || done) return;
+    if (done) return;
     const interval = setInterval(() => {
-      setTimerStep((prev) => (prev + 1) % pills.length);
+      setActiveStep((prev) => (prev + 1) % pills.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [hasRealSteps, done, pills.length]);
-
-  const activeStep = hasRealSteps ? Math.min(completedIdx + 1, pills.length - 1) : timerStep;
+  }, [done, pills.length]);
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
-      {pills.map((step, i) => {
-        const isComplete = hasRealSteps ? i <= completedIdx : i < timerStep;
-        const isActive = hasRealSteps ? i === activeStep && !done : i === timerStep;
-
-        return (
-          <motion.span
-            key={step}
-            animate={{
-              opacity: isComplete || isActive ? 1 : 0.3,
-              scale: isActive ? 1.05 : 1,
-            }}
-            transition={{ duration: 0.3 }}
-            className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
-              isComplete
-                ? "text-emerald-400 border-emerald-500/30"
-                : isActive
-                ? "text-accent border-accent/40"
-                : "text-muted-foreground border-border"
-            }`}
-          >
-            {isComplete ? "✓" : isActive ? "●" : "○"} {step}
-          </motion.span>
-        );
-      })}
+      {pills.map((step, i) => (
+        <motion.span
+          key={step}
+          animate={{
+            opacity: i <= activeStep ? 1 : 0.3,
+            scale: i === activeStep ? 1.05 : 1,
+          }}
+          transition={{ duration: 0.3 }}
+          className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
+            i < activeStep
+              ? "text-emerald-400 border-emerald-500/30"
+              : i === activeStep
+              ? "text-accent border-accent/40"
+              : "text-muted-foreground border-border"
+          }`}
+        >
+          {i < activeStep ? "✓" : i === activeStep ? "●" : "○"} {step}
+        </motion.span>
+      ))}
     </div>
   );
 }
@@ -391,7 +348,7 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
         </div>
       ) : (
         // Fast/Thorough: pill-based pipeline (same as Playground)
-        <PipelinePills depth={depth as "fast" | "thorough"} steps={steps} done={done} />
+        <PipelinePills depth={depth as "fast" | "thorough"} done={done} />
       )}
 
       {/* Early source previews */}
