@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DepthToggle, isDepthBlocked } from "@/components/DepthToggle";
+import { DepthToggle, isDepthBlocked, formatResetTime } from "@/components/DepthToggle";
 import {
   browseKnowledge, browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
   type BrowseSource, type BrowseClaim, type QuotaInfo,
@@ -503,7 +503,7 @@ const Playground = () => {
               )}
               {depth === "deep" && response.effectiveDepth && response.effectiveDepth !== "deep" && (
                 <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/30">
-                  Ran as thorough — deep mode {user ? "quota exhausted, resets in ~24h" : "requires sign in"}
+                  Ran as thorough — deep mode {user ? `quota exhausted, resets in ${formatResetTime(quota?.resetsInSeconds)}` : "requires sign in"}
                 </Badge>
               )}
               {/* Feedback buttons */}
