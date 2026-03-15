@@ -6,8 +6,8 @@ type AuthState = {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signInWithGitHub: () => Promise<void>;
+  signInWithGoogle: (redirectTo?: string) => Promise<void>;
+  signInWithGitHub: (redirectTo?: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -45,17 +45,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectTo?: string) => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: redirectTo ? `${window.location.origin}${redirectTo}` : window.location.origin },
     });
   };
 
-  const signInWithGitHub = async () => {
+  const signInWithGitHub = async (redirectTo?: string) => {
     await supabase.auth.signInWithOAuth({
       provider: "github",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: redirectTo ? `${window.location.origin}${redirectTo}` : window.location.origin },
     });
   };
 

@@ -912,7 +912,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               >
                 {user ? "Go to Dashboard" : "Sign in — it\u2019s free"}
               </Button>
-              <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+              <LoginModal open={loginOpen} onOpenChange={setLoginOpen} redirectTo="/dashboard#api-keys" />
             </motion.div>
 
             {/* Pro */}
