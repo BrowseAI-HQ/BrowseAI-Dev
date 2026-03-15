@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Loader2, Circle, Globe, FileText, Brain, Shield, GitMerge, Sparkles, Search, ChevronDown, ChevronRight } from "lucide-react";
+import { CheckCircle2, Loader2, Circle, Globe, FileText, Brain, Shield, GitMerge, Sparkles, Search, ChevronDown, ChevronRight, Zap, RefreshCw } from "lucide-react";
 import type { TraceEvent, SourcePreview } from "@/lib/api/stream";
 
 const STEP_ICONS: Record<string, React.ReactNode> = {
@@ -22,34 +22,44 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
   "Deep Complete": <CheckCircle2 className="w-4 h-4" />,
   "Final Verification": <Shield className="w-4 h-4" />,
   "Neural Rerank": <Sparkles className="w-4 h-4" />,
+  "Generating Answer": <Sparkles className="w-4 h-4" />,
 };
 
-const DEEP_STEP_LABELS: Record<string, string> = {
+// ── Group labels & icons per mode ──
+
+const GROUP_LABELS: Record<string, string> = {
+  // Deep mode
   "step 1": "Initial Research",
   "step 2": "Follow-up Research",
   "step 3": "Deep Dive",
+  // Thorough mode
+  "pass 1": "First Pass",
+  "pass 2": "Second Pass",
+  // Fast mode
+  "search": "Search & Discover",
+  "analyze": "Analyze & Verify",
 };
 
-const DEEP_STEP_ICONS: Record<string, React.ReactNode> = {
+const GROUP_ICONS: Record<string, React.ReactNode> = {
   "step 1": <Search className="w-4 h-4" />,
   "step 2": <Brain className="w-4 h-4" />,
   "step 3": <Sparkles className="w-4 h-4" />,
+  "pass 1": <Search className="w-4 h-4" />,
+  "pass 2": <RefreshCw className="w-4 h-4" />,
+  "search": <Globe className="w-4 h-4" />,
+  "analyze": <Shield className="w-4 h-4" />,
 };
 
 // Steps that are "in-progress" indicators (duration_ms = 0, emitted before the real step)
-const PROGRESS_STEPS = new Set(["Searching", "Fetching", "Analyzing"]);
+const PROGRESS_STEPS = new Set(["Searching", "Fetching", "Analyzing", "Generating Answer"]);
 
-/** Extract "step N" suffix from a step name like "Search Web (step 2)" */
+// Fast mode: steps that belong to the "Search & Discover" phase
+const FAST_SEARCH_STEPS = new Set(["Search Web", "Query Plan", "Fetch Pages", "Neural Rerank"]);
+
+/** Extract group key from a step name suffix. */
 function getStepGroup(stepName: string): string | null {
-  const match = stepName.match(/\((step \d+)\)$/);
+  const match = stepName.match(/\((step \d+|pass \d+)\)$/);
   return match ? match[1] : null;
-}
-
-/** Check if these steps are from a deep mode run */
-function isDeepMode(steps: TraceEvent[]): boolean {
-  return steps.some(
-    (s) => s.step.includes("(step ") || s.step === "Gap Analysis" || s.step.startsWith("Gap Analysis") || s.step === "Deep Complete" || s.step === "Final Verification"
-  );
 }
 
 type GroupedStep = {
@@ -66,27 +76,32 @@ type GroupedStep = {
   active: boolean;
 };
 
-function groupDeepSteps(steps: TraceEvent[], done: boolean): GroupedStep[] {
+function buildGroup(key: string, steps: TraceEvent[], done: boolean): GroupedStep {
+  const totalDuration = steps.reduce((sum, s) => sum + (s.duration_ms || 0), 0);
+  const allCompleted = steps.every((s) => s.duration_ms > 0);
+  const lastSubStep = steps[steps.length - 1];
+  const isActiveGroup = !done && !allCompleted && lastSubStep.duration_ms === 0;
+  return {
+    type: "group",
+    label: GROUP_LABELS[key] || key,
+    groupKey: key,
+    icon: GROUP_ICONS[key] || <Search className="w-4 h-4" />,
+    steps,
+    totalDuration,
+    completed: allCompleted || done,
+    active: isActiveGroup,
+  };
+}
+
+/** Group steps for deep/thorough modes — groups by "(step N)" or "(pass N)" suffix. */
+function groupBySuffix(steps: TraceEvent[], done: boolean): GroupedStep[] {
   const groups: GroupedStep[] = [];
   let currentGroupKey: string | null = null;
   let currentGroupSteps: TraceEvent[] = [];
 
-  const flushGroup = () => {
+  const flush = () => {
     if (currentGroupKey && currentGroupSteps.length > 0) {
-      const totalDuration = currentGroupSteps.reduce((sum, s) => sum + (s.duration_ms || 0), 0);
-      const allCompleted = currentGroupSteps.every((s) => s.duration_ms > 0);
-      const lastSubStep = currentGroupSteps[currentGroupSteps.length - 1];
-      const isActiveGroup = !done && !allCompleted && lastSubStep.duration_ms === 0;
-      groups.push({
-        type: "group",
-        label: DEEP_STEP_LABELS[currentGroupKey] || `Research ${currentGroupKey}`,
-        groupKey: currentGroupKey,
-        icon: DEEP_STEP_ICONS[currentGroupKey] || <Search className="w-4 h-4" />,
-        steps: currentGroupSteps,
-        totalDuration,
-        completed: allCompleted || done,
-        active: isActiveGroup,
-      });
+      groups.push(buildGroup(currentGroupKey, currentGroupSteps, done));
       currentGroupSteps = [];
       currentGroupKey = null;
     }
@@ -94,24 +109,122 @@ function groupDeepSteps(steps: TraceEvent[], done: boolean): GroupedStep[] {
 
   for (const step of steps) {
     const group = getStepGroup(step.step);
-
     if (group) {
       if (group !== currentGroupKey) {
-        flushGroup();
+        flush();
         currentGroupKey = group;
       }
       currentGroupSteps.push(step);
     } else {
-      flushGroup();
+      flush();
       groups.push({ type: "single", step });
     }
   }
-  flushGroup();
+  flush();
+  return groups;
+}
+
+/** Group steps for fast mode — split into "Search & Discover" vs "Analyze & Verify". */
+function groupFastSteps(steps: TraceEvent[], done: boolean): GroupedStep[] {
+  const searchSteps: TraceEvent[] = [];
+  const analyzeSteps: TraceEvent[] = [];
+
+  for (const step of steps) {
+    if (FAST_SEARCH_STEPS.has(step.step)) {
+      searchSteps.push(step);
+    } else {
+      analyzeSteps.push(step);
+    }
+  }
+
+  const groups: GroupedStep[] = [];
+  if (searchSteps.length > 0) groups.push(buildGroup("search", searchSteps, done));
+  if (analyzeSteps.length > 0) groups.push(buildGroup("analyze", analyzeSteps, done));
+  return groups;
+}
+
+/** Group first-pass (no suffix) steps for thorough mode into "pass 1". */
+function groupThoroughSteps(steps: TraceEvent[], done: boolean): GroupedStep[] {
+  const groups: GroupedStep[] = [];
+  let pass1Steps: TraceEvent[] = [];
+  let inPass1 = true;
+
+  for (const step of steps) {
+    const suffix = getStepGroup(step.step);
+
+    if (suffix === "pass 2") {
+      // Flush pass 1 before starting pass 2 group
+      if (inPass1 && pass1Steps.length > 0) {
+        groups.push(buildGroup("pass 1", pass1Steps, done));
+        pass1Steps = [];
+        inPass1 = false;
+      }
+    }
+
+    if (inPass1) {
+      // Standalone steps between passes (Rephrase Query)
+      if (step.step === "Rephrase Query" || step.step === "Select Best Result") {
+        if (pass1Steps.length > 0) {
+          groups.push(buildGroup("pass 1", pass1Steps, done));
+          pass1Steps = [];
+        }
+        inPass1 = false;
+        groups.push({ type: "single", step });
+      } else {
+        pass1Steps.push(step);
+      }
+    } else {
+      // After pass 1 — use suffix-based grouping for pass 2
+      if (suffix === "pass 2") {
+        // Check if we already have a pass 2 group started
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup?.type === "group" && lastGroup.groupKey === "pass 2") {
+          lastGroup.steps.push(step);
+          // Recalculate group state
+          lastGroup.totalDuration = lastGroup.steps.reduce((sum, s) => sum + (s.duration_ms || 0), 0);
+          const allCompleted = lastGroup.steps.every((s) => s.duration_ms > 0);
+          const lastSub = lastGroup.steps[lastGroup.steps.length - 1];
+          lastGroup.completed = allCompleted || done;
+          lastGroup.active = !done && !allCompleted && lastSub.duration_ms === 0;
+        } else {
+          groups.push(buildGroup("pass 2", [step], done));
+        }
+      } else if (step.step === "Rephrase Query" || step.step === "Select Best Result") {
+        groups.push({ type: "single", step });
+      } else {
+        // Standalone step between passes (e.g., "Analyzing" progress indicator)
+        // Try to add to the pass 2 group if it exists
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup?.type === "group" && lastGroup.groupKey === "pass 2") {
+          lastGroup.steps.push(step);
+          lastGroup.totalDuration = lastGroup.steps.reduce((sum, s) => sum + (s.duration_ms || 0), 0);
+          const allCompleted = lastGroup.steps.every((s) => s.duration_ms > 0);
+          const lastSub = lastGroup.steps[lastGroup.steps.length - 1];
+          lastGroup.completed = allCompleted || done;
+          lastGroup.active = !done && !allCompleted && lastSub.duration_ms === 0;
+        } else {
+          groups.push({ type: "single", step });
+        }
+      }
+    }
+  }
+
+  // Flush remaining pass 1 steps (fast mode that didn't trigger rephrase)
+  if (pass1Steps.length > 0) {
+    groups.push(buildGroup("pass 1", pass1Steps, done));
+  }
 
   return groups;
 }
 
-// ── Pipeline overview animation (shows expected steps before real trace arrives) ──
+/** Route to the right grouping strategy. */
+function groupSteps(steps: TraceEvent[], done: boolean, depth: "fast" | "thorough" | "deep"): GroupedStep[] {
+  if (depth === "deep") return groupBySuffix(steps, done);
+  if (depth === "thorough") return groupThoroughSteps(steps, done);
+  return groupFastSteps(steps, done);
+}
+
+// ── Pipeline overview animation ──
 
 const PIPELINE_OVERVIEW = {
   fast: ["Search Web", "Fetch Pages", "Extract Claims", "Verify Evidence", "Generate Answer"],
@@ -154,6 +267,8 @@ function PipelineOverview({ depth }: { depth: "fast" | "thorough" | "deep" }) {
     </div>
   );
 }
+
+// ── Shared components ──
 
 interface Props {
   steps: TraceEvent[];
@@ -206,7 +321,7 @@ function StepRow({ step, active, completed }: { step: TraceEvent; active: boolea
   );
 }
 
-function DeepGroupRow({ group }: { group: Extract<GroupedStep, { type: "group" }> }) {
+function GroupRow({ group }: { group: Extract<GroupedStep, { type: "group" }> }) {
   const [expanded, setExpanded] = useState(false);
   const activeSubStep = group.active
     ? group.steps.find((s) => s.duration_ms === 0)
@@ -291,6 +406,8 @@ function DeepGroupRow({ group }: { group: Extract<GroupedStep, { type: "group" }
   );
 }
 
+// ── Main component ──
+
 export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Props) {
   // Filter out in-progress indicator steps once the real step arrives
   const displaySteps = steps.filter((step) => {
@@ -299,28 +416,29 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
         "Searching": "Search Web",
         "Fetching": "Fetch Pages",
         "Analyzing": "Extract Claims",
+        "Generating Answer": "Generate Answer",
       };
       const realName = realStepMap[step.step];
-      // For deep mode, check with suffix variants too
       return !steps.some((s) => s.step === realName || s.step.startsWith(realName + " ("));
     }
     return true;
   });
 
-  const deepMode = isDeepMode(displaySteps);
   const lastStep = displaySteps[displaySteps.length - 1];
+  const grouped = groupSteps(displaySteps, done, depth);
 
-  // For deep mode, compute a friendly current phase label
-  const deepCurrentLabel = deepMode && lastStep
+  // Compute a friendly label for the current activity
+  const currentLabel = lastStep
     ? (() => {
-        const group = getStepGroup(lastStep.step);
-        if (group) {
+        const suffix = getStepGroup(lastStep.step);
+        if (suffix) {
           const baseName = lastStep.step.replace(/\s*\(.*\)$/, "");
-          return `${DEEP_STEP_LABELS[group] || group}: ${baseName}`;
+          const groupLabel = GROUP_LABELS[suffix];
+          return groupLabel ? `${groupLabel}: ${baseName}` : baseName;
         }
         return lastStep.step;
       })()
-    : lastStep?.step;
+    : null;
 
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-8">
@@ -335,14 +453,14 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
             <Loader2 className="w-8 h-8 text-accent animate-spin" />
             <div className="absolute inset-0 w-8 h-8 rounded-full bg-accent/10 animate-ping" />
           </div>
-          {lastStep ? (
+          {currentLabel ? (
             <motion.p
-              key={deepCurrentLabel}
+              key={currentLabel}
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-sm font-medium text-accent"
             >
-              {deepCurrentLabel}...
+              {currentLabel}...
             </motion.p>
           ) : (
             <motion.span
@@ -360,51 +478,47 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
         </motion.div>
       )}
 
-      {/* Step timeline */}
+      {/* Depth badge */}
+      {!done && displaySteps.length > 0 && depth !== "fast" && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center gap-1.5"
+        >
+          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
+            depth === "deep"
+              ? "text-purple-400 border-purple-500/30 bg-purple-500/5"
+              : "text-accent border-accent/30 bg-accent/5"
+          }`}>
+            {depth === "deep" ? <Brain className="w-3 h-3 inline mr-1" /> : <RefreshCw className="w-3 h-3 inline mr-1" />}
+            {depth === "deep" ? "Deep Mode" : "Thorough Mode"}
+          </span>
+        </motion.div>
+      )}
+
+      {/* Grouped step timeline */}
       <div className="w-full max-w-md space-y-1">
-        {deepMode ? (
-          // Deep mode: grouped view
-          <AnimatePresence mode="popLayout">
-            {groupDeepSteps(displaySteps, done).map((item, i) => (
-              <motion.div
-                key={item.type === "single" ? `single-${item.step.step}-${i}` : `group-${item.groupKey}-${i}`}
-                initial={{ opacity: 0, x: -20, height: 0 }}
-                animate={{ opacity: 1, x: 0, height: "auto" }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="overflow-hidden"
-              >
-                {item.type === "single" ? (
-                  <StepRow
-                    step={item.step}
-                    active={item.step === lastStep && !done && item.step.duration_ms === 0}
-                    completed={item.step.duration_ms > 0 || done}
-                  />
-                ) : (
-                  <DeepGroupRow group={item} />
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        ) : (
-          // Fast/thorough mode: flat list (same as before)
-          <AnimatePresence mode="popLayout">
-            {displaySteps.map((step, i) => {
-              const active = step === lastStep && !done && step.duration_ms === 0;
-              const completed = !active && (step.duration_ms > 0 || done);
-              return (
-                <motion.div
-                  key={`${step.step}-${i}`}
-                  initial={{ opacity: 0, x: -20, height: 0 }}
-                  animate={{ opacity: 1, x: 0, height: "auto" }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="overflow-hidden"
-                >
-                  <StepRow step={step} active={active} completed={completed} />
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        )}
+        <AnimatePresence mode="popLayout">
+          {grouped.map((item, i) => (
+            <motion.div
+              key={item.type === "single" ? `single-${item.step.step}-${i}` : `group-${item.groupKey}-${i}`}
+              initial={{ opacity: 0, x: -20, height: 0 }}
+              animate={{ opacity: 1, x: 0, height: "auto" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              {item.type === "single" ? (
+                <StepRow
+                  step={item.step}
+                  active={item.step === lastStep && !done && item.step.duration_ms === 0}
+                  completed={item.step.duration_ms > 0 || done}
+                />
+              ) : (
+                <GroupRow group={item} />
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       {/* Early source previews */}
