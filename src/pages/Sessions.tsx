@@ -399,6 +399,16 @@ const Sessions = () => {
                   <Badge variant="outline" className="text-xs">
                     +{lastResult.session.newClaimsStored} new claims
                   </Badge>
+                  {lastResult.quota && (
+                    <Badge variant="outline" className={`text-[10px] ${lastResult.quota.premiumActive ? "text-emerald-400 border-emerald-400/30" : "text-amber-400 border-amber-500/30"}`}>
+                      {lastResult.quota.premiumActive ? "Premium" : "Standard"} · {lastResult.quota.used}/{lastResult.quota.limit}
+                    </Badge>
+                  )}
+                  {depth === "deep" && (lastResult as any).effectiveDepth && (lastResult as any).effectiveDepth !== "deep" && (
+                    <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30">
+                      Ran as thorough — deep mode {user ? "quota exhausted, resets in ~24h" : "requires sign in"}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-sm leading-relaxed whitespace-pre-line">{lastResult.answer}</p>
 

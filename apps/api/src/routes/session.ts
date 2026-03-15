@@ -230,8 +230,11 @@ export function registerSessionRoutes(
         }
       }
 
+      // Deep mode requires premium — fall back to thorough if premium isn't active
+      const effectiveDepth = parsed.data.depth === "deep" && !premiumActive ? "thorough" : parsed.data.depth;
+
       // Phase 2: Run the answer pipeline with contextualized query + session context for LLM
-      const result = await answerQuery(searchQuery, reqEnv, cache, parsed.data.depth, sessionContext || undefined);
+      const result = await answerQuery(searchQuery, reqEnv, cache, effectiveDepth, sessionContext || undefined);
 
       // Inject recall + contextualize trace steps at the beginning
       const cacheHitIdx = result.trace.findIndex((t) => t.step === "Cache Hit");
@@ -279,6 +282,7 @@ export function registerSessionRoutes(
         result: {
           ...result,
           shareId,
+          effectiveDepth,
           session: {
             id: session.id,
             name: session.name,
