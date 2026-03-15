@@ -54,12 +54,15 @@ export async function streamAnswer(
   onEvent: (event: StreamEvent) => void,
 ): Promise<BrowseResult> {
   const authHeaders = await getAuthHeaders();
+  // Logged-in users use their stored keys (via backend) — don't send BYOK headers
+  const isLoggedIn = !!authHeaders.Authorization;
+  const keyHeaders = isLoggedIn ? {} : getUserKeyHeaders();
 
   const res = await fetch(`${API_BASE}/browse/answer/stream`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...getUserKeyHeaders(),
+      ...keyHeaders,
       ...authHeaders,
     },
     body: JSON.stringify({ query, depth }),

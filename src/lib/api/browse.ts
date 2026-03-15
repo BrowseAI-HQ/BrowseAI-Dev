@@ -81,9 +81,12 @@ async function apiCall<T>(
   body: Record<string, unknown>
 ): Promise<T> {
   const authHeaders = await getAuthHeaders();
+  // Logged-in users use their stored keys (via backend) — don't send BYOK headers
+  const isLoggedIn = !!authHeaders.Authorization;
+  const keyHeaders = isLoggedIn ? {} : getUserKeyHeaders();
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...getUserKeyHeaders(), ...authHeaders },
+    headers: { "Content-Type": "application/json", ...keyHeaders, ...authHeaders },
     body: JSON.stringify(body),
   });
 

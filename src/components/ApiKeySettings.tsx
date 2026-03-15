@@ -59,6 +59,21 @@ export function ApiKeySettings() {
     setKeysConfigured(false);
   };
 
+  // Logged-in users should manage keys on the dashboard, not via localStorage
+  if (user) {
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="relative text-muted-foreground text-xs"
+        onClick={() => navigate("/dashboard#api-keys")}
+      >
+        <Settings className="w-4 h-4" />
+        <span className="hidden sm:inline ml-1">API Keys</span>
+      </Button>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
