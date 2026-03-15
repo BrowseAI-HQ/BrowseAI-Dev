@@ -254,7 +254,7 @@ export async function answerQueryDeep(
   let allClaims = [...initial.claims];
   let allSources = [...initial.sources];
   const allPageTexts = new Map(pageTexts);
-  let bestAnswer = initial.answer;
+  const bestAnswer = initial.answer;
   let bestConfidence = initial.confidence;
 
   // Iterative follow-up loop
