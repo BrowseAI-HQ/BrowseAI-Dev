@@ -903,7 +903,7 @@ export async function verifyEvidence(
   // ── Phase 1c: NLI semantic entailment (when available) ──
   // For each claim with a matched sentence, ask NLI: does this evidence
   // actually ENTAIL the claim? This catches paraphrases BM25 misses.
-  let nliResults: Array<NLIResult | null> = claims.map(() => null);
+  const nliResults: Array<NLIResult | null> = claims.map(() => null);
 
   if (hfApiKey) {
     const nliPairs: Array<{ evidence: string; claim: string }> = [];

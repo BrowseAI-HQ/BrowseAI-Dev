@@ -72,7 +72,8 @@ HF_API_KEY             — HuggingFace API token (optional, enables NLI verifica
 
 - `apps/api/src/routes/browse.ts` — All API endpoints (search, answer, extract, compare, share)
 - `apps/api/src/lib/gemini.ts` — LLM extraction + confidence algorithm + query rephrasing
-- `apps/api/src/lib/verify.ts` — Full verification engine (BM25, consensus, contradictions, domain authority)
+- `apps/api/src/lib/nli.ts` — NLI semantic entailment via HuggingFace DeBERTa (claim verification + contradiction detection)
+- `apps/api/src/lib/verify.ts` — Full verification engine (hybrid BM25 + NLI, consensus, contradictions, domain authority)
 - `apps/api/src/services/answer.ts` — Answer pipeline with thorough mode retry logic
 - `apps/api/src/services/compare.ts` — Raw LLM vs evidence-backed comparison
 - `apps/api/src/services/store.ts` — Supabase result storage + domain stats aggregation
@@ -85,7 +86,9 @@ HF_API_KEY             — HuggingFace API token (optional, enables NLI verifica
 - `src/pages/Developers.tsx` — Developer page (roadmap, code examples)
 - `src/pages/Playground.tsx` — Interactive playground
 
-## Ship checklist — run this after every feature
+## MANDATORY: Ship checklist — run this after every feature
+
+**CRITICAL: Every feature MUST update all surfaces before committing. No exceptions. Code without doc/site updates is incomplete work. Update as you go, not as a separate task.**
 
 Every time a new feature is implemented, go through this checklist before considering it done. This ensures all surfaces stay in sync.
 
