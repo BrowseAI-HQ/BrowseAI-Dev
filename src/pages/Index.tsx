@@ -413,11 +413,11 @@ const Index = () => {
                 { phase: "Shipped", text: "Self-learning pipeline — adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop" },
                 { phase: "Shipped", text: "Token streaming — real-time SSE streaming with per-token answer delivery, automatic retry with exponential backoff on all external APIs" },
                 { phase: "Shipped", text: "Neural cross-encoder re-ranker — semantic query-document scoring via cross-encoder for more relevant source selection before page fetching" },
-                { phase: "Shipped", text: "Deep reasoning mode — multi-step agentic research with iterative gap analysis, follow-up searches, and knowledge merging across up to 3 reasoning steps" },
+                { phase: "Shipped", text: "Deep mode — premium verification with NLI reranking, multi-provider search, multi-pass consistency, and multi-step agentic reasoning. Requires BAI key, 100 deep queries/day (each costs 3x quota), graceful fallback to thorough" },
                 { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
                 { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims and entities, build reusable queryable knowledge" },
-                { phase: "Shipped", text: "Premium verification tier — NLI reranking, multi-provider search, and consistency checking gated behind API keys. Free users get BM25 verification." },
+                { phase: "Shipped", text: "Premium verification tier — NLI reranking, multi-provider search, and consistency checking via deep mode. Free BAI key users get 100 deep queries/day. Falls back to thorough when quota exhausted." },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Coming Soon", text: "Fine-tuned verification model — custom model trained on 10K+ production examples for per-domain calibration" },
                 { phase: "Coming Soon", text: "Enterprise search adapters — plug into Elasticsearch, Confluence, or any custom endpoint with zero data retention (architecture ready)" },
@@ -488,7 +488,7 @@ const Index = () => {
                   <Target className="w-5 h-5 text-accent" />
                 </div>
                 <span className="font-semibold text-sm block mb-1">Multi-Pass Consistency</span>
-                <p className="text-xs text-muted-foreground">Claims cross-checked across independent extraction passes in thorough mode</p>
+                <p className="text-xs text-muted-foreground">Claims cross-checked across independent extraction passes in thorough and deep modes</p>
               </div>
               <div className="p-5 rounded-xl bg-card border border-border text-center">
                 <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mx-auto mb-3">
@@ -570,6 +570,7 @@ const Index = () => {
     { "url": "https://...", "domain": "nasa.gov", "quote": "An aurora is...",
       "verified": true, "authority": 0.95 }
   ],
+  "depth": "deep",
   "confidence": 0.92,
   "trace": [
     { "step": "Search Web", "duration_ms": 340, "detail": "5 results" },
@@ -616,7 +617,7 @@ const Index = () => {
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score, auto-calibrated from feedback)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Neural re-ranking — cross-encoder semantic scoring for best source selection</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 3 depth modes — fast, thorough (auto-retry), and deep (multi-step agentic reasoning)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 3 depth modes — fast (default), thorough (auto-retry + multi-pass), deep (premium: NLI reranking, multi-provider search, multi-pass consistency)</li>
               </ul>
             </motion.div>
           </div>
@@ -909,7 +910,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Everything above, unlimited</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Generous premium verification with BAI key</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> NLI + multi-provider search</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough mode + multi-pass</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough + deep modes (100 deep/day)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Falls back to unlimited basic</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> One BAI key + history</li>
               </ul>

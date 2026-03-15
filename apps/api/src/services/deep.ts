@@ -23,8 +23,8 @@ import { fetchWithRetry } from "../lib/retry.js";
 import { computeConfidence } from "../lib/gemini.js";
 import { verifyEvidence } from "../lib/verify.js";
 
-const MAX_FOLLOW_UP_STEPS = 2;
-const DEEP_CONFIDENCE_THRESHOLD = 0.75;
+const MAX_FOLLOW_UP_STEPS = 3;
+const DEEP_CONFIDENCE_THRESHOLD = 0.85;
 
 type GapAnalysisResult = {
   complete: boolean;

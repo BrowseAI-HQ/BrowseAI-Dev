@@ -125,8 +125,8 @@ const ROADMAP_ITEMS = [
   },
   {
     phase: "Shipped",
-    title: "Deep reasoning mode",
-    desc: "Multi-step agentic research with iterative think→search→extract→evaluate cycles. Gap analysis identifies missing evidence, follow-up searches fill gaps, knowledge merges across up to 3 reasoning steps. Requires BAI key.",
+    title: "Deep mode",
+    desc: "Premium verification: NLI reranking, multi-provider search, multi-pass consistency, and multi-step agentic reasoning. Requires BAI key and sign-in. 100 deep queries/day (each costs 3x quota). Falls back gracefully to thorough when quota exhausted.",
     done: true,
   },
   {
@@ -150,7 +150,7 @@ const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
     title: "Premium verification tier",
-    desc: "NLI semantic reranking, multi-provider search, and multi-pass consistency checking with BAI keys. 50 premium queries/day with graceful fallback to BM25. BYOK/demo get BM25 verification.",
+    desc: "NLI semantic reranking, multi-provider search, and multi-pass consistency checking via deep mode with BAI keys. 100 deep queries/day (3x quota cost each). Falls back to thorough when exhausted. BYOK/demo get BM25 verification.",
     done: true,
   },
   {

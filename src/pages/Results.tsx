@@ -34,6 +34,7 @@ const Results = () => {
   const [streamDone, setStreamDone] = useState(false);
   const [quota, setQuota] = useState<PremiumQuota | null>(null);
   const [effectiveDepth, setEffectiveDepth] = useState(depth);
+  const [reasoningSteps, setReasoningSteps] = useState<any[]>([]);
 
   const handleStreamEvent = useCallback((event: StreamEvent) => {
     switch (event.type) {
@@ -42,6 +43,9 @@ const Results = () => {
         break;
       case "sources":
         setPreviewSources(event.data);
+        break;
+      case "reasoning_step":
+        setReasoningSteps((prev) => [...prev, event.data]);
         break;
       case "result":
         setResult(event.data);
@@ -61,6 +65,7 @@ const Results = () => {
     setResult(null);
     setTraceSteps([]);
     setPreviewSources([]);
+    setReasoningSteps([]);
     setStreamDone(false);
 
     streamAnswer(query, depth, handleStreamEvent)
@@ -171,37 +176,45 @@ const Results = () => {
           </motion.div>
         )}
 
+        {/* Deep reasoning steps — show during streaming and after result */}
+        {(() => {
+          const steps = result?.reasoningSteps?.length ? result.reasoningSteps : reasoningSteps;
+          return steps.length > 0 ? (
+            <motion.section
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Brain className="w-3.5 h-3.5 text-purple-400" />
+                Deep Reasoning ({steps.length} step{steps.length !== 1 ? "s" : ""})
+                {loading && <span className="animate-pulse text-purple-400/60">…</span>}
+              </h3>
+              <div className="space-y-2">
+                {steps.map((rs: any, i: number) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="p-3 rounded-lg bg-purple-400/5 border border-purple-400/20 text-sm space-y-1"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 border-purple-400/30 text-purple-400">Step {rs.step}</Badge>
+                      <span className="text-xs text-muted-foreground">{rs.claimCount} claims · {Math.round(rs.confidence * 100)}% confidence</span>
+                    </div>
+                    <p className="text-xs font-mono text-muted-foreground">"{rs.query}"</p>
+                    {rs.gapAnalysis && rs.gapAnalysis !== "Initial research pass" && (
+                      <p className="text-xs text-muted-foreground/70">Gap: {rs.gapAnalysis}</p>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.section>
+          ) : null;
+        })()}
+
         {result && !loading && (
           <>
-            <FinalAnswer answer={result.answer} confidence={result.confidence} />
-
-            {/* Deep reasoning steps */}
-            {result.reasoningSteps && result.reasoningSteps.length > 0 && (
-              <motion.section
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Brain className="w-3.5 h-3.5 text-purple-400" />
-                  Deep Reasoning ({result.reasoningSteps.length} steps)
-                </h3>
-                <div className="space-y-2">
-                  {result.reasoningSteps.map((rs: any, i: number) => (
-                    <div key={i} className="p-3 rounded-lg bg-purple-400/5 border border-purple-400/20 text-sm space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] px-1.5 border-purple-400/30 text-purple-400">Step {rs.step}</Badge>
-                        <span className="text-xs text-muted-foreground">{rs.claimCount} claims · {Math.round(rs.confidence * 100)}% confidence</span>
-                      </div>
-                      <p className="text-xs font-mono text-muted-foreground">"{rs.query}"</p>
-                      {rs.gapAnalysis && rs.gapAnalysis !== "Initial research pass" && (
-                        <p className="text-xs text-muted-foreground/70">Gap: {rs.gapAnalysis}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </motion.section>
-            )}
 
             <EvidenceGraph claims={result.claims} sources={result.sources} contradictions={result.contradictions} />
             <TracePipeline trace={result.trace} />
