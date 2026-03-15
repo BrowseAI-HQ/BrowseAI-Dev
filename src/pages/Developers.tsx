@@ -126,7 +126,7 @@ const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
     title: "Deep reasoning mode",
-    desc: "Multi-step agentic research with iterative think→search→extract→evaluate cycles. Gap analysis identifies missing evidence, follow-up searches fill gaps, knowledge merges across up to 4 reasoning steps. Requires BAI key.",
+    desc: "Multi-step agentic research with iterative think→search→extract→evaluate cycles. Gap analysis identifies missing evidence, follow-up searches fill gaps, knowledge merges across up to 3 reasoning steps. Requires BAI key.",
     done: true,
   },
   {

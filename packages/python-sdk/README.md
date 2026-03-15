@@ -141,7 +141,7 @@ Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
 - **NLI semantic reranking** — evidence matched by meaning, not just keywords
 - **Multi-provider search** — parallel search across multiple sources for broader coverage
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes (in thorough mode)
-- **Deep reasoning mode** — multi-step agentic research with iterative gap analysis (up to 4 steps)
+- **Deep reasoning mode** — multi-step agentic research with iterative gap analysis (up to 3 steps)
 - **Token streaming** — per-token answer delivery via SSE for real-time UI
 - **Research Sessions** — persistent memory across queries
 
