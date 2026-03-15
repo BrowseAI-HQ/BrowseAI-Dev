@@ -245,8 +245,10 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">Coming soon — unlock advanced features for power users and teams.</p>
+              <p className="text-sm text-muted-foreground mb-4">Coming soon — everything in Free, plus unlimited premium verification with no quotas.</p>
               <ul className="text-sm space-y-2 text-muted-foreground mb-4">
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Unlimited premium verification</li>
+                <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> No quotas, no fallback</li>
                 <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Managed keys — no BYOK needed</li>
                 <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> 15+ sources per query</li>
                 <li className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" /> Multi-model verification</li>
