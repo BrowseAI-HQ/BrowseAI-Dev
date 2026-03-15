@@ -4,6 +4,7 @@
  * Event types:
  *   trace   — { step, duration_ms, detail } — pipeline progress
  *   sources — { sources } — discovered sources (sent early)
+ *   token   — { text } — streamed answer token
  *   result  — full BrowseResult — final answer
  *   error   — { error } — on failure
  *
@@ -14,7 +15,7 @@ import { createHash } from "crypto";
 import { search } from "./search.js";
 import type { SearchResult } from "./search.js";
 import { openPage } from "./scrape.js";
-import { extractKnowledge, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
+import { streamAnswer, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
 import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
 import { isLowQualityDomain } from "../lib/verify.js";
@@ -161,13 +162,25 @@ export async function answerQueryStreaming(
   }
 
   const filtered = filterLowQuality(allResults);
-  const diverseResults = enforceDomainDiversity(filtered);
+  let diverseResults = enforceDomainDiversity(filtered);
+
+  // Neural re-rank (premium)
+  let neuralLabel = "";
+  if (env.HF_API_KEY && diverseResults.length > 1) {
+    const { crossEncoderRerank } = await import("../lib/reranker.js");
+    const ceResult = await crossEncoderRerank(query, diverseResults, env.HF_API_KEY);
+    if (ceResult.reranked) {
+      diverseResults = ceResult.results;
+      neuralLabel = " → neural";
+    }
+  }
+
   const pageCount = ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
 
   const searchStep: TraceStep = {
     step: "Search Web",
     duration_ms: Date.now() - searchStart,
-    detail: `${diverseResults.length} results [${analysis.type}]${searchDetail}`,
+    detail: `${diverseResults.length} results [${analysis.type}]${searchDetail}${neuralLabel}`,
   };
   trace.push(searchStep);
   emit("trace", searchStep);
@@ -209,13 +222,17 @@ export async function answerQueryStreaming(
     })
     .join("\n\n---\n\n");
 
-  // Phase 3: Extract + verify
+  // Phase 3: Stream answer + extract claims + verify
   const llmStart = Date.now();
-  emit("trace", { step: "Analyzing", duration_ms: 0, detail: "Extracting knowledge and verifying claims..." });
+  emit("trace", { step: "Generating Answer", duration_ms: 0, detail: "Streaming answer..." });
 
-  const knowledge = await extractKnowledge(query, pageContents, env.OPENROUTER_API_KEY, pageTexts, analysis.type, undefined, {
-    hfApiKey: env.HF_API_KEY,
-  });
+  const knowledge = await streamAnswer(
+    query, pageContents, env.OPENROUTER_API_KEY,
+    (token) => emit("token", { text: token }),
+    pageTexts, analysis.type, {
+      hfApiKey: env.HF_API_KEY,
+    },
+  );
   const llmDuration = Date.now() - llmStart;
 
   const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;

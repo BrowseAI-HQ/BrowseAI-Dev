@@ -113,8 +113,20 @@ const ROADMAP_ITEMS = [
   },
   {
     phase: "Shipped",
-    title: "Streaming API & retry with backoff",
-    desc: "Real-time SSE streaming for the answer pipeline. Automatic retry with exponential backoff on all external API calls (search, LLM, page fetching). Production-grade reliability.",
+    title: "Token streaming & retry with backoff",
+    desc: "Real-time SSE streaming with per-token answer delivery. Automatic retry with exponential backoff on all external API calls (search, LLM, page fetching). Production-grade reliability.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Neural cross-encoder re-ranker",
+    desc: "Semantic query-document scoring via cross-encoder model. Re-ranks search results by true relevance before page fetching, replacing keyword-only heuristics. Premium feature with graceful fallback.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Deep reasoning mode",
+    desc: "Multi-step agentic research with iterative think→search→extract→evaluate cycles. Gap analysis identifies missing evidence, follow-up searches fill gaps, knowledge merges across up to 4 reasoning steps. Requires BAI key.",
     done: true,
   },
   {

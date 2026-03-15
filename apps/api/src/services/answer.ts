@@ -6,6 +6,7 @@ import { extractKnowledge, rephraseQuery, generateQueryVariant, analyzeQuery } f
 import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
 import { isLowQualityDomain, rerankSources, trackSourceUsefulness } from "../lib/verify.js";
+import { crossEncoderRerank } from "../lib/reranker.js";
 import {
   getAdaptiveBM25Threshold,
   getAdaptiveConsensusThreshold,
@@ -183,7 +184,7 @@ function doSearch(
 }
 
 /** Run a single search → fetch → extract pass. Returns result + raw page texts for merging. */
-async function singlePass(
+export async function singlePass(
   query: string,
   env: Env,
   cache: CacheService,
@@ -278,16 +279,33 @@ async function singlePass(
   const diverseResults = enforceDomainDiversity(filtered);
 
   // Rerank using domain intelligence (authority + usefulness + co-citation)
-  const rerankedResults = rerankSources(diverseResults);
+  let rerankedResults = rerankSources(diverseResults);
+
+  // Neural re-rank: cross-encoder scoring for semantic query-document relevance (premium)
+  let neuralReranked = false;
+  if (env.HF_API_KEY && rerankedResults.length > 1) {
+    const rerankStart = Date.now();
+    const ceResult = await crossEncoderRerank(query, rerankedResults, env.HF_API_KEY);
+    if (ceResult.reranked) {
+      rerankedResults = ceResult.results;
+      neuralReranked = true;
+      trace.push({
+        step: `Neural Rerank${label}`,
+        duration_ms: Date.now() - rerankStart,
+        detail: `${rerankedResults.length} results re-scored by cross-encoder`,
+      });
+    }
+  }
 
   // Adaptive page count: learning engine overrides if enough data, else use defaults
   const pageCount = getAdaptivePageCount(analysis.type) || ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
 
   const providerLabel = useProvider ? ` via ${useProvider.name}` : "";
+  const rerankLabel = neuralReranked ? " → neural" : "";
   trace.push({
     step: `Search Web${label}`,
     duration_ms: Date.now() - searchStart,
-    detail: `${rerankedResults.length} results (${allResults.length} raw → ${filtered.length} quality → diverse → reranked) [${analysis.type}]${searchDetail}${providerLabel}`,
+    detail: `${rerankedResults.length} results (${allResults.length} raw → ${filtered.length} quality → diverse → reranked${rerankLabel}) [${analysis.type}]${searchDetail}${providerLabel}`,
   });
 
   if (rerankedResults.length === 0) {
@@ -396,7 +414,7 @@ export async function answerQuery(
   query: string,
   env: Env,
   cache: CacheService,
-  depth: "fast" | "thorough" = "fast",
+  depth: "fast" | "thorough" | "deep" = "fast",
   sessionContext?: string,
   options?: AnswerOptions,
 ): Promise<BrowseResult> {
@@ -413,6 +431,14 @@ export async function answerQuery(
       result.trace = [{ step: "Cache Hit", duration_ms: 0, detail: "Served from cache" }, ...result.trace];
       return result;
     }
+  }
+
+  // Deep mode: multi-step reasoning agent
+  if (depth === "deep") {
+    const { answerQueryDeep } = await import("./deep.js");
+    const result = await answerQueryDeep(query, env, cache, sessionContext, options);
+    if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    return result;
   }
 
   const queryStart = Date.now();

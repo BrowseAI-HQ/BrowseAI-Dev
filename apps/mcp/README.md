@@ -9,7 +9,7 @@ MCP server with real-time web search, evidence extraction, and structured citati
 Instead of letting your AI hallucinate, `browse-ai` gives it real-time access to the web with **structured, cited answers**:
 
 ```
-Your question → Web search → Fetch pages → Extract claims → Build evidence graph → Cited answer
+Your question → Web search → Neural rerank → Fetch pages → Extract claims → Verify → Cited answer (streamed)
 ```
 
 Every answer includes:
@@ -18,14 +18,16 @@ Every answer includes:
 - **Source quotes** verified against actual page text via hybrid BM25 + NLI matching
 - **Atomic claim decomposition** — compound facts split and verified independently
 - **Execution trace** with timing
-- **Thorough mode** — pass `depth: "thorough"` to auto-retry with rephrased queries when confidence < 60%, with multi-pass consistency checking
+- **3 depth modes** — `"fast"` (default), `"thorough"` (auto-retry with rephrased queries), `"deep"` (multi-step agentic reasoning with gap analysis — requires BAI key)
 
 ### Premium Features (with `BROWSE_API_KEY`)
 
 Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
+- **Neural cross-encoder re-ranking** — search results re-scored by semantic query-document relevance
 - **NLI semantic reranking** — evidence matched by meaning, not just keywords
 - **Multi-provider search** — parallel search across multiple sources for broader coverage
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes
+- **Deep reasoning mode** — multi-step agentic research with iterative gap analysis
 - **Research Sessions** — persistent memory across queries
 
 Free BAI key users get a generous daily quota (50 premium queries/day). When exceeded, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours.
@@ -116,7 +118,7 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 | `browse_search` | Search the web via multi-provider search |
 | `browse_open` | Fetch and parse a page into clean text |
 | `browse_extract` | Extract structured knowledge from a page |
-| `browse_answer` | Full pipeline: search + extract + cite. Supports `depth: "thorough"` for auto-retry |
+| `browse_answer` | Full pipeline: search + extract + cite. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
 | `browse_compare` | Compare raw LLM vs evidence-backed answer |
 | `browse_session_create` | Create a research session (persistent memory across queries) |
 | `browse_session_ask` | Research within a session (recalls prior knowledge, stores new claims) |
@@ -133,6 +135,8 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 Ask Claude: *"Use browse_answer to explain what causes aurora borealis"*
 
 For higher accuracy: *"Use browse_answer with depth thorough to research quantum computing"*
+
+For deep research: *"Use browse_answer with depth deep to compare CRISPR approaches for sickle cell disease"*
 
 Response:
 ```json
@@ -168,7 +172,7 @@ Response:
 | Sources | None | Real URLs with quotes |
 | Citations | Hallucinated | Verified from pages |
 | Confidence | Unknown | 7-factor evidence-based score |
-| Depth | Single pass | Thorough mode with auto-retry |
+| Depth | Single pass | 3 modes: fast, thorough, deep reasoning |
 | Freshness | Training data | Real-time web |
 | Claims | Mixed in text | Structured + linked |
 

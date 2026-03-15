@@ -17,6 +17,7 @@ from .models import (
     Contradiction,
     KnowledgeEntry,
     PageResult,
+    ReasoningStep,
     RecallResult,
     SearchResult,
     Session,
@@ -37,6 +38,7 @@ __all__ = [
     "BrowseSource",
     "BrowseClaim",
     "Contradiction",
+    "ReasoningStep",
     "TraceStep",
     "SearchResult",
     "PageResult",
@@ -47,4 +49,4 @@ __all__ = [
     "RecallResult",
 ]
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"

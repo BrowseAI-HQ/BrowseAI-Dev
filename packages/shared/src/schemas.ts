@@ -39,6 +39,14 @@ export const ContradictionSchema = z.object({
   nliConfidence: z.number().min(0).max(1).optional(),
 });
 
+export const ReasoningStepSchema = z.object({
+  step: z.number().int(),
+  query: z.string(),
+  gapAnalysis: z.string(),
+  claimCount: z.number().int(),
+  confidence: z.number().min(0).max(1),
+});
+
 export const BrowseResultSchema = z.object({
   answer: z.string(),
   claims: z.array(BrowseClaimSchema),
@@ -46,6 +54,7 @@ export const BrowseResultSchema = z.object({
   confidence: z.number().min(0).max(1),
   trace: z.array(TraceStepSchema),
   contradictions: z.array(ContradictionSchema).optional(),
+  reasoningSteps: z.array(ReasoningStepSchema).optional(),
 });
 
 export const SearchRequestSchema = z.object({
@@ -79,7 +88,7 @@ export const SearchProviderConfigSchema = z.object({
 
 export const AnswerRequestSchema = z.object({
   query: z.string().min(1).max(500),
-  depth: z.enum(["fast", "thorough"]).optional().default("fast"),
+  depth: z.enum(["fast", "thorough", "deep"]).optional().default("fast"),
   sessionId: z.string().max(36).optional(),
   searchProvider: SearchProviderConfigSchema.optional(),
 });
@@ -92,7 +101,7 @@ export const CreateSessionSchema = z.object({
 
 export const SessionAskSchema = z.object({
   query: z.string().min(1).max(500),
-  depth: z.enum(["fast", "thorough"]).optional().default("fast"),
+  depth: z.enum(["fast", "thorough", "deep"]).optional().default("fast"),
 });
 
 export const RecallSchema = z.object({

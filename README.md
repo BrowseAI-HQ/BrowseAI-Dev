@@ -18,7 +18,7 @@ Agent → BrowseAI Dev → Internet → Verified answers + sources
 ## How It Works
 
 ```
-search → fetch pages → extract claims → build evidence graph → cited answer
+search → fetch pages → neural rerank → extract claims → verify → cited answer (streamed)
 ```
 
 Every answer goes through a multi-step verification pipeline. No hallucination. Every claim is backed by a real source.
@@ -28,7 +28,7 @@ Every answer goes through a multi-step verification pipeline. No hallucination. 
 Confidence scores are **evidence-based** — not LLM self-assessed. After the LLM extracts claims and sources, a post-extraction verification engine checks every claim against the actual source page text:
 
 1. **Atomic claim decomposition** — Compound claims are auto-split into individual verifiable facts. "Tesla had $96B revenue and 1.8M deliveries" becomes two atomic claims, each verified independently.
-2. **NLI evidence reranking** — For each claim, BM25 finds the top-3 candidate sentences from source text. A [DeBERTa-v3 NLI model](https://huggingface.co/MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli) then reranks candidates by semantic entailment, picking the best supporting evidence — not just the best keyword match.
+2. **Neural re-ranking** — Search results are re-scored by a cross-encoder model for semantic query-document relevance before page fetching. Then for each claim, BM25 finds the top-3 candidate sentences from source text. A [DeBERTa-v3 NLI model](https://huggingface.co/MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli) reranks candidates by semantic entailment, picking the best supporting evidence — not just the best keyword match.
 3. **Hybrid BM25 + NLI verification** — Each claim is scored using BM25 lexical matching + NLI semantic entailment (30% BM25, 70% NLI). Catches paraphrased claims that keyword matching alone would miss, with contradiction penalties and paraphrase boosts.
 4. **Multi-provider search** — Parallel search across multiple providers for broader source diversity. More independent sources = stronger cross-reference = higher confidence.
 5. **Domain authority scoring** — 10,000+ domains across 5 tiers (institutional `.gov`/`.edu` → major news → tech journalism → community → low-quality), stored in Supabase with Majestic Million bulk import. Self-improving via Bayesian cold-start smoothing.
@@ -42,21 +42,36 @@ Claims include `verified`, `verificationScore`, `consensusCount`, `consensusLeve
 
 > **NLI graceful fallback:** When `HF_API_KEY` is not set, the system runs BM25-only verification — the same pipeline that shipped before NLI was added. No degradation, no errors. NLI is a transparent enhancement.
 
-### Thorough Mode
+### Depth Modes
 
-Pass `depth: "thorough"` for maximum accuracy. When first-pass confidence is below 60%, the system automatically retries with a rephrased query, merges sources from both passes, runs multi-pass consistency checking (SelfCheckGPT-inspired), and picks the higher-confidence result with consistency adjustments.
+Three depth levels control research thoroughness:
+
+| Depth | Behavior | Use case |
+|-------|----------|----------|
+| `fast` (default) | Single search → extract → verify pass | Quick lookups, real-time agents |
+| `thorough` | Auto-retries with rephrased query when confidence < 60%, multi-pass consistency checking | Important research, fact-checking |
+| `deep` | Multi-step agentic reasoning: iterative gap analysis, follow-up searches, knowledge merging across up to 4 steps | Complex research questions, comprehensive analysis |
 
 ```bash
+# Thorough mode
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
   -H "X-Tavily-Key: tvly-xxx" \
   -H "X-OpenRouter-Key: sk-or-xxx" \
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'
+
+# Deep mode (requires BAI key — uses premium features)
+curl -X POST https://browseai.dev/api/browse/answer \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer bai_xxx" \
+  -d '{"query": "Compare CRISPR approaches for sickle cell disease", "depth": "deep"}'
 ```
+
+Deep mode responses include `reasoningSteps` showing the multi-step research process. Without a BAI key, deep mode gracefully falls back to thorough.
 
 ### Streaming API
 
-Get real-time progress instead of waiting for the full response. The streaming endpoint sends Server-Sent Events (SSE) as each pipeline step completes:
+Get real-time progress with per-token answer streaming. The streaming endpoint sends Server-Sent Events (SSE) as each pipeline step completes:
 
 ```bash
 curl -N -X POST https://browseai.dev/api/browse/answer/stream \
@@ -66,7 +81,7 @@ curl -N -X POST https://browseai.dev/api/browse/answer/stream \
   -d '{"query": "What is quantum computing?"}'
 ```
 
-Events: `trace` (progress), `sources` (discovered early), `result` (final answer), `done`.
+Events: `trace` (progress), `sources` (discovered early), `token` (streamed answer text), `result` (final answer), `done`.
 
 ### Retry with Backoff
 
@@ -163,7 +178,12 @@ for source in result.sources:
     print(f"  - {source.title}: {source.url}")
 
 # Thorough mode — auto-retries if confidence < 60%
-deep = client.ask("What is quantum computing?", depth="thorough")
+thorough = client.ask("What is quantum computing?", depth="thorough")
+
+# Deep mode — multi-step reasoning with gap analysis (requires BAI key)
+deep = client.ask("Compare CRISPR approaches for sickle cell disease", depth="deep")
+for step in deep.reasoning_steps or []:
+    print(f"  Step {step.step}: {step.query} ({step.confidence:.0%})")
 ```
 
 **Framework integrations:**
@@ -226,6 +246,12 @@ curl -X POST https://browseai.dev/api/browse/answer \
   -H "X-OpenRouter-Key: sk-or-xxx" \
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'
 
+# Deep mode (multi-step reasoning — requires BAI key)
+curl -X POST https://browseai.dev/api/browse/answer \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer bai_xxx" \
+  -d '{"query": "Compare CRISPR approaches", "depth": "deep"}'
+
 # With a BrowseAI Dev API key
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
@@ -286,8 +312,8 @@ API responses include quota info when using a BAI key:
 | `POST /browse/search` | Search the web |
 | `POST /browse/open` | Fetch and parse a page |
 | `POST /browse/extract` | Extract structured claims from a page |
-| `POST /browse/answer` | Full pipeline: search + extract + cite. Pass `depth: "thorough"` for auto-retry |
-| `POST /browse/answer/stream` | Streaming answer via SSE — real-time progress events |
+| `POST /browse/answer` | Full pipeline: search + extract + cite. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
+| `POST /browse/answer/stream` | Streaming answer via SSE — real-time token streaming + progress events |
 | `POST /browse/compare` | Compare raw LLM vs evidence-backed answer |
 | `GET /browse/share/:id` | Get a shared result |
 | `GET /browse/stats` | Total queries answered |
@@ -315,7 +341,7 @@ API responses include quota info when using a BAI key:
 | `browse_search` | Search the web for information on any topic |
 | `browse_open` | Fetch and parse a web page into clean text |
 | `browse_extract` | Extract structured claims from a page |
-| `browse_answer` | Full pipeline: search + extract + cite. Supports `depth: "thorough"` |
+| `browse_answer` | Full pipeline: search + extract + cite. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
 | `browse_compare` | Compare raw LLM vs evidence-backed answer |
 | `browse_session_create` | Create a research session (persistent memory) |
 | `browse_session_ask` | Research within a session (recalls prior knowledge) |
@@ -332,7 +358,7 @@ API responses include quota info when using a BAI key:
 | `client.search(query)` | Search the web |
 | `client.open(url)` | Fetch and parse a page |
 | `client.extract(url, query=)` | Extract claims from a page |
-| `client.ask(query, depth=)` | Full pipeline with citations. `depth="thorough"` for auto-retry |
+| `client.ask(query, depth=)` | Full pipeline with citations. `depth`: `"fast"`, `"thorough"`, or `"deep"` |
 | `client.compare(query)` | Raw LLM vs evidence-backed |
 | `client.session(name)` | Create a research session |
 | `session.ask(query, depth=)` | Research with memory recall |
