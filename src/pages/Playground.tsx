@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DepthToggle } from "@/components/DepthToggle";
+import { DepthToggle, isDepthBlocked } from "@/components/DepthToggle";
 import {
   browseKnowledge, browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
   type BrowseSource, type BrowseClaim, type QuotaInfo,
@@ -391,7 +391,7 @@ const Playground = () => {
                 {tab === "answer" && (
                   <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
                 )}
-                <Button onClick={() => run()} disabled={loading || !input.trim()} className="bg-accent text-accent-foreground h-12 px-5">
+                <Button onClick={() => run()} disabled={loading || !input.trim() || (activeTab === "answer" && isDepthBlocked(depth, !!user, quota))} className="bg-accent text-accent-foreground h-12 px-5">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                 </Button>
               </div>

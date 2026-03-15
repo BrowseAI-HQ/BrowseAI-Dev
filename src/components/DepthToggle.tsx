@@ -13,41 +13,51 @@ interface DepthToggleProps {
   size?: "sm" | "md";
 }
 
+/**
+ * Returns true if the user cannot search at the current depth.
+ * Use this to disable search/ask buttons.
+ */
+export function isDepthBlocked(
+  depth: Depth,
+  isLoggedIn: boolean,
+  quota?: { premiumActive: boolean } | null,
+): boolean {
+  if (depth !== "deep") return false;
+  if (!isLoggedIn) return true;
+  if (quota && !quota.premiumActive) return true;
+  return false;
+}
+
 export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggleProps) {
   const { user } = useAuth();
   const [hint, setHint] = useState<string | null>(null);
 
   const isLoggedIn = !!user;
   const deepAvailable = isLoggedIn && (!quota || quota.premiumActive);
+  const blocked = depth === "deep" && !deepAvailable;
 
   const handleClick = () => {
-    if (depth === "fast") {
-      setHint(null);
-      setDepth("thorough");
-    } else if (depth === "thorough") {
-      if (deepAvailable) {
-        setHint(null);
-        setDepth("deep");
-      } else {
-        // Can't use deep — show hint and cycle back to fast
-        if (!isLoggedIn) {
-          setHint("Deep mode requires a BAI key — sign in to unlock");
-        } else if (quota && !quota.premiumActive) {
-          setHint(`Deep mode exhausted today (${quota.used}/${quota.limit}) — resets in ~24h`);
-        }
-        setDepth("fast");
+    const next: Depth =
+      depth === "fast" ? "thorough" : depth === "thorough" ? "deep" : "fast";
+
+    setDepth(next);
+
+    // Show hint when landing on deep and it's unavailable
+    if (next === "deep" && !deepAvailable) {
+      if (!isLoggedIn) {
+        setHint("Deep mode requires a BAI key — sign in to unlock");
+      } else if (quota && !quota.premiumActive) {
+        setHint(`Deep mode exhausted today (${quota.used}/${quota.limit}) — resets in ~24h`);
       }
     } else {
-      // deep → fast
       setHint(null);
-      setDepth("fast");
     }
   };
 
-  // Auto-dismiss hint after 4s
+  // Auto-dismiss hint after 5s
   useEffect(() => {
     if (!hint) return;
-    const t = setTimeout(() => setHint(null), 4000);
+    const t = setTimeout(() => setHint(null), 5000);
     return () => clearTimeout(t);
   }, [hint]);
 
@@ -56,16 +66,18 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
     ? "h-8 px-2 rounded-lg border text-[10px] font-mono transition-colors"
     : "h-12 px-3 rounded-lg border text-xs font-mono transition-colors";
 
-  const colorClass =
-    depth === "deep"
-      ? "bg-purple-500/10 border-purple-500/40 text-purple-400"
-      : depth === "thorough"
-      ? "bg-accent/10 border-accent/40 text-accent"
-      : "bg-secondary border-border text-muted-foreground hover:text-foreground";
+  const colorClass = blocked
+    ? "bg-purple-500/10 border-purple-500/40 text-purple-400 opacity-70"
+    : depth === "deep"
+    ? "bg-purple-500/10 border-purple-500/40 text-purple-400"
+    : depth === "thorough"
+    ? "bg-accent/10 border-accent/40 text-accent"
+    : "bg-secondary border-border text-muted-foreground hover:text-foreground";
 
   return (
     <div className="relative">
       <button onClick={handleClick} className={`${baseClass} ${colorClass} flex items-center gap-1`}>
+        {blocked && <Lock className="w-3 h-3" />}
         {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"}
       </button>
       <AnimatePresence>

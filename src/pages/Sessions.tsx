@@ -11,7 +11,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginModal } from "@/components/LoginModal";
 import { SessionPipelineProgress } from "@/components/results/SessionPipelineProgress";
-import { DepthToggle } from "@/components/DepthToggle";
+import { DepthToggle, isDepthBlocked } from "@/components/DepthToggle";
 import {
   createSession, listSessions, deleteSession, sessionAsk, getSessionKnowledge,
   shareSession,
@@ -366,7 +366,7 @@ const Sessions = () => {
                   <DepthToggle depth={depth} setDepth={setDepth} quota={quota} size="sm" />
                   <Button
                     onClick={handleAsk}
-                    disabled={!query.trim() || asking}
+                    disabled={!query.trim() || asking || isDepthBlocked(depth, !!user, quota)}
                     className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-4 h-8 text-sm font-semibold gap-2"
                   >
                     {asking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

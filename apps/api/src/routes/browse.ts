@@ -444,7 +444,7 @@ export function registerBrowseRoutes(
 
       return {
         success: true,
-        result: { ...result, shareId },
+        result: { ...result, shareId, effectiveDepth },
         ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }),
       };
     } catch (e: any) {
@@ -500,7 +500,7 @@ export function registerBrowseRoutes(
         Promise.all(incrementAll).catch(() => {});
       }
 
-      reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId, ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }) })}\n\n`);
+      reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId, effectiveDepth: streamDepth, ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }) })}\n\n`);
       reply.raw.end();
     } catch (e: any) {
       request.log.error(e);

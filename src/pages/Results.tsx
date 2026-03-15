@@ -32,6 +32,7 @@ const Results = () => {
   const [previewSources, setPreviewSources] = useState<SourcePreview[]>([]);
   const [streamDone, setStreamDone] = useState(false);
   const [quota, setQuota] = useState<PremiumQuota | null>(null);
+  const [effectiveDepth, setEffectiveDepth] = useState(depth);
 
   const handleStreamEvent = useCallback((event: StreamEvent) => {
     switch (event.type) {
@@ -46,6 +47,7 @@ const Results = () => {
         break;
       case "done":
         if (event.data?.quota) setQuota(event.data.quota);
+        if (event.data?.effectiveDepth) setEffectiveDepth(event.data.effectiveDepth as "fast" | "thorough" | "deep");
         setStreamDone(true);
         break;
     }
@@ -117,7 +119,12 @@ const Results = () => {
             <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${quota.premiumActive ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30"}`}>
               <Zap className="w-3 h-3 inline mr-0.5" />
               {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
-              {!quota.premiumActive && depth === "deep" && " · fell back to thorough — resets in ~24h"}
+              {depth === "deep" && effectiveDepth !== "deep" && " · fell back to thorough — resets in ~24h"}
+            </span>
+          )}
+          {!user && depth === "deep" && !loading && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full border font-mono text-amber-400 border-amber-500/30">
+              Ran as thorough — deep mode requires sign in
             </span>
           )}
           <p className="text-sm text-muted-foreground truncate hidden sm:block max-w-md font-mono ml-2">

@@ -39,7 +39,7 @@ export type StreamEvent =
   | { type: "result"; data: BrowseResult }
   | { type: "error"; data: { error: string } }
   | { type: "reasoning_step"; data: ReasoningStepEvent }
-  | { type: "done"; data?: { shareId?: string; quota?: PremiumQuota } };
+  | { type: "done"; data?: { shareId?: string; effectiveDepth?: string; quota?: PremiumQuota } };
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();

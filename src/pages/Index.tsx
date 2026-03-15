@@ -15,7 +15,7 @@ import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
-import { DepthToggle } from "@/components/DepthToggle";
+import { DepthToggle, isDepthBlocked } from "@/components/DepthToggle";
 
 const EXAMPLE_PROMPTS = [
   "How do mRNA vaccines work?",
@@ -269,12 +269,12 @@ const Index = () => {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                onKeyDown={(e) => e.key === "Enter" && !isDepthBlocked(depth, !!user, null) && handleSearch()}
                 className="w-full h-14 pl-12 pr-16 sm:pr-36 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base"
               />
               <Button
                 onClick={() => handleSearch()}
-                disabled={!query.trim()}
+                disabled={!query.trim() || isDepthBlocked(depth, !!user, null)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2"
               >
                 <span className="hidden sm:inline">Search</span>
@@ -298,8 +298,8 @@ const Index = () => {
             {EXAMPLE_PROMPTS.map((prompt) => (
               <button
                 key={prompt}
-                onClick={() => { setQuery(prompt); handleSearch(prompt); }}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-border text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all whitespace-nowrap"
+                onClick={() => { if (!isDepthBlocked(depth, !!user, null)) { setQuery(prompt); handleSearch(prompt); } }}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-border text-xs sm:text-sm text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all whitespace-nowrap ${isDepthBlocked(depth, !!user, null) ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {prompt}
               </button>
