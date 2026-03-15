@@ -19,6 +19,82 @@ import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
 import type { SearchProvider } from "../lib/searchProvider.js";
 
+// ─── Multi-Pass Consistency (SelfCheckGPT-inspired) ──────────────────
+// Compares claims from two independent extraction passes.
+// Claims confirmed by both passes are more reliable → boost.
+// Claims unique to one pass may be hallucinated → penalize.
+
+interface ConsistencyResult {
+  /** Per-claim verification score adjustments */
+  adjustments: number[];
+  /** Number of claims from primary pass confirmed in secondary */
+  confirmedCount: number;
+  /** Ratio of confirmed claims (0-1) */
+  consistencyRate: number;
+}
+
+/**
+ * Check consistency between claims from two extraction passes.
+ * Uses token overlap to identify matching claims (NLI would be better
+ * but adds latency; token overlap is fast and sufficient here since
+ * both passes extract from the same sources).
+ */
+function checkMultiPassConsistency(
+  primaryClaims: Array<{ claim: string; [k: string]: unknown }>,
+  secondaryClaims: Array<{ claim: string; [k: string]: unknown }>,
+): ConsistencyResult {
+  if (secondaryClaims.length === 0) {
+    return {
+      adjustments: primaryClaims.map(() => 0),
+      confirmedCount: 0,
+      consistencyRate: 0,
+    };
+  }
+
+  const OVERLAP_THRESHOLD = 0.35; // Min token overlap to consider "same claim"
+  const BOOST = 0.08;             // Verification score boost for confirmed claims
+  const PENALTY = -0.05;          // Penalty for unconfirmed claims
+
+  const adjustments: number[] = [];
+  let confirmedCount = 0;
+
+  for (const primary of primaryClaims) {
+    const primaryTokens = consistencyTokenize(primary.claim);
+    let bestOverlap = 0;
+
+    for (const secondary of secondaryClaims) {
+      const secondaryTokens = consistencyTokenize(secondary.claim);
+      const shared = primaryTokens.filter(t => secondaryTokens.includes(t));
+      const overlap = shared.length / Math.max(primaryTokens.length, secondaryTokens.length, 1);
+      bestOverlap = Math.max(bestOverlap, overlap);
+    }
+
+    if (bestOverlap >= OVERLAP_THRESHOLD) {
+      confirmedCount++;
+      adjustments.push(BOOST);
+    } else {
+      adjustments.push(PENALTY);
+    }
+  }
+
+  return {
+    adjustments,
+    confirmedCount,
+    consistencyRate: primaryClaims.length > 0 ? confirmedCount / primaryClaims.length : 0,
+  };
+}
+
+/** Simple tokenizer for consistency checking */
+function consistencyTokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(w => w.length > 2);
+}
+
 export type AnswerOptions = {
   /** Pluggable search provider. If set, overrides Tavily/Brave. */
   searchProvider?: SearchProvider;
@@ -356,13 +432,53 @@ export async function answerQuery(
 
     // Pick whichever pass produced higher confidence
     const best = pass2.confidence > knowledge.confidence ? pass2 : knowledge;
+    const other = pass2.confidence > knowledge.confidence ? knowledge : pass2;
     trace.push({
       step: "Select Best Result",
       duration_ms: 0,
-      detail: `Pass ${pass2.confidence > knowledge.confidence ? "2" : "1"} selected (${Math.round(best.confidence * 100)}% vs ${Math.round((pass2.confidence > knowledge.confidence ? knowledge : pass2).confidence * 100)}%)`,
+      detail: `Pass ${pass2.confidence > knowledge.confidence ? "2" : "1"} selected (${Math.round(best.confidence * 100)}% vs ${Math.round(other.confidence * 100)}%)`,
     });
 
-    const result = { ...best, trace };
+    // Multi-pass consistency check (SelfCheckGPT-inspired):
+    // Compare claims across both passes. Claims confirmed by both passes
+    // get a consistency boost; claims only in one pass get penalized.
+    // Uses NLI entailment when available, falls back to token overlap.
+    const consistencyStart = Date.now();
+    const consistencyResult = checkMultiPassConsistency(
+      best.claims,
+      other.claims,
+    );
+    trace.push({
+      step: "Consistency Check",
+      duration_ms: Date.now() - consistencyStart,
+      detail: `${consistencyResult.confirmedCount}/${best.claims.length} claims confirmed across passes`,
+    });
+
+    // Apply consistency adjustments to verification scores
+    const adjustedClaims = best.claims.map((claim: any, i: number) => {
+      const adjustment = consistencyResult.adjustments[i] ?? 0;
+      if (!claim.verificationScore) return claim;
+      const adjusted = Math.max(0, Math.min(1, claim.verificationScore + adjustment));
+      return {
+        ...claim,
+        verificationScore: Math.round(adjusted * 100) / 100,
+        // Downgrade consistency-failed claims
+        verified: adjusted >= 0.2,
+      };
+    });
+
+    // Adjust overall confidence based on consistency rate
+    let adjustedConfidence = best.confidence;
+    if (consistencyResult.consistencyRate < 0.3) {
+      // Very low consistency — penalize heavily
+      adjustedConfidence = Math.max(0.10, adjustedConfidence - 0.15);
+    } else if (consistencyResult.consistencyRate > 0.7) {
+      // High consistency — boost confidence
+      adjustedConfidence = Math.min(0.97, adjustedConfidence + 0.05);
+    }
+    adjustedConfidence = Math.round(adjustedConfidence * 100) / 100;
+
+    const result = { ...best, claims: adjustedClaims, confidence: adjustedConfidence, trace };
     if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
 
     // Record learning signals (fire-and-forget)

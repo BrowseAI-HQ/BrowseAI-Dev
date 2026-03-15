@@ -72,11 +72,26 @@ function bm25BestSentence(
   query: string,
   document: string,
 ): { score: number; sentence: string | null } {
+  const results = bm25TopSentences(query, document, 1);
+  if (results.length === 0) return { score: 0, sentence: null };
+  return { score: results[0].score, sentence: results[0].sentence };
+}
+
+/**
+ * Return the top-K BM25 candidate sentences from a document.
+ * Used by NLI reranking to pick the semantically best evidence
+ * from multiple BM25 candidates instead of just the top-1.
+ */
+function bm25TopSentences(
+  query: string,
+  document: string,
+  topK: number = 3,
+): Array<{ score: number; sentence: string }> {
   const sentences = splitSentences(document);
-  if (sentences.length === 0) return { score: 0, sentence: null };
+  if (sentences.length === 0) return [];
 
   const queryTerms = tokenize(query);
-  if (queryTerms.length === 0) return { score: 0, sentence: null };
+  if (queryTerms.length === 0) return [];
 
   // Compute document-level stats
   const sentenceTokens = sentences.map(s => tokenize(s));
@@ -92,8 +107,7 @@ function bm25BestSentence(
   }
 
   // Score each sentence
-  let bestScore = 0;
-  let bestIdx = -1;
+  const scored: Array<{ score: number; idx: number }> = [];
 
   for (let i = 0; i < sentenceTokens.length; i++) {
     const tokens = sentenceTokens[i];
@@ -116,19 +130,22 @@ function bm25BestSentence(
       score += termIdf * tfNorm;
     }
 
-    if (score > bestScore) {
-      bestScore = score;
-      bestIdx = i;
+    if (score > 0) {
+      scored.push({ score, idx: i });
     }
   }
 
-  if (bestIdx === -1) return { score: 0, sentence: null };
+  if (scored.length === 0) return [];
 
-  // Normalize score to 0–1 range
+  // Normalize scores to 0–1 range
   const maxPossible = queryTerms.reduce((sum, t) => sum + (idf.get(t) || 0), 0) * (K1 + 1);
-  const normalized = maxPossible > 0 ? Math.min(1, bestScore / maxPossible) : 0;
 
-  return { score: normalized, sentence: sentences[bestIdx] };
+  // Sort by score descending, take top-K
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topK).map(s => ({
+    score: maxPossible > 0 ? Math.min(1, s.score / maxPossible) : 0,
+    sentence: sentences[s.idx],
+  }));
 }
 
 /**
@@ -774,8 +791,10 @@ function computeConsensus(
 function detectContradictions(claims: string[]): Contradiction[] {
   const contradictions: Contradiction[] = [];
 
-  for (let i = 0; i < claims.length; i++) {
-    for (let j = i + 1; j < claims.length; j++) {
+  // Cap at 50 claims to prevent O(n^2) blowup (1225 pairs max)
+  const maxClaims = Math.min(claims.length, 50);
+  for (let i = 0; i < maxClaims; i++) {
+    for (let j = i + 1; j < maxClaims; j++) {
       const overlap = tokenOverlap(claims[i], claims[j]);
       // Same topic threshold — claims must share enough tokens
       if (overlap < 0.3) continue;
@@ -877,51 +896,113 @@ export async function verifyEvidence(
     };
   });
 
-  // ── Phase 1b: BM25 claim verification + best evidence extraction ──
-  const claimBestEvidence: Array<{ bm25Score: number; bestSentence: string | null }> = [];
+  // ── Phase 1b: BM25 candidate extraction (top-3 per claim) ──
+  // Instead of just the top-1, we extract top-3 BM25 candidate sentences
+  // per claim. When NLI is available, it reranks these candidates to pick
+  // the semantically best evidence — catching cases where BM25's top pick
+  // is a keyword match but not the best semantic support.
+  const NLI_RERANK_K = 3;
+  const claimCandidates: Array<Array<{ bm25Score: number; sentence: string }>> = [];
 
   for (const claim of claims) {
-    let bestScore = 0;
-    let bestSentence: string | null = null;
+    const candidates: Array<{ bm25Score: number; sentence: string }> = [];
 
     if (claim.sources && claim.sources.length > 0) {
       for (const url of claim.sources) {
         const pageText = pageContents.get(url) || "";
         if (!pageText) continue;
 
-        const { score, matchedSentence } = verifyTextInSource(claim.claim, pageText, bm25Threshold);
-        if (score > bestScore) {
-          bestScore = score;
-          bestSentence = matchedSentence;
+        // Get top-K candidates from each source
+        const topK = bm25TopSentences(claim.claim, pageText, NLI_RERANK_K);
+        for (const t of topK) {
+          candidates.push({ bm25Score: t.score, sentence: t.sentence });
         }
       }
     }
 
-    claimBestEvidence.push({ bm25Score: bestScore, bestSentence });
+    // Sort all candidates across sources by BM25 score, take top-K
+    candidates.sort((a, b) => b.bm25Score - a.bm25Score);
+    claimCandidates.push(candidates.slice(0, NLI_RERANK_K));
   }
 
-  // ── Phase 1c: NLI semantic entailment (when available) ──
-  // For each claim with a matched sentence, ask NLI: does this evidence
-  // actually ENTAIL the claim? This catches paraphrases BM25 misses.
+  // ── Phase 1c: NLI evidence reranking (when available) ──
+  // For each claim with multiple BM25 candidates, NLI scores all candidates
+  // and picks the one with highest entailment. This is effectively cross-encoder
+  // reranking using our existing NLI model — better evidence in → better verification.
+  // Without NLI, falls back to BM25's top-1 pick.
+  const claimBestEvidence: Array<{ bm25Score: number; bestSentence: string | null }> = [];
   const nliResults: Array<NLIResult | null> = claims.map(() => null);
 
   if (hfApiKey) {
-    const nliPairs: Array<{ evidence: string; claim: string }> = [];
-    const nliIndices: number[] = [];
+    // Build batch NLI pairs: for each claim, score all its BM25 candidates
+    const allPairs: Array<{ evidence: string; claim: string }> = [];
+    const pairMap: Array<{ claimIdx: number; candidateIdx: number }> = [];
 
     for (let i = 0; i < claims.length; i++) {
-      const evidence = claimBestEvidence[i].bestSentence;
-      if (evidence && evidence.length > 20) {
-        nliPairs.push({ evidence, claim: claims[i].claim });
-        nliIndices.push(i);
+      const candidates = claimCandidates[i];
+      for (let c = 0; c < candidates.length; c++) {
+        if (candidates[c].sentence.length > 20) {
+          allPairs.push({ evidence: candidates[c].sentence, claim: claims[i].claim });
+          pairMap.push({ claimIdx: i, candidateIdx: c });
+        }
       }
     }
 
-    if (nliPairs.length > 0) {
-      const batchResults = await batchCheckEntailment(nliPairs, hfApiKey);
+    if (allPairs.length > 0) {
+      const batchResults = await batchCheckEntailment(allPairs, hfApiKey);
+
+      // For each claim, pick the candidate with highest NLI entailment
+      const claimBestNLI: Map<number, { nli: NLIResult; candidateIdx: number; entailment: number }> = new Map();
+
       for (let j = 0; j < batchResults.length; j++) {
-        nliResults[nliIndices[j]] = batchResults[j];
+        const nli = batchResults[j];
+        if (!nli) continue;
+        const { claimIdx, candidateIdx } = pairMap[j];
+        const existing = claimBestNLI.get(claimIdx);
+        if (!existing || nli.entailment > existing.entailment) {
+          claimBestNLI.set(claimIdx, { nli, candidateIdx, entailment: nli.entailment });
+        }
       }
+
+      // Assign best evidence: NLI-reranked candidate or BM25 top-1 fallback
+      for (let i = 0; i < claims.length; i++) {
+        const best = claimBestNLI.get(i);
+        const candidates = claimCandidates[i];
+        if (best && candidates[best.candidateIdx]) {
+          // NLI picked the best evidence
+          claimBestEvidence.push({
+            bm25Score: candidates[best.candidateIdx].bm25Score,
+            bestSentence: candidates[best.candidateIdx].sentence,
+          });
+          nliResults[i] = best.nli;
+        } else if (candidates.length > 0) {
+          // NLI failed for this claim, use BM25 top-1
+          claimBestEvidence.push({
+            bm25Score: candidates[0].bm25Score,
+            bestSentence: candidates[0].sentence,
+          });
+        } else {
+          claimBestEvidence.push({ bm25Score: 0, bestSentence: null });
+        }
+      }
+    } else {
+      // No valid pairs to check
+      for (let i = 0; i < claims.length; i++) {
+        const candidates = claimCandidates[i];
+        claimBestEvidence.push({
+          bm25Score: candidates[0]?.bm25Score ?? 0,
+          bestSentence: candidates[0]?.sentence ?? null,
+        });
+      }
+    }
+  } else {
+    // No NLI: use BM25 top-1 (existing behavior)
+    for (let i = 0; i < claims.length; i++) {
+      const candidates = claimCandidates[i];
+      claimBestEvidence.push({
+        bm25Score: candidates[0]?.bm25Score ?? 0,
+        bestSentence: candidates[0]?.sentence ?? null,
+      });
     }
   }
 

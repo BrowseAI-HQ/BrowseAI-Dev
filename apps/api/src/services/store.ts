@@ -22,6 +22,16 @@ export type DomainAuthorityRow = {
   curated: boolean;
 };
 
+export type CalibrationBucket = {
+  bucket: string;          // e.g., "0.70-0.80"
+  count: number;           // total results in this bucket
+  goodCount: number;       // feedback "good"
+  badCount: number;        // feedback "bad"
+  wrongCount: number;      // feedback "wrong"
+  accuracy: number;        // goodCount / (goodCount + wrongCount), NaN if no data
+  avgConfidence: number;   // avg predicted confidence in this bucket
+};
+
 export interface ResultStore {
   save(query: string, result: BrowseResult, userId?: string, tool?: string, options?: SaveOptions): Promise<string>;
   get(id: string): Promise<{ query: string; result: BrowseResult; created_at: string } | null>;
@@ -46,6 +56,16 @@ export interface ResultStore {
   saveDomainAuthority(entries: Partial<DomainAuthorityRow>[]): Promise<number>;
   /** Atomically update domain scores using Postgres function (no race conditions) */
   updateDomainScores(updates: Array<{ domain: string; verified_count: number; total_count: number }>): Promise<void>;
+  /** Save user feedback on a result (for confidence calibration) */
+  saveFeedback(resultId: string, rating: "good" | "bad" | "wrong", claimIndex?: number): Promise<void>;
+  /** Get confidence calibration data: predicted confidence vs actual accuracy from feedback */
+  getCalibrationData(): Promise<CalibrationBucket[]>;
+}
+
+/** Sanitize a value for PostgREST query parameters to prevent filter injection */
+function sanitizePostgrestParam(value: string): string {
+  // Only allow alphanumeric, hyphens, underscores (safe for IDs and UUIDs)
+  return value.replace(/[^a-zA-Z0-9_-]/g, "");
 }
 
 export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string): ResultStore {
@@ -96,7 +116,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
     },
 
     async get(id: string) {
-      const res = await supabaseFetch(`/browse_results?id=eq.${id}&select=*`);
+      const res = await supabaseFetch(`/browse_results?id=eq.${sanitizePostgrestParam(id)}&select=*`);
       if (!res.ok) return null;
       const rows = await res.json();
       return rows[0] || null;
@@ -112,7 +132,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
 
     async getUserHistory(userId: string, limit = 20) {
       const res = await supabaseFetch(
-        `/browse_results?user_id=eq.${userId}&select=id,query,tool,created_at&order=created_at.desc&limit=${limit}`
+        `/browse_results?user_id=eq.${sanitizePostgrestParam(userId)}&select=id,query,tool,created_at&order=created_at.desc&limit=${limit}`
       );
       if (!res.ok) return [];
       return res.json();
@@ -120,7 +140,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
 
     async getUserStats(userId: string) {
       const totalRes = await supabaseFetch(
-        `/browse_results?user_id=eq.${userId}&select=id`,
+        `/browse_results?user_id=eq.${sanitizePostgrestParam(userId)}&select=id`,
         { headers: { Prefer: "count=exact" } }
       );
       const totalCount = totalRes.headers.get("content-range")?.split("/")[1];
@@ -129,7 +149,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const monthRes = await supabaseFetch(
-        `/browse_results?user_id=eq.${userId}&created_at=gte.${monthStart}&select=id`,
+        `/browse_results?user_id=eq.${sanitizePostgrestParam(userId)}&created_at=gte.${monthStart}&select=id`,
         { headers: { Prefer: "count=exact" } }
       );
       const monthCount = monthRes.headers.get("content-range")?.split("/")[1];
@@ -222,6 +242,69 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
       if (!res.ok) {
         console.warn("Failed to update domain scores:", res.status);
       }
+    },
+
+    async saveFeedback(resultId: string, rating: "good" | "bad" | "wrong", claimIndex?: number): Promise<void> {
+      // Update the browse_results row with feedback data
+      const body: Record<string, unknown> = {
+        feedback_rating: rating,
+        feedback_at: new Date().toISOString(),
+      };
+      if (claimIndex !== undefined) body.feedback_claim_index = claimIndex;
+
+      const res = await supabaseFetch(`/browse_results?id=eq.${sanitizePostgrestParam(resultId)}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        console.warn("Failed to save feedback:", res.status);
+      }
+    },
+
+    async getCalibrationData(): Promise<CalibrationBucket[]> {
+      // Fetch results that have feedback
+      const res = await supabaseFetch(
+        `/browse_results?feedback_rating=not.is.null&select=result,feedback_rating&limit=5000&order=created_at.desc`
+      );
+      if (!res.ok) return [];
+      const rows: { result: BrowseResult; feedback_rating: string }[] = await res.json();
+
+      // Bucket by confidence (0.1 wide buckets: 0.0-0.1, 0.1-0.2, ..., 0.9-1.0)
+      const buckets = new Map<string, { confidences: number[]; good: number; bad: number; wrong: number }>();
+      for (let i = 0; i < 10; i++) {
+        const lo = (i / 10).toFixed(1);
+        const hi = ((i + 1) / 10).toFixed(1);
+        buckets.set(`${lo}-${hi}`, { confidences: [], good: 0, bad: 0, wrong: 0 });
+      }
+
+      for (const row of rows) {
+        const confidence = row.result?.confidence ?? 0;
+        const bucketIdx = Math.min(9, Math.floor(confidence * 10));
+        const lo = (bucketIdx / 10).toFixed(1);
+        const hi = ((bucketIdx + 1) / 10).toFixed(1);
+        const key = `${lo}-${hi}`;
+        const bucket = buckets.get(key);
+        if (!bucket) continue;
+
+        bucket.confidences.push(confidence);
+        if (row.feedback_rating === "good") bucket.good++;
+        else if (row.feedback_rating === "bad") bucket.bad++;
+        else if (row.feedback_rating === "wrong") bucket.wrong++;
+      }
+
+      return [...buckets.entries()]
+        .map(([key, b]) => ({
+          bucket: key,
+          count: b.confidences.length,
+          goodCount: b.good,
+          badCount: b.bad,
+          wrongCount: b.wrong,
+          accuracy: (b.good + b.wrong) > 0 ? b.good / (b.good + b.wrong) : NaN,
+          avgConfidence: b.confidences.length > 0
+            ? b.confidences.reduce((a, c) => a + c, 0) / b.confidences.length
+            : 0,
+        }))
+        .filter(b => b.count > 0);
     },
 
     async getDomainStats(limit = 5000): Promise<DomainStats[]> {
@@ -329,5 +412,7 @@ export function createNoopStore(): ResultStore {
     async loadDomainAuthority() { return []; },
     async saveDomainAuthority() { return 0; },
     async updateDomainScores() {},
+    async saveFeedback() {},
+    async getCalibrationData() { return []; },
   };
 }

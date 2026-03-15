@@ -47,12 +47,13 @@ const TOOLS = [
 ];
 
 const PIPELINE_STEPS = [
-  { label: "Search", detail: "Web search" },
+  { label: "Search", detail: "Multi-source" },
   { label: "Fetch", detail: "Page parsing" },
-  { label: "Extract", detail: "Claim extraction" },
+  { label: "Extract", detail: "Atomic claims" },
+  { label: "Rerank", detail: "NLI evidence" },
   { label: "Verify", detail: "BM25 + NLI" },
-  { label: "Consensus", detail: "Cross-source" },
-  { label: "Answer", detail: "Cited result" },
+  { label: "Consensus", detail: "Multi-pass" },
+  { label: "Answer", detail: "Calibrated" },
 ];
 
 const Index = () => {
@@ -395,14 +396,20 @@ const Index = () => {
                 { phase: "Shipped", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
                 { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseai, works with LangChain and CrewAI out of the box" },
                 { phase: "Shipped", text: "Multi-source verification — hybrid BM25 + NLI semantic entailment, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
+                { phase: "Shipped", text: "NLI evidence reranking — top-3 BM25 candidates reranked by DeBERTa semantic entailment for best evidence selection" },
+                { phase: "Shipped", text: "Atomic claim decomposition — compound claims auto-split into individual verifiable facts for finer-grained verification" },
+                { phase: "Shipped", text: "Multi-pass consistency — thorough mode cross-checks claims across extraction passes, penalizing inconsistencies (SelfCheckGPT-inspired)" },
+                { phase: "Shipped", text: "Auto-calibrated confidence — predicted confidence auto-adjusts from user feedback data using isotonic calibration curves" },
+                { phase: "Shipped", text: "Multi-provider search — parallel search across multiple providers for broader source diversity and stronger consensus" },
                 { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
-                { phase: "Shipped", text: "Self-learning pipeline — adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query improves future accuracy" },
+                { phase: "Shipped", text: "Self-learning pipeline — adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop" },
                 { phase: "Shipped", text: "Streaming API & retry with backoff — real-time SSE streaming, automatic retry with exponential backoff on all external APIs" },
                 { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
-                { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels for broader evidence coverage" },
-                { phase: "Coming Soon", text: "Knowledge graph & entity extraction — map relationships between claims, build reusable knowledge" },
+                { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels" },
+                { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims and entities, build reusable queryable knowledge" },
+                { phase: "In Progress", text: "Premium verification tier — NLI reranking, multi-provider search, and consistency checking for API key users" },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
-                { phase: "Coming Soon", text: "Multi-provider search — combine Tavily, Google, Bing for broader coverage and source diversity" },
+                { phase: "Coming Soon", text: "Fine-tuned verification model — custom model trained on 10K+ production examples for per-domain calibration" },
                 { phase: "Coming Soon", text: "Enterprise search adapters — plug into Elasticsearch, Confluence, or any custom endpoint with zero data retention" },
               ];
               const visible = showAllRoadmap ? roadmapItems : roadmapItems.slice(0, 4);
@@ -439,13 +446,72 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ===== GET A BAI KEY CTA ===== */}
+      <section className="py-20 px-6 border-t border-border bg-accent/[0.03]">
+        <div className="max-w-4xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
+            <Badge variant="outline" className="text-xs font-normal mb-4 text-accent border-accent/30">100% Free</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Premium verification. Free API key.</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Get a <code className="text-xs bg-secondary px-1.5 py-0.5 rounded font-semibold text-accent">bai_</code> key and unlock features that make your agent's research significantly more accurate. One key works across MCP, REST API, and Python SDK.
+            </p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="p-5 rounded-xl bg-card border border-border text-center">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mx-auto mb-3">
+                  <Shield className="w-5 h-5 text-accent" />
+                </div>
+                <span className="font-semibold text-sm block mb-1">NLI Semantic Verification</span>
+                <p className="text-xs text-muted-foreground">Evidence matched by meaning using DeBERTa entailment, not just keyword overlap</p>
+              </div>
+              <div className="p-5 rounded-xl bg-card border border-border text-center">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mx-auto mb-3">
+                  <Globe className="w-5 h-5 text-accent" />
+                </div>
+                <span className="font-semibold text-sm block mb-1">Multi-Provider Search</span>
+                <p className="text-xs text-muted-foreground">Parallel search across multiple sources for broader coverage and stronger consensus</p>
+              </div>
+              <div className="p-5 rounded-xl bg-card border border-border text-center">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mx-auto mb-3">
+                  <Target className="w-5 h-5 text-accent" />
+                </div>
+                <span className="font-semibold text-sm block mb-1">Multi-Pass Consistency</span>
+                <p className="text-xs text-muted-foreground">Claims cross-checked across independent extraction passes in thorough mode</p>
+              </div>
+              <div className="p-5 rounded-xl bg-card border border-border text-center">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mx-auto mb-3">
+                  <Brain className="w-5 h-5 text-accent" />
+                </div>
+                <span className="font-semibold text-sm block mb-1">Research Sessions</span>
+                <p className="text-xs text-muted-foreground">Persistent memory across queries — later research recalls prior verified findings</p>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <Button
+                className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 px-6 h-11 text-sm font-semibold"
+                onClick={() => user ? navigate("/dashboard#api-keys") : setLoginOpen(true)}
+              >
+                <LogIn className="w-4 h-4" />
+                {user ? "Go to Dashboard" : "Get your free API key"}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-3">
+                No credit card required. No usage limits. Sign in, grab your key, and start using premium features immediately.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ===== HOW IT WORKS ===== */}
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">How it works</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Every answer — whether from your agent or your own search — goes through a 6-step verification pipeline. Every claim is backed by a real source.
+              Every answer — whether from your agent or your own search — goes through a multi-step verification pipeline. Every claim is backed by a real source.
             </p>
           </motion.div>
 
@@ -810,6 +876,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               <ul className="space-y-2.5 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 free queries/hour</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BM25 keyword verification</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BYOK for unlimited access</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> MCP + REST API + Python SDK</li>
               </ul>
@@ -823,6 +890,9 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               </div>
               <ul className="space-y-2.5 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> NLI semantic verification — deep entailment-based evidence matching</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Multi-provider search — parallel search across multiple sources</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Multi-pass consistency checking in thorough mode</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Research Sessions — persistent memory across queries</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI Dev API key (one key for everything)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
@@ -832,7 +902,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 variant="outline"
                 size="sm"
                 className="mt-4 w-full text-xs border-accent/30 text-accent hover:bg-accent/10"
-                onClick={() => user ? navigate("/dashboard") : setLoginOpen(true)}
+                onClick={() => user ? navigate("/dashboard#api-keys") : setLoginOpen(true)}
               >
                 {user ? "Go to Dashboard" : "Sign in — it\u2019s free"}
               </Button>

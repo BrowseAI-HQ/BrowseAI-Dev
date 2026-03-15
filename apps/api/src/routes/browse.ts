@@ -16,6 +16,7 @@ import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
 import { recordFeedback, applyFeedbackToType } from "../lib/learning.js";
+import { setCalibrationData } from "../lib/gemini.js";
 import { createSearchProvider } from "../lib/searchProvider.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
@@ -57,7 +58,7 @@ async function getRequestEnv(
   env: Env,
   apiKeyService: ApiKeyService | null,
   cache: CacheService
-): Promise<{ env: Env; isOwnKeys: boolean; userId: string | null }> {
+): Promise<{ env: Env; isOwnKeys: boolean; userId: string | null; hasBaiKey: boolean }> {
   // Try to get userId from JWT (for logged-in web users)
   let userId = await getUserIdFromRequest(request);
 
@@ -71,9 +72,13 @@ async function getRequestEnv(
         ...env,
         ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
         ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
+        // BYOK users don't get premium features (NLI, Brave) — those are bai_ key perks
+        HF_API_KEY: undefined,
+        BRAVE_API_KEY: undefined,
       },
       isOwnKeys: true,
       userId,
+      hasBaiKey: false,
     };
   }
 
@@ -101,9 +106,11 @@ async function getRequestEnv(
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
+            // bai_ key users get full premium pipeline (NLI + Brave)
           },
           isOwnKeys: true,
           userId,
+          hasBaiKey: true,
         };
       }
 
@@ -136,9 +143,11 @@ async function getRequestEnv(
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
+            // Signed-in users with stored keys get premium pipeline
           },
           isOwnKeys: true,
           userId,
+          hasBaiKey: true,
         };
       }
     } catch (e) {
@@ -147,10 +156,20 @@ async function getRequestEnv(
     }
   }
 
-  // Priority 4: Default env
+  // Priority 4: Default env (demo users — no premium features)
   // Authenticated users (valid JWT) bypass demo limits even when using server keys
   const isAuthenticated = !!userId;
-  return { env, isOwnKeys: isAuthenticated, userId };
+  return {
+    env: {
+      ...env,
+      // Demo/unauthenticated users don't get NLI or Brave — those cost us money
+      HF_API_KEY: undefined,
+      BRAVE_API_KEY: undefined,
+    },
+    isOwnKeys: isAuthenticated,
+    userId,
+    hasBaiKey: false,
+  };
 }
 
 async function checkDemoLimit(
@@ -175,7 +194,7 @@ function detectClient(request: FastifyRequest): string {
   const ua = (request.headers["user-agent"] || "").toLowerCase();
   if (ua.includes("browseai-python")) return "python-sdk";
   if (ua.includes("browse-ai-mcp") || ua.includes("mcp")) return "mcp";
-  if (request.headers["x-browse-client"]) return String(request.headers["x-browse-client"]);
+  if (request.headers["x-browse-client"]) return String(request.headers["x-browse-client"]).slice(0, 50).replace(/[^a-zA-Z0-9_.-]/g, "");
   if (request.headers.origin || request.headers.referer) return "web";
   if (ua.includes("curl")) return "curl";
   if (ua.includes("python")) return "python";
@@ -452,7 +471,7 @@ export function registerBrowseRoutes(
     } catch (e: any) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Comparison failed");
-      return reply.status(status).send({ success: false, error, detail: e.message });
+      return reply.status(status).send({ success: false, error });
     }
   });
 
@@ -531,8 +550,9 @@ export function registerBrowseRoutes(
       return reply.status(404).send({ success: false, error: "Result not found" });
     }
 
-    // Record feedback in learning engine
+    // Record feedback in learning engine + persist to Supabase for calibration
     recordFeedback({ resultId, rating, claimIndex });
+    await store.saveFeedback(resultId, rating, claimIndex);
 
     // Link feedback to query type via Search Web trace step: "N results (...) [factual]"
     const searchTrace = stored.result.trace?.find(t => t.step.startsWith("Search Web"));
@@ -540,6 +560,11 @@ export function registerBrowseRoutes(
     if (typeMatch) {
       applyFeedbackToType(typeMatch[1], rating);
     }
+
+    // Refresh confidence calibration every 10 feedbacks (non-blocking)
+    store.getCalibrationData().then(buckets => {
+      if (buckets.length > 0) setCalibrationData(buckets);
+    }).catch(() => {});
 
     return { success: true, result: { recorded: true } };
   });

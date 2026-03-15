@@ -95,6 +95,14 @@ const Dashboard = () => {
     }
   }, [user, loadData, checkWaitlist]);
 
+  useEffect(() => {
+    if (!loading && user && window.location.hash === "#api-keys") {
+      setTimeout(() => {
+        document.getElementById("api-keys")?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    }
+  }, [loading, user]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -225,7 +233,9 @@ const Dashboard = () => {
             </Card>
           )}
 
-          <ApiKeyManager />
+          <div id="api-keys">
+            <ApiKeyManager />
+          </div>
 
           <Card className="border-amber-400/20">
             <CardHeader>

@@ -25,10 +25,15 @@ function validateEndpointUrl(endpoint: string): void {
     throw new Error("Invalid endpoint URL");
   }
 
-  // Must use HTTPS (except localhost for development)
-  const isLocalhost = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
-  if (parsed.protocol !== "https:" && !isLocalhost) {
+  // Must use HTTPS — no exceptions (localhost blocked in production)
+  if (parsed.protocol !== "https:") {
     throw new Error("Enterprise endpoints must use HTTPS");
+  }
+
+  // Block localhost/loopback
+  const isLocalhost = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1" || parsed.hostname === "::1";
+  if (isLocalhost) {
+    throw new Error("Enterprise endpoints cannot target localhost");
   }
 
   // Block private/internal IP ranges
@@ -180,9 +185,12 @@ export class ConfluenceProvider implements SearchProvider {
   ) {}
 
   async search(query: string, limit = 10): Promise<SearchResult[]> {
+    // Sanitize inputs for CQL injection prevention
+    const sanitizeCql = (s: string) => s.replace(/["\\()~=]/g, " ").trim();
+    const safeQuery = sanitizeCql(query);
     const cql = this.spaceKey
-      ? `space = "${this.spaceKey}" AND text ~ "${query.replace(/"/g, '\\"')}"`
-      : `text ~ "${query.replace(/"/g, '\\"')}"`;
+      ? `space = "${sanitizeCql(this.spaceKey)}" AND text ~ "${safeQuery}"`
+      : `text ~ "${safeQuery}"`;
 
     const url = new URL(`${this.endpoint.replace(/\/$/, "")}/rest/api/content/search`);
     url.searchParams.set("cql", cql);
@@ -280,11 +288,15 @@ export function createSearchProvider(config: SearchProviderConfig): SearchProvid
     case "elasticsearch":
       if (!config.endpoint) throw new Error("Elasticsearch provider requires endpoint");
       validateEndpointUrl(config.endpoint);
-      return new ElasticsearchProvider(
-        config.endpoint,
-        config.index || "_all",
-        config.authHeader,
-      );
+      {
+        const idx = config.index || "_all";
+        if (!/^[a-z0-9_.*-]+$/i.test(idx)) throw new Error("Invalid Elasticsearch index name");
+        return new ElasticsearchProvider(
+          config.endpoint,
+          idx,
+          config.authHeader,
+        );
+      }
 
     case "confluence":
       if (!config.endpoint || !config.authHeader) {

@@ -27,12 +27,16 @@ Every answer goes through a 6-step verification pipeline. No hallucination. Ever
 
 Confidence scores are **evidence-based** — not LLM self-assessed. After the LLM extracts claims and sources, a post-extraction verification engine checks every claim against the actual source page text:
 
-1. **Hybrid BM25 + NLI verification** — Each claim is first scored against every sentence in its cited sources using [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) for lexical matching. When available, a [DeBERTa-v3 NLI model](https://huggingface.co/MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli) then checks semantic entailment — catching paraphrased claims that lexical matching alone would miss. The hybrid score blends both signals (30% BM25, 70% NLI) with contradiction penalties and paraphrase boosts.
-2. **Domain authority scoring** — 10,000+ domains across 5 tiers (institutional `.gov`/`.edu` → major news → tech journalism → community → low-quality), stored in Supabase with Majestic Million bulk import. Scores self-improve over time using Bayesian cold-start smoothing — every query feeds back verification data to make future scores more accurate.
-3. **Source quote verification** — LLM-extracted quotes are verified against actual page text using hybrid matching (exact substring → BM25 fallback).
-4. **Cross-source consensus** — Each claim is verified against *all* available page texts (not just cited sources). Claims supported by 3+ independent domains get "strong consensus", boosting confidence. Single-source claims are flagged as "weak".
-5. **Contradiction detection** — Claim pairs are analyzed for semantic conflicts using topic overlap + NLI contradiction classification. When NLI is available, contradictions are detected with model confidence scores; otherwise falls back to negation asymmetry heuristics. Detected contradictions are surfaced in the response and penalize the confidence score.
-6. **7-factor confidence formula** — Final score combines: verification rate (25%), domain authority (20%), source count (15%), consensus (15%), domain diversity (10%), claim grounding (10%), and citation depth (5%). Each detected contradiction subtracts 0.05 from the raw score.
+1. **Atomic claim decomposition** — Compound claims are auto-split into individual verifiable facts. "Tesla had $96B revenue and 1.8M deliveries" becomes two atomic claims, each verified independently.
+2. **NLI evidence reranking** — For each claim, BM25 finds the top-3 candidate sentences from source text. A [DeBERTa-v3 NLI model](https://huggingface.co/MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli) then reranks candidates by semantic entailment, picking the best supporting evidence — not just the best keyword match.
+3. **Hybrid BM25 + NLI verification** — Each claim is scored using BM25 lexical matching + NLI semantic entailment (30% BM25, 70% NLI). Catches paraphrased claims that keyword matching alone would miss, with contradiction penalties and paraphrase boosts.
+4. **Multi-provider search** — Parallel search across multiple providers for broader source diversity. More independent sources = stronger cross-reference = higher confidence.
+5. **Domain authority scoring** — 10,000+ domains across 5 tiers (institutional `.gov`/`.edu` → major news → tech journalism → community → low-quality), stored in Supabase with Majestic Million bulk import. Self-improving via Bayesian cold-start smoothing.
+6. **Source quote verification** — LLM-extracted quotes verified against actual page text using hybrid matching (exact substring → BM25 fallback).
+7. **Cross-source consensus** — Each claim verified against *all* available page texts. Claims supported by 3+ independent domains get "strong consensus". Single-source claims flagged as "weak".
+8. **Contradiction detection** — Claim pairs analyzed for semantic conflicts using topic overlap + NLI contradiction classification. Detected contradictions surfaced in the response and penalize confidence.
+9. **Multi-pass consistency** — In thorough mode, claims are cross-checked across independent extraction passes. Claims confirmed by both passes get boosted; inconsistent claims are penalized (SelfCheckGPT-inspired).
+10. **Auto-calibrated confidence** — 7-factor confidence formula auto-adjusts from user feedback using isotonic calibration curves. Predicted confidence aligns with actual accuracy over time. Factors: verification rate (25%), domain authority (20%), source count (15%), consensus (15%), domain diversity (10%), claim grounding (10%), citation depth (5%).
 
 Claims include `verified`, `verificationScore`, `consensusCount`, `consensusLevel`, and optional `nliScore` fields. Sources include `verified` and `authority`. Detected `contradictions` (with optional `nliConfidence`) are returned at the top level. Agents can use these fields to make trust decisions programmatically.
 
@@ -40,7 +44,7 @@ Claims include `verified`, `verificationScore`, `consensusCount`, `consensusLeve
 
 ### Thorough Mode
 
-Pass `depth: "thorough"` to automatically retry with a rephrased query when first-pass confidence is below 60%. The system searches again with alternative terms, merges sources from both passes, and picks the higher-confidence result.
+Pass `depth: "thorough"` for maximum accuracy. When first-pass confidence is below 60%, the system automatically retries with a rephrased query, merges sources from both passes, runs multi-pass consistency checking (SelfCheckGPT-inspired), and picks the higher-confidence result with consistency adjustments.
 
 ```bash
 curl -X POST https://browseai.dev/api/browse/answer \
@@ -244,13 +248,13 @@ pnpm dev
 
 Three ways to authenticate:
 
-| Method | How | Limits |
-|--------|-----|--------|
-| **BYOK** (recommended) | Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers | Unlimited, free (search/answer only — no sessions) |
-| **BrowseAI Dev API Key** | Pass `Authorization: Bearer bai_xxx` | Unlimited + sessions, sharing, forking |
-| **Demo** | No auth needed | 5 queries/hour per IP |
+| Method | How | Verification | Limits |
+|--------|-----|-------------|--------|
+| **BrowseAI Dev API Key** | `Authorization: Bearer bai_xxx` | Full premium — NLI reranking, multi-provider search, multi-pass consistency | Unlimited + sessions, sharing, forking |
+| **BYOK** | `X-Tavily-Key` + `X-OpenRouter-Key` headers | BM25 keyword verification | Unlimited, free (search/answer only — no sessions) |
+| **Demo** | No auth needed | BM25 keyword verification | 5 queries/hour per IP |
 
-Get a BrowseAI Dev API key from the [dashboard](https://browseai.dev/dashboard) — it bundles your Tavily + OpenRouter keys into one key for CLI, MCP, and API use.
+Get a BrowseAI Dev API key from the [dashboard](https://browseai.dev/dashboard) — it bundles your keys into one key and unlocks the premium verification pipeline (NLI semantic matching, multi-provider search, consistency checking).
 
 ## Project Structure
 

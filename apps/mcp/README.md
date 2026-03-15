@@ -14,10 +14,21 @@ Your question → Web search → Fetch pages → Extract claims → Build eviden
 
 Every answer includes:
 - **Claims** with source URLs, verification status, and consensus level
-- **7-factor confidence score** (0-1) — evidence-based, not LLM self-assessed
-- **Source quotes** verified against actual page text via BM25
+- **7-factor confidence score** (0-1) — evidence-based, not LLM self-assessed, auto-calibrated from feedback
+- **Source quotes** verified against actual page text via hybrid BM25 + NLI matching
+- **Atomic claim decomposition** — compound facts split and verified independently
 - **Execution trace** with timing
-- **Thorough mode** — pass `depth: "thorough"` to auto-retry with rephrased queries when confidence < 60%
+- **Thorough mode** — pass `depth: "thorough"` to auto-retry with rephrased queries when confidence < 60%, with multi-pass consistency checking
+
+### Premium Features (with `BROWSE_API_KEY`)
+
+Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
+- **NLI semantic reranking** — evidence matched by meaning, not just keywords
+- **Multi-provider search** — parallel search across multiple sources for broader coverage
+- **Multi-pass consistency** — claims cross-checked across independent extraction passes
+- **Research Sessions** — persistent memory across queries
+
+Without a `BROWSE_API_KEY`, all tools work with BM25 keyword verification — fast and reliable.
 
 ## Quick Start
 
@@ -164,9 +175,10 @@ All API calls include automatic retry with exponential backoff on transient fail
 
 ## Tech Stack
 
-- **Search**: Tavily API
+- **Search**: Multi-provider (parallel search across sources)
 - **Parsing**: @mozilla/readability + linkedom
 - **AI**: OpenRouter (100+ models)
+- **Verification**: Hybrid BM25 + NLI semantic entailment
 - **Protocol**: Model Context Protocol (MCP)
 
 ## Agent Skills
