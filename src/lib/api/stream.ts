@@ -45,6 +45,7 @@ export async function streamAnswer(
   onEvent: (event: StreamEvent) => void,
 ): Promise<BrowseResult> {
   const authHeaders = await getAuthHeaders();
+  // UI never sends BYOK headers — users sign in (stored keys + premium) or use demo
 
   const res = await fetch(`${API_BASE}/browse/answer/stream`, {
     method: "POST",
