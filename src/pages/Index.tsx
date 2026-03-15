@@ -15,6 +15,7 @@ import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTypewriter } from "@/hooks/useTypewriter";
+import { DepthToggle } from "@/components/DepthToggle";
 
 const EXAMPLE_PROMPTS = [
   "How do mRNA vaccines work?",
@@ -283,12 +284,7 @@ const Index = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={() => setDepth(depth === "fast" ? "thorough" : depth === "thorough" ? "deep" : "fast")}
-              className={`px-4 py-2 rounded-full border text-xs font-medium transition-all ${depth === "deep" ? "bg-purple-500/10 border-purple-500/40 text-purple-400" : depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-accent/40"}`}
-            >
-              {depth === "deep" ? "Deep Mode" : depth === "thorough" ? "Thorough Mode" : "Fast Mode"}
-            </button>
+            <DepthToggle depth={depth} setDepth={setDepth} quota={null} />
             <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={handleCompare} disabled={!query.trim()}>
               <GitCompare className="w-3.5 h-3.5" />
               Compare vs Raw LLM

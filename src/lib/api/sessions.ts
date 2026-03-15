@@ -62,6 +62,12 @@ export interface KnowledgeEntry {
   createdAt: string;
 }
 
+export interface SessionQuota {
+  used: number;
+  limit: number;
+  premiumActive: boolean;
+}
+
 export interface SessionAskResult {
   answer: string;
   claims: Array<{ claim: string; sources: string[]; verified?: boolean; verificationScore?: number; consensusLevel?: string }>;
@@ -74,6 +80,7 @@ export interface SessionAskResult {
     recalledClaims: number;
     newClaimsStored: number;
   };
+  quota?: SessionQuota;
 }
 
 export async function createSession(name: string): Promise<Session> {
@@ -93,10 +100,32 @@ export async function deleteSession(id: string): Promise<void> {
 }
 
 export async function sessionAsk(id: string, query: string, depth?: "fast" | "thorough" | "deep"): Promise<SessionAskResult> {
-  return authFetch(`/session/${id}/ask`, {
+  let token = await getAccessToken();
+  const makeHeaders = (t: string): Record<string, string> => ({
+    Authorization: `Bearer ${t}`,
+    "Content-Type": "application/json",
+  });
+  let res = await fetch(`${API_BASE}/session/${id}/ask`, {
     method: "POST",
+    headers: makeHeaders(token),
     body: JSON.stringify({ query, ...(depth && { depth }) }),
   });
+  if (res.status === 401) {
+    const { data: { session } } = await supabase.auth.refreshSession();
+    if (session?.access_token) {
+      token = session.access_token;
+      res = await fetch(`${API_BASE}/session/${id}/ask`, {
+        method: "POST",
+        headers: makeHeaders(token),
+        body: JSON.stringify({ query, ...(depth && { depth }) }),
+      });
+    }
+  }
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || `API call failed: ${res.status}`);
+  }
+  return { ...data.result, ...(data.quota && { quota: data.quota }) };
 }
 
 export async function getSessionKnowledge(id: string, limit = 50): Promise<{ entries: KnowledgeEntry[]; count: number }> {

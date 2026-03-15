@@ -11,10 +11,11 @@ import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginModal } from "@/components/LoginModal";
 import { SessionPipelineProgress } from "@/components/results/SessionPipelineProgress";
+import { DepthToggle } from "@/components/DepthToggle";
 import {
   createSession, listSessions, deleteSession, sessionAsk, getSessionKnowledge,
   shareSession,
-  type Session, type KnowledgeEntry, type SessionAskResult,
+  type Session, type KnowledgeEntry, type SessionAskResult, type SessionQuota,
 } from "@/lib/api/sessions";
 
 type View = "list" | "session";
@@ -32,6 +33,7 @@ const Sessions = () => {
   const [depth, setDepth] = useState<"fast" | "thorough" | "deep">("fast");
   const [asking, setAsking] = useState(false);
   const [lastResult, setLastResult] = useState<SessionAskResult | null>(null);
+  const [quota, setQuota] = useState<SessionQuota | null>(null);
   const [newSessionName, setNewSessionName] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -122,6 +124,7 @@ const Sessions = () => {
     setLastResult(null);
     try {
       const result = await sessionAsk(activeSession.id, query.trim(), depth);
+      if (result.quota) setQuota(result.quota);
       setLastResult(result);
       setQuery("");
       // Refresh knowledge and session data
@@ -360,16 +363,7 @@ const Sessions = () => {
                   className="w-full h-12 pl-12 pr-32 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-sm"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                  <button
-                    onClick={() => setDepth(depth === "fast" ? "thorough" : depth === "thorough" ? "deep" : "fast")}
-                    className={`h-8 px-2 rounded-lg border text-[10px] font-mono transition-colors ${
-                      depth === "deep" ? "bg-purple-500/10 border-purple-500/40 text-purple-400" :
-                      depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" :
-                      "bg-secondary border-border text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"}
-                  </button>
+                  <DepthToggle depth={depth} setDepth={setDepth} quota={quota} size="sm" />
                   <Button
                     onClick={handleAsk}
                     disabled={!query.trim() || asking}

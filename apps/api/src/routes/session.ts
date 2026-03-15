@@ -269,6 +269,11 @@ export function registerSessionRoutes(
         parsed.data.query, result, userId || undefined, "session-ask", { client: "session" }
       );
 
+      // Build quota info for frontend
+      const premiumQuota = premiumActive && userId
+        ? await checkPremiumQuota(userId, cache)
+        : null;
+
       return {
         success: true,
         result: {
@@ -281,6 +286,7 @@ export function registerSessionRoutes(
             newClaimsStored: newClaims.length,
           },
         },
+        ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }),
       };
     } catch (e: any) {
       request.log.error(e);

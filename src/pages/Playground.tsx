@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DepthToggle } from "@/components/DepthToggle";
 import {
   browseKnowledge, browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
   type BrowseSource, type BrowseClaim, type QuotaInfo,
@@ -388,12 +389,7 @@ const Playground = () => {
                   className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
                 />
                 {tab === "answer" && (
-                  <button
-                    onClick={() => setDepth(depth === "fast" ? "thorough" : depth === "thorough" ? "deep" : "fast")}
-                    className={`h-12 px-3 rounded-lg border text-xs font-mono transition-colors ${depth === "deep" ? "bg-purple-500/10 border-purple-500/40 text-purple-400" : depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "bg-secondary border-border text-muted-foreground hover:text-foreground"}`}
-                  >
-                    {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"}
-                  </button>
+                  <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
                 )}
                 <Button onClick={() => run()} disabled={loading || !input.trim()} className="bg-accent text-accent-foreground h-12 px-5">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
