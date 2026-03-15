@@ -13,36 +13,35 @@ interface DepthToggleProps {
   size?: "sm" | "md";
 }
 
-function nextDepth(d: Depth): Depth {
-  return d === "fast" ? "thorough" : d === "thorough" ? "deep" : "fast";
-}
-
 export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggleProps) {
   const { user } = useAuth();
   const [hint, setHint] = useState<string | null>(null);
 
-  const deepExhausted = quota && !quota.premiumActive;
   const isLoggedIn = !!user;
+  const deepAvailable = isLoggedIn && (!quota || quota.premiumActive);
 
   const handleClick = () => {
-    const next = nextDepth(depth);
-
-    // If switching TO deep, check availability
-    if (next === "deep") {
-      if (!isLoggedIn) {
-        setHint("Deep mode available with BAI key — sign in to unlock");
-        setDepth(next); // still allow toggle, API will fallback
-        return;
+    if (depth === "fast") {
+      setHint(null);
+      setDepth("thorough");
+    } else if (depth === "thorough") {
+      if (deepAvailable) {
+        setHint(null);
+        setDepth("deep");
+      } else {
+        // Can't use deep — show hint and cycle back to fast
+        if (!isLoggedIn) {
+          setHint("Deep mode requires a BAI key — sign in to unlock");
+        } else if (quota && !quota.premiumActive) {
+          setHint(`Deep mode exhausted today (${quota.used}/${quota.limit}) — resets in ~24h`);
+        }
+        setDepth("fast");
       }
-      if (deepExhausted) {
-        const resetHours = Math.ceil((quota!.limit - quota!.used + quota!.limit) / quota!.limit * 24 % 24) || 24;
-        setHint(`Deep mode exhausted for today (${quota!.used}/${quota!.limit}) — resets in ~${resetHours}h`);
-        setDepth(next); // still allow toggle, API will fallback to thorough
-        return;
-      }
+    } else {
+      // deep → fast
+      setHint(null);
+      setDepth("fast");
     }
-    setHint(null);
-    setDepth(next);
   };
 
   // Auto-dismiss hint after 4s
@@ -64,12 +63,9 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
       ? "bg-accent/10 border-accent/40 text-accent"
       : "bg-secondary border-border text-muted-foreground hover:text-foreground";
 
-  const showLock = depth === "deep" && (deepExhausted || !isLoggedIn);
-
   return (
     <div className="relative">
       <button onClick={handleClick} className={`${baseClass} ${colorClass} flex items-center gap-1`}>
-        {showLock && <Lock className="w-3 h-3" />}
         {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"}
       </button>
       <AnimatePresence>
@@ -80,6 +76,7 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
             exit={{ opacity: 0, y: -4 }}
             className="absolute top-full mt-1.5 right-0 z-50 whitespace-nowrap px-3 py-1.5 rounded-lg bg-card border border-border shadow-lg text-[11px] text-muted-foreground"
           >
+            <Lock className="w-3 h-3 inline mr-1" />
             {hint}
           </motion.div>
         )}

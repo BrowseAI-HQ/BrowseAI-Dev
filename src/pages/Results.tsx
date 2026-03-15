@@ -117,6 +117,7 @@ const Results = () => {
             <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${quota.premiumActive ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30"}`}>
               <Zap className="w-3 h-3 inline mr-0.5" />
               {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
+              {!quota.premiumActive && depth === "deep" && " · fell back to thorough — resets in ~24h"}
             </span>
           )}
           <p className="text-sm text-muted-foreground truncate hidden sm:block max-w-md font-mono ml-2">

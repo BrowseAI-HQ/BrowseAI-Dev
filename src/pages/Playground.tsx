@@ -499,6 +499,7 @@ const Playground = () => {
               {quota && (
                 <Badge variant="outline" className={`text-[10px] px-2 py-0.5 ${quota.premiumActive ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30"}`}>
                   {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
+                  {!quota.premiumActive && depth === "deep" && " · fell back to thorough — resets in ~24h"}
                 </Badge>
               )}
               {/* Feedback buttons */}
