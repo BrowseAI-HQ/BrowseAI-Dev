@@ -8,7 +8,7 @@ type Depth = "fast" | "thorough" | "deep";
 interface DepthToggleProps {
   depth: Depth;
   setDepth: (d: Depth) => void;
-  quota?: { used: number; limit: number; premiumActive: boolean } | null;
+  quota?: { used: number; limit: number; premiumActive: boolean; resetsInSeconds?: number } | null;
   /** Override size: sm (sessions), md (playground), pill (landing page) */
   size?: "sm" | "md" | "pill";
 }
@@ -26,6 +26,15 @@ export function isDepthBlocked(
   if (!isLoggedIn) return true;
   if (quota && !quota.premiumActive) return true;
   return false;
+}
+
+/** Format seconds into a human-readable reset time */
+export function formatResetTime(seconds?: number): string {
+  if (!seconds || seconds <= 0) return "~24h";
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.ceil((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
 }
 
 export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggleProps) {
@@ -47,7 +56,8 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
       if (!isLoggedIn) {
         setHint("Deep mode requires a BAI key — sign in to unlock");
       } else if (quota && !quota.premiumActive) {
-        setHint(`Deep mode exhausted today (${quota.used}/${quota.limit}) — resets in ~24h`);
+        const resetTime = formatResetTime(quota.resetsInSeconds);
+        setHint(`Deep mode exhausted today (${quota.used}/${quota.limit}) — resets in ${resetTime}`);
       }
     } else {
       setHint(null);

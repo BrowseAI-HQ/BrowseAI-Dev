@@ -23,6 +23,7 @@ export interface PremiumQuota {
   used: number;
   limit: number;
   premiumActive: boolean;
+  resetsInSeconds?: number;
 }
 
 export type ReasoningStepEvent = {

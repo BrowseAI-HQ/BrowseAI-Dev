@@ -101,6 +101,7 @@ export type QuotaInfo = {
   used: number;
   limit: number;
   premiumActive: boolean;
+  resetsInSeconds?: number;
 };
 
 export async function browseKnowledge(

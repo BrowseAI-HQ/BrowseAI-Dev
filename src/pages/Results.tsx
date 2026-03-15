@@ -15,6 +15,7 @@ import { BrowseBadge } from "@/components/BrowseBadge";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatResetTime } from "@/components/DepthToggle";
 
 const Results = () => {
   const [searchParams] = useSearchParams();
@@ -119,7 +120,7 @@ const Results = () => {
             <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${quota.premiumActive ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30"}`}>
               <Zap className="w-3 h-3 inline mr-0.5" />
               {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
-              {depth === "deep" && effectiveDepth !== "deep" && " · fell back to thorough — resets in ~24h"}
+              {depth === "deep" && effectiveDepth !== "deep" && ` · fell back to thorough — resets in ${formatResetTime(quota.resetsInSeconds)}`}
             </span>
           )}
           {!user && depth === "deep" && !loading && (
@@ -155,7 +156,7 @@ const Results = () => {
             <Zap className="w-3.5 h-3.5 shrink-0" />
             <span>
               Ran in <strong>standard mode</strong> (thorough) — deep mode
-              {user ? " quota exhausted for today, resets in ~24h" : " requires sign in with a BAI key"}
+              {user ? ` quota exhausted for today, resets in ${formatResetTime(quota?.resetsInSeconds)}` : " requires sign in with a BAI key"}
             </span>
           </motion.div>
         )}

@@ -66,6 +66,7 @@ export interface SessionQuota {
   used: number;
   limit: number;
   premiumActive: boolean;
+  resetsInSeconds?: number;
 }
 
 export interface SessionAskResult {

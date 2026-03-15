@@ -29,8 +29,8 @@ import type { ZodError } from "zod";
 const DEMO_LIMIT = 5;
 const DEMO_WINDOW_SECONDS = 3600;
 
-/** Free BAI key users get 50 premium queries/day before graceful fallback to BM25 */
-const FREE_PREMIUM_DAILY_LIMIT = 50;
+/** Free BAI key users get 100 premium queries/day before graceful fallback to BM25 */
+const FREE_PREMIUM_DAILY_LIMIT = 100;
 const PREMIUM_WINDOW_SECONDS = 86400; // 24 hours
 
 /** Convert Zod error to a human-readable string */
@@ -68,11 +68,12 @@ function extractBrowseApiKey(request: FastifyRequest): string | null {
 async function checkPremiumQuota(
   userId: string,
   cache: CacheService
-): Promise<{ exceeded: boolean; used: number; limit: number }> {
+): Promise<{ exceeded: boolean; used: number; limit: number; resetsInSeconds: number }> {
   const key = `premium_quota:${userId}`;
   const current = await cache.get(key);
   const used = current ? parseInt(current, 10) : 0;
-  return { exceeded: used >= FREE_PREMIUM_DAILY_LIMIT, used, limit: FREE_PREMIUM_DAILY_LIMIT };
+  const resetsInSeconds = current ? await cache.ttl(key) : 0;
+  return { exceeded: used >= FREE_PREMIUM_DAILY_LIMIT, used, limit: FREE_PREMIUM_DAILY_LIMIT, resetsInSeconds };
 }
 
 /** Increment premium usage counter after a successful premium query */

@@ -11,7 +11,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginModal } from "@/components/LoginModal";
 import { SessionPipelineProgress } from "@/components/results/SessionPipelineProgress";
-import { DepthToggle, isDepthBlocked } from "@/components/DepthToggle";
+import { DepthToggle, isDepthBlocked, formatResetTime } from "@/components/DepthToggle";
 import {
   createSession, listSessions, deleteSession, sessionAsk, getSessionKnowledge,
   shareSession,
@@ -406,7 +406,7 @@ const Sessions = () => {
                   )}
                   {depth === "deep" && (lastResult as any).effectiveDepth && (lastResult as any).effectiveDepth !== "deep" && (
                     <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30">
-                      Ran as thorough — deep mode {user ? "quota exhausted, resets in ~24h" : "requires sign in"}
+                      Ran as thorough — deep mode {user ? `quota exhausted, resets in ${formatResetTime(lastResult.quota?.resetsInSeconds)}` : "requires sign in"}
                     </Badge>
                   )}
                 </div>
