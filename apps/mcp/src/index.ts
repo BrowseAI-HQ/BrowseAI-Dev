@@ -448,7 +448,18 @@ function registerTools(server: McpServer) {
         const body: Record<string, unknown> = { query, depth: depth || "fast" };
         if (searchProvider) body.searchProvider = searchProvider;
         const result = await apiCall("/browse/answer", body);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        const content: Array<{ type: "text"; text: string }> = [
+          { type: "text", text: JSON.stringify(result, null, 2) },
+        ];
+        // Surface quota info so agents can inform users about premium status
+        if (result._quota) {
+          const q = result._quota;
+          const status = q.premiumActive
+            ? `Premium active (${q.used}/${q.limit} queries used today)`
+            : `Premium quota exceeded (${q.used}/${q.limit}). Results use standard verification. Upgrade or wait 24h for reset.`;
+          content.push({ type: "text", text: `\n---\nQuota: ${status}` });
+        }
+        return { content };
       }
       const result = await answerPipeline(query);
       return {

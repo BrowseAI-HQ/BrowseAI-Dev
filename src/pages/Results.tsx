@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Share2, GitCompare, Check } from "lucide-react";
+import { ArrowLeft, Share2, GitCompare, Check, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BrowseResult } from "@/lib/api/browse";
-import { streamAnswer, type TraceEvent, type SourcePreview, type StreamEvent } from "@/lib/api/stream";
+import { streamAnswer, type TraceEvent, type SourcePreview, type StreamEvent, type PremiumQuota } from "@/lib/api/stream";
 import { FinalAnswer } from "@/components/results/FinalAnswer";
 import { EvidenceGraph } from "@/components/results/EvidenceGraph";
 import { TracePipeline } from "@/components/results/TracePipeline";
@@ -30,6 +30,7 @@ const Results = () => {
   const [traceSteps, setTraceSteps] = useState<TraceEvent[]>([]);
   const [previewSources, setPreviewSources] = useState<SourcePreview[]>([]);
   const [streamDone, setStreamDone] = useState(false);
+  const [quota, setQuota] = useState<PremiumQuota | null>(null);
 
   const handleStreamEvent = useCallback((event: StreamEvent) => {
     switch (event.type) {
@@ -43,6 +44,7 @@ const Results = () => {
         setResult(event.data);
         break;
       case "done":
+        if (event.data?.quota) setQuota(event.data.quota);
         setStreamDone(true);
         break;
     }
@@ -109,6 +111,12 @@ const Results = () => {
                 <span className="hidden sm:inline">Compare</span>
               </Button>
             </>
+          )}
+          {quota && (
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${quota.premiumActive ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30"}`}>
+              <Zap className="w-3 h-3 inline mr-0.5" />
+              {quota.premiumActive ? "Premium" : "Standard"} · {quota.used}/{quota.limit}
+            </span>
           )}
           <p className="text-sm text-muted-foreground truncate hidden sm:block max-w-md font-mono ml-2">
             "{query}"
