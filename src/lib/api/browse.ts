@@ -34,6 +34,13 @@ export type BrowseResult = {
   }[];
   shareId?: string;
   contradictions?: Contradiction[];
+  reasoningSteps?: {
+    step: number;
+    query: string;
+    gapAnalysis: string;
+    claimCount: number;
+    confidence: number;
+  }[];
 };
 
 export type CompareResult = {
@@ -90,7 +97,7 @@ async function apiCall<T>(
   return data.result;
 }
 
-export async function browseKnowledge(query: string, depth: "fast" | "thorough" = "fast"): Promise<BrowseResult> {
+export async function browseKnowledge(query: string, depth: "fast" | "thorough" | "deep" = "fast"): Promise<BrowseResult> {
   return apiCall<BrowseResult>("/browse/answer", { query, depth });
 }
 

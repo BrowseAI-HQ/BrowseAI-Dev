@@ -51,6 +51,17 @@ class Contradiction(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class ReasoningStep(BaseModel):
+    """Multi-step reasoning step (deep mode only)."""
+    step: int
+    query: str
+    gap_analysis: str = Field(alias="gapAnalysis")
+    claim_count: int = Field(alias="claimCount")
+    confidence: float
+
+    model_config = {"populate_by_name": True}
+
+
 class BrowseResult(BaseModel):
     answer: str
     claims: list[BrowseClaim]
@@ -58,6 +69,7 @@ class BrowseResult(BaseModel):
     confidence: float = Field(ge=0, le=1)
     trace: list[TraceStep] = []
     contradictions: list[Contradiction] | None = None
+    reasoning_steps: list[ReasoningStep] | None = Field(None, alias="reasoningSteps")
     share_id: str | None = Field(None, alias="shareId")
 
     model_config = {"populate_by_name": True}

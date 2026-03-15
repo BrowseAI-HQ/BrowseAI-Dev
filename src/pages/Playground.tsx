@@ -142,7 +142,7 @@ const Playground = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>("answer");
-  const [depth, setDepth] = useState<"fast" | "thorough">("fast");
+  const [depth, setDepth] = useState<"fast" | "thorough" | "deep">("fast");
   const [showRawJson, setShowRawJson] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedbackSent, setFeedbackSent] = useState<string | null>(null);
@@ -323,10 +323,10 @@ const Playground = () => {
                 />
                 {tab === "answer" && (
                   <button
-                    onClick={() => setDepth(depth === "fast" ? "thorough" : "fast")}
-                    className={`h-12 px-3 rounded-lg border text-xs font-mono transition-colors ${depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "bg-secondary border-border text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setDepth(depth === "fast" ? "thorough" : depth === "thorough" ? "deep" : "fast")}
+                    className={`h-12 px-3 rounded-lg border text-xs font-mono transition-colors ${depth === "deep" ? "bg-purple-500/10 border-purple-500/40 text-purple-400" : depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "bg-secondary border-border text-muted-foreground hover:text-foreground"}`}
                   >
-                    {depth === "thorough" ? "Thorough" : "Fast"}
+                    {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"}
                   </button>
                 )}
                 <Button onClick={() => run()} disabled={loading || !input.trim()} className="bg-accent text-accent-foreground h-12 px-5">
@@ -467,6 +467,28 @@ const Playground = () => {
                         )}
                       </div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Reasoning Steps (deep mode) */}
+            {response.reasoningSteps?.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                  <Brain className="w-3.5 h-3.5 text-purple-400" />
+                  Deep Reasoning ({response.reasoningSteps.length} steps)
+                </h3>
+                {response.reasoningSteps.map((rs: any, i: number) => (
+                  <div key={i} className="p-3 rounded-lg bg-purple-400/5 border border-purple-400/20 text-sm space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 border-purple-400/30 text-purple-400">Step {rs.step}</Badge>
+                      <span className="text-xs text-muted-foreground">{rs.claimCount} claims · {Math.round(rs.confidence * 100)}% confidence</span>
+                    </div>
+                    <p className="text-xs font-mono text-muted-foreground">"{rs.query}"</p>
+                    {rs.gapAnalysis && rs.gapAnalysis !== "Initial research pass" && (
+                      <p className="text-xs text-muted-foreground/70">Gap: {rs.gapAnalysis}</p>
+                    )}
                   </div>
                 ))}
               </div>

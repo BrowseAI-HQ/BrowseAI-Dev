@@ -23,7 +23,12 @@ for source in result.sources:
     print(f"  - {source.title}: {source.url}")
 
 # Thorough mode — auto-retries if confidence < 60%
-deep = client.ask("What is quantum computing?", depth="thorough")
+thorough = client.ask("What is quantum computing?", depth="thorough")
+
+# Deep mode — multi-step reasoning with gap analysis (requires BAI key)
+deep = client.ask("Compare CRISPR approaches", depth="deep")
+for step in deep.reasoning_steps or []:
+    print(f"  Step {step.step}: {step.query} ({step.confidence:.0%})")
 
 # Web search
 results = client.search("latest AI news", limit=5)
@@ -49,7 +54,9 @@ from browseai import AsyncBrowseAI
 async with AsyncBrowseAI(api_key="bai_xxx") as client:
     result = await client.ask("What is quantum computing?")
     # Thorough mode works with async too
-    deep = await client.ask("What is quantum computing?", depth="thorough")
+    thorough = await client.ask("What is quantum computing?", depth="thorough")
+    # Deep mode — multi-step agentic reasoning (requires BAI key)
+    deep = await client.ask("Complex research question", depth="deep")
 ```
 
 ## Streaming (REST API)
@@ -68,7 +75,7 @@ with httpx.stream("POST", "https://browseai.dev/api/browse/answer/stream",
             print(line[6:])
 ```
 
-Events: `trace` (progress), `sources` (discovered early), `result` (final answer), `done`.
+Events: `trace` (progress), `sources` (discovered early), `token` (streamed answer text), `result` (final answer), `done`.
 
 ## Research Memory (Sessions)
 
@@ -130,9 +137,12 @@ async with AsyncBrowseAI(api_key="bai_xxx") as client:
 ## Premium Features (with API Key)
 
 Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
+- **Neural cross-encoder re-ranking** — search results re-scored by semantic query-document relevance
 - **NLI semantic reranking** — evidence matched by meaning, not just keywords
 - **Multi-provider search** — parallel search across multiple sources for broader coverage
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes (in thorough mode)
+- **Deep reasoning mode** — multi-step agentic research with iterative gap analysis (up to 4 steps)
+- **Token streaming** — per-token answer delivery via SSE for real-time UI
 - **Research Sessions** — persistent memory across queries
 
 Free BAI key users get a generous daily quota (50 premium queries/day). When exceeded, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours. Check `client.last_quota` after any API call for current usage.

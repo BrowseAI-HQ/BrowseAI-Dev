@@ -644,3 +644,191 @@ export async function extractKnowledge(
     confidence: computeConfidence(claims, sources),
   };
 }
+
+/**
+ * Stream answer generation — two-phase approach:
+ * Phase A: Stream answer text token-by-token (standard chat completion with stream: true)
+ * Phase B: Extract claims/sources via tool call (non-streamed, reuses extractKnowledge logic)
+ *
+ * The token callback fires for each text chunk, giving real-time answer rendering.
+ * Claims, sources, confidence arrive at the end as a complete object.
+ */
+export async function streamAnswer(
+  query: string,
+  pageContents: string,
+  apiKey: string,
+  tokenCallback: (token: string) => void,
+  pageTexts?: Map<string, string>,
+  queryType?: QueryType,
+  adaptiveOptions?: {
+    bm25Threshold?: number;
+    consensusThreshold?: number;
+    weights?: { source: number; domain: number; grounding: number; depth: number; verification: number; authority: number; consensus: number };
+    hfApiKey?: string;
+  },
+): Promise<Omit<BrowseResult, "trace">> {
+  const systemPrompt = getExtractionPrompt(queryType);
+
+  // Phase A: Stream the answer text
+  const streamRes = await fetch(LLM_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: LLM_MODEL,
+      stream: true,
+      messages: [
+        {
+          role: "system",
+          content: `${systemPrompt}\n\nIMPORTANT: Write ONLY the answer text (2-4 paragraphs). Do NOT output JSON, claims, or sources — those will be extracted separately. Focus on a clear, well-cited answer using [Source N] references.`,
+        },
+        {
+          role: "user",
+          content: `Question: ${query}\n\nWeb sources:\n${pageContents}`,
+        },
+      ],
+      max_tokens: 1500,
+    }),
+  });
+
+  if (!streamRes.ok) {
+    // Fall back to non-streaming extractKnowledge
+    return extractKnowledge(query, pageContents, apiKey, pageTexts, queryType, undefined, adaptiveOptions);
+  }
+
+  // Read SSE stream and emit tokens
+  let fullAnswer = "";
+  const reader = streamRes.body?.getReader();
+  if (!reader) {
+    return extractKnowledge(query, pageContents, apiKey, pageTexts, queryType, undefined, adaptiveOptions);
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") continue;
+
+        try {
+          const parsed = JSON.parse(data);
+          const token = parsed.choices?.[0]?.delta?.content;
+          if (token) {
+            fullAnswer += token;
+            tokenCallback(token);
+          }
+        } catch {
+          // Skip malformed SSE chunks
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  // Phase B: Extract claims + sources (non-streamed, tool call)
+  // Use the already-generated answer as context so the LLM just needs to extract structured data
+  const extractRes = await fetchWithRetry(LLM_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: LLM_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: "Extract claims with source attribution from the answer and source pages. Each claim must be atomic (one verifiable fact). Return structured data using the tool.",
+        },
+        {
+          role: "user",
+          content: `Question: ${query}\n\nAnswer:\n${fullAnswer}\n\nWeb sources:\n${pageContents}`,
+        },
+      ],
+      tools: [TOOL_SCHEMA],
+      tool_choice: {
+        type: "function",
+        function: { name: "return_knowledge" },
+      },
+    }),
+  });
+
+  if (!extractRes.ok) {
+    // If extraction fails, return the streamed answer with empty claims
+    return {
+      answer: fullAnswer || "Failed to generate answer.",
+      claims: [],
+      sources: [],
+      confidence: 0.15,
+    };
+  }
+
+  const extractData = await extractRes.json();
+  const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
+
+  if (!toolCall) {
+    return {
+      answer: fullAnswer,
+      claims: [],
+      sources: [],
+      confidence: 0.15,
+    };
+  }
+
+  let knowledge;
+  try {
+    knowledge = JSON.parse(toolCall.function.arguments);
+  } catch {
+    return { answer: fullAnswer, claims: [], sources: [], confidence: 0.15 };
+  }
+
+  const rawClaims: BrowseClaim[] = knowledge.claims || [];
+  const sources: BrowseSource[] = knowledge.sources || [];
+  const claims = decomposeCompoundClaims(rawClaims);
+
+  // Run verification if page texts are available
+  if (pageTexts && pageTexts.size > 0) {
+    const verification = await verifyEvidence(claims, sources, pageTexts, {
+      bm25Threshold: adaptiveOptions?.bm25Threshold,
+      consensusThreshold: adaptiveOptions?.consensusThreshold,
+      hfApiKey: adaptiveOptions?.hfApiKey,
+    });
+    return {
+      answer: fullAnswer,
+      claims: verification.claims,
+      sources: verification.sources,
+      confidence: computeConfidence(
+        claims, sources,
+        verification.verificationRate,
+        verification.avgAuthority,
+        verification.consensusScore,
+        verification.contradictions.length,
+        queryType,
+        adaptiveOptions?.weights,
+      ),
+      contradictions: verification.contradictions.length > 0
+        ? verification.contradictions
+        : undefined,
+    };
+  }
+
+  return {
+    answer: fullAnswer,
+    claims,
+    sources,
+    confidence: computeConfidence(claims, sources),
+  };
+}

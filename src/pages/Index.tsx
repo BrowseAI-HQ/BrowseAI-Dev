@@ -49,10 +49,10 @@ const PIPELINE_STEPS = [
   { label: "Search", detail: "Multi-source" },
   { label: "Fetch", detail: "Page parsing" },
   { label: "Extract", detail: "Atomic claims" },
-  { label: "Rerank", detail: "NLI evidence" },
+  { label: "Rerank", detail: "Neural + NLI" },
   { label: "Verify", detail: "BM25 + NLI" },
   { label: "Consensus", detail: "Multi-pass" },
-  { label: "Answer", detail: "Calibrated" },
+  { label: "Answer", detail: "Streamed" },
 ];
 
 const Index = () => {
@@ -65,7 +65,7 @@ const Index = () => {
   const typedText = useTypewriter(TYPEWRITER_QUERIES);
   const { user, loading: authLoading } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
-  const [depth, setDepth] = useState<"fast" | "thorough">("fast");
+  const [depth, setDepth] = useState<"fast" | "thorough" | "deep">("fast");
   const [showAllTools, setShowAllTools] = useState(false);
   const [showAllEndpoints, setShowAllEndpoints] = useState(false);
   const [showAllRoadmap, setShowAllRoadmap] = useState(false);
@@ -284,10 +284,10 @@ const Index = () => {
 
           <div className="flex flex-wrap justify-center gap-2">
             <button
-              onClick={() => setDepth(depth === "fast" ? "thorough" : "fast")}
-              className={`px-4 py-2 rounded-full border text-xs font-medium transition-all ${depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-accent/40"}`}
+              onClick={() => setDepth(depth === "fast" ? "thorough" : depth === "thorough" ? "deep" : "fast")}
+              className={`px-4 py-2 rounded-full border text-xs font-medium transition-all ${depth === "deep" ? "bg-purple-500/10 border-purple-500/40 text-purple-400" : depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" : "border-border text-muted-foreground hover:text-foreground hover:border-accent/40"}`}
             >
-              {depth === "thorough" ? "Thorough Mode" : "Fast Mode"}
+              {depth === "deep" ? "Deep Mode" : depth === "thorough" ? "Thorough Mode" : "Fast Mode"}
             </button>
             <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={handleCompare} disabled={!query.trim()}>
               <GitCompare className="w-3.5 h-3.5" />
@@ -415,7 +415,9 @@ const Index = () => {
                 { phase: "Shipped", text: "Multi-provider search — parallel search across multiple providers for broader source diversity and stronger consensus" },
                 { phase: "Shipped", text: "Thorough mode — auto-retries with rephrased queries when confidence is low, merges sources from both passes" },
                 { phase: "Shipped", text: "Self-learning pipeline — adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop" },
-                { phase: "Shipped", text: "Streaming API & retry with backoff — real-time SSE streaming, automatic retry with exponential backoff on all external APIs" },
+                { phase: "Shipped", text: "Token streaming — real-time SSE streaming with per-token answer delivery, automatic retry with exponential backoff on all external APIs" },
+                { phase: "Shipped", text: "Neural cross-encoder re-ranker — semantic query-document scoring via cross-encoder for more relevant source selection before page fetching" },
+                { phase: "Shipped", text: "Deep reasoning mode — multi-step agentic research with iterative gap analysis, follow-up searches, and knowledge merging across up to 4 reasoning steps" },
                 { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
                 { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims and entities, build reusable queryable knowledge" },
@@ -617,7 +619,8 @@ const Index = () => {
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Atomic claim decomposition — compound facts split and verified independently</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score, auto-calibrated from feedback)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough mode — auto-retries with rephrased queries for higher accuracy</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Neural re-ranking — cross-encoder semantic scoring for best source selection</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 3 depth modes — fast, thorough (auto-retry), and deep (multi-step agentic reasoning)</li>
               </ul>
             </motion.div>
           </div>

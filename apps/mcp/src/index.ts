@@ -10,7 +10,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.1.8";
+const VERSION = "0.1.9";
 const LLM_MODEL = "google/gemini-2.5-flash";
 const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
@@ -430,10 +430,10 @@ function registerTools(server: McpServer) {
 
   server.tool(
     "browse_answer",
-    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score. Use depth='thorough' for auto-retry with rephrased queries when confidence is low. Enterprise: use searchProvider to search internal data instead of the public web.",
+    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score. Use depth='thorough' for auto-retry with rephrased queries when confidence is low. Use depth='deep' for multi-step agentic research that identifies knowledge gaps and runs follow-up searches. Enterprise: use searchProvider to search internal data instead of the public web.",
     {
       query: z.string(),
-      depth: z.enum(["fast", "thorough"]).optional().describe("Research depth: 'fast' (default) or 'thorough' (auto-retries with rephrased query if confidence < 60%)"),
+      depth: z.enum(["fast", "thorough", "deep"]).optional().describe("Research depth: 'fast' (default), 'thorough' (auto-retry if confidence < 60%), or 'deep' (multi-step agentic research with gap analysis)"),
       searchProvider: z.object({
         type: z.enum(["tavily", "brave", "elasticsearch", "confluence", "custom"]).describe("Search backend type"),
         endpoint: z.string().optional().describe("Endpoint URL (required for elasticsearch, confluence, custom)"),
@@ -514,7 +514,7 @@ function registerTools(server: McpServer) {
     {
       session_id: z.string().describe("Session ID from browse_session_create"),
       query: z.string(),
-      depth: z.enum(["fast", "thorough"]).optional().describe("'fast' (default) or 'thorough'"),
+      depth: z.enum(["fast", "thorough", "deep"]).optional().describe("'fast' (default), 'thorough', or 'deep' (multi-step agentic)"),
     },
     async ({ session_id, query, depth }) => {
       if (!API_MODE) {

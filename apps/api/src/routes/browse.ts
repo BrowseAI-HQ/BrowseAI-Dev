@@ -386,7 +386,14 @@ export function registerBrowseRoutes(
         answerOpts.dataRetention = providerConfig.dataRetention || "normal";
       }
 
-      const result = await answerQuery(parsed.data.query, reqEnv, cache, parsed.data.depth, undefined, answerOpts);
+      // Deep mode requires premium (uses our HF key for multiple re-rank + NLI passes).
+      // Gracefully fall back to thorough if premium isn't active.
+      let effectiveDepth = parsed.data.depth;
+      if (effectiveDepth === "deep" && !premiumActive) {
+        effectiveDepth = "thorough";
+      }
+
+      const result = await answerQuery(parsed.data.query, reqEnv, cache, effectiveDepth, undefined, answerOpts);
       const client = detectClient(request);
       const noRetention = answerOpts.dataRetention === "none";
       const cacheHit = result.trace?.[0]?.step === "Cache Hit";
@@ -448,8 +455,11 @@ export function registerBrowseRoutes(
       }
 
       // Increment premium quota counter (fire-and-forget) if premium was used
+      // Deep mode counts as 3x since it uses multiple HF re-rank + NLI passes
       if (premiumActive && userId) {
-        incrementPremiumUsage(userId, cache).catch(() => {});
+        const quotaCost = effectiveDepth === "deep" ? 3 : 1;
+        const incrementAll = Array.from({ length: quotaCost }, () => incrementPremiumUsage(userId, cache));
+        Promise.all(incrementAll).catch(() => {});
       }
 
       return {
@@ -489,6 +499,10 @@ export function registerBrowseRoutes(
         reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       };
 
+      // Deep mode requires premium — fall back to thorough for streaming too
+      // (streaming currently only supports fast mode, but gate it for future use)
+      const streamDepth = parsed.data.depth === "deep" && !premiumActive ? "thorough" : parsed.data.depth;
+
       const result = await answerQueryStreaming(parsed.data.query, reqEnv, cache, emit);
 
       // Save to store and include shareId in done event
@@ -497,8 +511,11 @@ export function registerBrowseRoutes(
       const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
 
       // Increment premium quota counter (fire-and-forget) if premium was used
+      // Deep mode counts as 3x
       if (premiumActive && userId) {
-        incrementPremiumUsage(userId, cache).catch(() => {});
+        const quotaCost = streamDepth === "deep" ? 3 : 1;
+        const incrementAll = Array.from({ length: quotaCost }, () => incrementPremiumUsage(userId, cache));
+        Promise.all(incrementAll).catch(() => {});
       }
 
       reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId, ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }) })}\n\n`);

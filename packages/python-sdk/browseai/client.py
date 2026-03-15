@@ -173,8 +173,8 @@ class BrowseAI:
 
         Args:
             query: The research question.
-            depth: 'fast' (default) or 'thorough'. Thorough mode auto-retries
-                   with a rephrased query when confidence is below 60%.
+            depth: 'fast' (default), 'thorough' (auto-retry if confidence < 60%),
+                   or 'deep' (multi-step agentic research with gap analysis).
             search_provider: Enterprise search provider config. Use to search
                 internal data (Elasticsearch, Confluence, custom endpoint)
                 instead of the public web.
@@ -393,11 +393,11 @@ class AsyncBrowseAI:
         depth: str = "fast",
         search_provider: SearchProviderConfig | dict | None = None,
     ) -> BrowseResult:
-        """Full research pipeline with optional thorough mode.
+        """Full research pipeline with optional deep mode.
 
         Args:
             query: The research question.
-            depth: 'fast' (default) or 'thorough'.
+            depth: 'fast' (default), 'thorough', or 'deep' (multi-step agentic).
             search_provider: Enterprise search provider config.
         """
         body: dict[str, Any] = {"query": query, "depth": depth}

@@ -144,6 +144,9 @@ export function ApiKeyManager() {
             <p className="text-sm text-muted-foreground">
               Save your API keys to get unlimited queries on the website, CLI, MCP,
               and API. Your default key is used automatically when you're signed in.
+              While search and LLM keys are bring-your-own, we layer on premium
+              verification features at no extra cost — including multi-provider search,
+              semantic claim verification, and neural source re-ranking.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5">

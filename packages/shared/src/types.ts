@@ -43,6 +43,14 @@ export type Contradiction = {
   nliConfidence?: number;
 };
 
+export type ReasoningStep = {
+  step: number;
+  query: string;
+  gapAnalysis: string;
+  claimCount: number;
+  confidence: number;
+};
+
 export type BrowseResult = {
   answer: string;
   claims: BrowseClaim[];
@@ -50,6 +58,8 @@ export type BrowseResult = {
   confidence: number;
   trace: TraceStep[];
   contradictions?: Contradiction[];
+  /** Multi-step reasoning steps (deep mode only) */
+  reasoningSteps?: ReasoningStep[];
 };
 
 export type SearchRequest = {
@@ -68,7 +78,7 @@ export type ExtractRequest = {
 
 export type AnswerRequest = {
   query: string;
-  depth?: "fast" | "thorough";
+  depth?: "fast" | "thorough" | "deep";
   sessionId?: string;
   searchProvider?: SearchProviderConfig;
 };
@@ -115,7 +125,7 @@ export type KnowledgeEntry = {
 
 export type SessionAskRequest = {
   query: string;
-  depth?: "fast" | "thorough";
+  depth?: "fast" | "thorough" | "deep";
 };
 
 export type RecallRequest = {
