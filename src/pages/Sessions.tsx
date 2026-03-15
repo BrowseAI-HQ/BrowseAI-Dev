@@ -383,7 +383,7 @@ const Sessions = () => {
             </div>
 
             {/* Pipeline progress while asking */}
-            {asking && <SessionPipelineProgress />}
+            {asking && <SessionPipelineProgress depth={depth} />}
 
             {/* Last result */}
             {lastResult && (

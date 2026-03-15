@@ -1,79 +1,86 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, CheckCircle2, Brain, Search, FileText, Shield, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Loader2, Brain, RefreshCw } from "lucide-react";
 
-const PIPELINE_STEPS = [
-  { name: "Recall Knowledge", icon: Brain, delay: 0, duration: 800 },
-  { name: "Search Web", icon: Search, delay: 1000, duration: 3000 },
-  { name: "Fetch Pages", icon: FileText, delay: 4000, duration: 4000 },
-  { name: "Extract & Verify", icon: Shield, delay: 8000, duration: 5000 },
-  { name: "Generate Answer", icon: Sparkles, delay: 13000, duration: 4000 },
-];
+const PIPELINE_STEPS: Record<string, string[]> = {
+  fast: ["Recall Knowledge", "Search Web", "Fetch Pages", "Extract Claims", "Verify Evidence", "Generate Answer"],
+  thorough: ["Recall Knowledge", "Search Web", "Fetch Pages", "Extract & Verify", "Rephrase Query", "Second Pass", "Select Best"],
+  deep: ["Recall Knowledge", "Initial Research", "Gap Analysis", "Follow-up Research", "Final Verification", "Generate Answer"],
+};
 
 /**
- * Simulated pipeline progress for session ask (non-streaming).
- * Shows steps lighting up on a timer to give visual feedback.
+ * Pill-based pipeline animation for session ask.
+ * Matches Playground and Results page animation style.
+ * Cycles through pills on a timer since sessions use non-streaming API.
  */
-export function SessionPipelineProgress() {
-  const [activeIdx, setActiveIdx] = useState(0);
+export function SessionPipelineProgress({ depth = "fast" }: { depth?: "fast" | "thorough" | "deep" }) {
+  const pills = PIPELINE_STEPS[depth] || PIPELINE_STEPS.fast;
+  const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
-    const timers = PIPELINE_STEPS.map((step, i) =>
-      setTimeout(() => setActiveIdx(i), step.delay)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % pills.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [pills.length]);
 
   return (
     <div className="flex flex-col items-center py-8 space-y-6">
-      <div className="relative">
-        <Loader2 className="w-7 h-7 text-accent animate-spin" />
-      </div>
+      {/* Spinner + label */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex flex-col items-center gap-3"
+      >
+        <div className="relative">
+          <Loader2 className="w-8 h-8 text-accent animate-spin" />
+          <div className="absolute inset-0 w-8 h-8 rounded-full bg-accent/10 animate-ping" />
+        </div>
+        <motion.p
+          key={pills[activeStep]}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-sm font-medium text-accent"
+        >
+          {pills[activeStep]}...
+        </motion.p>
+      </motion.div>
 
-      <div className="w-full max-w-sm space-y-1">
-        <AnimatePresence mode="popLayout">
-          {PIPELINE_STEPS.map((step, i) => {
-            const Icon = step.icon;
-            const isActive = i === activeIdx;
-            const isCompleted = i < activeIdx;
-            const isVisible = i <= activeIdx;
+      {/* Depth badge */}
+      {depth !== "fast" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1.5">
+          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
+            depth === "deep"
+              ? "text-purple-400 border-purple-500/30 bg-purple-500/5"
+              : "text-accent border-accent/30 bg-accent/5"
+          }`}>
+            {depth === "deep" ? <Brain className="w-3 h-3 inline mr-1" /> : <RefreshCw className="w-3 h-3 inline mr-1" />}
+            {depth === "deep" ? "Deep Mode" : "Thorough Mode"}
+          </span>
+        </motion.div>
+      )}
 
-            if (!isVisible) return null;
-
-            return (
-              <motion.div
-                key={step.name}
-                initial={{ opacity: 0, x: -15, height: 0 }}
-                animate={{ opacity: 1, x: 0, height: "auto" }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
-              >
-                <div className="flex items-center gap-3 py-1.5 px-3 rounded-lg">
-                  <div className={`shrink-0 ${
-                    isCompleted ? "text-emerald-400" :
-                    isActive ? "text-accent" :
-                    "text-muted-foreground/40"
-                  }`}>
-                    {isActive ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : isCompleted ? (
-                      <CheckCircle2 className="w-4 h-4" />
-                    ) : (
-                      <Icon className="w-4 h-4" />
-                    )}
-                  </div>
-                  <span className={`text-sm ${
-                    isCompleted ? "text-foreground" :
-                    isActive ? "text-accent font-medium" :
-                    "text-muted-foreground"
-                  }`}>
-                    {step.name}
-                  </span>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+      {/* Pills */}
+      <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
+        {pills.map((step, i) => (
+          <motion.span
+            key={step}
+            animate={{
+              opacity: i <= activeStep ? 1 : 0.3,
+              scale: i === activeStep ? 1.05 : 1,
+            }}
+            transition={{ duration: 0.3 }}
+            className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${
+              i < activeStep
+                ? "text-emerald-400 border-emerald-500/30"
+                : i === activeStep
+                ? "text-accent border-accent/40"
+                : "text-muted-foreground border-border"
+            }`}
+          >
+            {i < activeStep ? "✓" : i === activeStep ? "●" : "○"} {step}
+          </motion.span>
+        ))}
       </div>
     </div>
   );
