@@ -903,9 +903,9 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               <ul className="space-y-2.5 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Generous access to premium verification pipeline</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> NLI semantic verification + multi-provider search</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> NLI semantic verification + multi-provider search with BAI key</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough mode with multi-pass consistency</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Graceful fallback to BM25 + Tavily when quota resets</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Graceful fallback to keyword verification when quota resets</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI Dev API key (one key for everything)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
               </ul>
