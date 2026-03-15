@@ -8,14 +8,17 @@
  *   result  — full BrowseResult — final answer
  *   error   — { error } — on failure
  *
- * Clients receive real-time progress instead of waiting 5-15s for the full response.
+ * Supports all depth modes:
+ *   fast     — single pass with streaming tokens
+ *   thorough — fast pass + rephrase retry if confidence < 60%
+ *   deep     — multi-step agentic research with gap analysis
  */
 
 import { createHash } from "crypto";
 import { search } from "./search.js";
 import type { SearchResult } from "./search.js";
 import { openPage } from "./scrape.js";
-import { streamAnswer, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
+import { streamAnswer, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
 import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
 import { isLowQualityDomain } from "../lib/verify.js";
@@ -25,6 +28,7 @@ import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
 
 const MAX_PER_DOMAIN = 2;
+const THOROUGH_CONFIDENCE_THRESHOLD = 0.6;
 
 const ADAPTIVE_PAGE_COUNT: Record<QueryType, number> = {
   factual: 6,
@@ -76,32 +80,56 @@ function mergeSearchResults(a: SearchResult[], b: SearchResult[]): SearchResult[
 
 export type SSEWriter = (event: string, data: unknown) => void;
 
+/** Emit a trace step both to the trace array and the SSE stream. */
+function emitTrace(trace: TraceStep[], emit: SSEWriter, step: TraceStep) {
+  trace.push(step);
+  emit("trace", step);
+}
+
+/** Emit verification trace steps from knowledge result. */
+function emitVerificationSteps(
+  knowledge: Omit<BrowseResult, "trace">,
+  llmDuration: number,
+  trace: TraceStep[],
+  emit: SSEWriter,
+  label = "",
+) {
+  const suffix = label ? ` (${label})` : "";
+  const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;
+  const strongConsensus = knowledge.claims.filter(
+    (c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
+  ).length;
+  const contradictionCount = knowledge.contradictions?.length || 0;
+
+  emitTrace(trace, emit, { step: `Extract Claims${suffix}`, duration_ms: Math.round(llmDuration * 0.30), detail: `${knowledge.claims.length} claims` });
+  emitTrace(trace, emit, { step: `Verify Evidence${suffix}`, duration_ms: Math.round(llmDuration * 0.15), detail: `${verifiedCount}/${knowledge.claims.length} verified` });
+  emitTrace(trace, emit, {
+    step: `Cross-Source Consensus${suffix}`,
+    duration_ms: Math.round(llmDuration * 0.10),
+    detail: `${strongConsensus}/${knowledge.claims.length} agreement${contradictionCount > 0 ? `, ${contradictionCount} contradiction${contradictionCount > 1 ? "s" : ""}` : ""}`,
+  });
+  emitTrace(trace, emit, { step: `Build Evidence Graph${suffix}`, duration_ms: Math.round(llmDuration * 0.10), detail: `${knowledge.sources.length} sources` });
+  emitTrace(trace, emit, { step: `Generate Answer${suffix}`, duration_ms: Math.round(llmDuration * 0.35), detail: "OpenRouter" });
+}
+
 /**
- * Run the answer pipeline with streaming progress events.
- * Returns the final BrowseResult (also sent via SSE).
+ * Run a single streaming pass: search → fetch → stream answer → verify.
+ * Returns knowledge + pageTexts for potential re-use by thorough mode.
  */
-export async function answerQueryStreaming(
+async function streamingSinglePass(
   query: string,
   env: Env,
   cache: CacheService,
   emit: SSEWriter,
-): Promise<BrowseResult> {
-  // Check cache first
-  const cacheKey = `answer:fast:${hashKey(query)}`;
-  const cached = await cache.get(cacheKey);
-  if (cached) {
-    const result = JSON.parse(cached) as BrowseResult;
-    result.trace = [{ step: "Cache Hit", duration_ms: 0, detail: "Served from cache" }, ...result.trace];
-    emit("trace", { step: "Cache Hit", duration_ms: 0, detail: "Served from cache" });
-    emit("result", result);
-    return result;
-  }
-
-  const trace: TraceStep[] = [];
+  trace: TraceStep[],
+  label?: string,
+  existingPageTexts?: Map<string, string>,
+) {
+  const suffix = label ? ` (${label})` : "";
 
   // Phase 1: Search
   const searchStart = Date.now();
-  emit("trace", { step: "Searching", duration_ms: 0, detail: "Querying search providers..." });
+  emit("trace", { step: "Searching", duration_ms: 0, detail: `Querying search providers${suffix}...` });
 
   const [mainResults, variantQuery, analysis, braveResults] = await Promise.all([
     search(query, env.SERP_API_KEY, cache),
@@ -114,16 +142,13 @@ export async function answerQueryStreaming(
       : Promise.resolve([]),
   ] as const);
 
-  // Add query plan trace step if plan exists
   if (analysis.plan && analysis.plan.length > 0) {
     const planDetail = analysis.plan.map((p) => `[${p.intent}] ${p.query}`).join("; ");
-    const planStep: TraceStep = {
-      step: "Query Plan",
+    emitTrace(trace, emit, {
+      step: `Query Plan${suffix}`,
       duration_ms: 0,
       detail: `${analysis.plan.length} sub-queries: ${planDetail}`,
-    };
-    trace.push(planStep);
-    emit("trace", planStep);
+    });
   }
 
   let allResults = mainResults.results;
@@ -177,24 +202,22 @@ export async function answerQueryStreaming(
 
   const pageCount = ADAPTIVE_PAGE_COUNT[analysis.type] || 8;
 
-  const searchStep: TraceStep = {
-    step: "Search Web",
+  emitTrace(trace, emit, {
+    step: `Search Web${suffix}`,
     duration_ms: Date.now() - searchStart,
     detail: `${diverseResults.length} results [${analysis.type}]${searchDetail}${neuralLabel}`,
-  };
-  trace.push(searchStep);
-  emit("trace", searchStep);
+  });
 
   if (diverseResults.length === 0) {
     throw new Error("No search results found");
   }
 
-  // Emit sources early so client can show them while pages load
+  // Emit sources early
   emit("sources", diverseResults.slice(0, pageCount).map((r) => ({ url: r.url, title: r.title })));
 
   // Phase 2: Fetch pages
   const scrapeStart = Date.now();
-  emit("trace", { step: "Fetching", duration_ms: 0, detail: `Loading ${Math.min(pageCount, diverseResults.length)} pages...` });
+  emit("trace", { step: "Fetching", duration_ms: 0, detail: `Loading ${Math.min(pageCount, diverseResults.length)} pages${suffix}...` });
 
   const pages = await Promise.allSettled(
     diverseResults.slice(0, pageCount).map((r) => openPage(r.url, cache))
@@ -203,16 +226,14 @@ export async function answerQueryStreaming(
     .filter((p): p is PromiseFulfilledResult<Awaited<ReturnType<typeof openPage>>> => p.status === "fulfilled")
     .map((p) => p.value.page);
 
-  const fetchStep: TraceStep = {
-    step: "Fetch Pages",
+  emitTrace(trace, emit, {
+    step: `Fetch Pages${suffix}`,
     duration_ms: Date.now() - scrapeStart,
     detail: `${successfulPages.length} pages`,
-  };
-  trace.push(fetchStep);
-  emit("trace", fetchStep);
+  });
 
   // Build content
-  const pageTexts = new Map<string, string>();
+  const pageTexts = new Map<string, string>(existingPageTexts || []);
   const pageContents = successfulPages
     .map((p, i) => {
       const url = diverseResults[i]?.url || "";
@@ -224,7 +245,7 @@ export async function answerQueryStreaming(
 
   // Phase 3: Stream answer + extract claims + verify
   const llmStart = Date.now();
-  emit("trace", { step: "Generating Answer", duration_ms: 0, detail: "Streaming answer..." });
+  emit("trace", { step: "Generating Answer", duration_ms: 0, detail: `Streaming answer${suffix}...` });
 
   const knowledge = await streamAnswer(
     query, pageContents, env.OPENROUTER_API_KEY,
@@ -235,36 +256,88 @@ export async function answerQueryStreaming(
   );
   const llmDuration = Date.now() - llmStart;
 
-  const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;
-  const strongConsensus = knowledge.claims.filter(
-    (c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
-  ).length;
-  const contradictionCount = knowledge.contradictions?.length || 0;
+  emitVerificationSteps(knowledge, llmDuration, trace, emit, label);
 
-  const extractStep: TraceStep = { step: "Extract Claims", duration_ms: Math.round(llmDuration * 0.30), detail: `${knowledge.claims.length} claims` };
-  const verifyStep: TraceStep = { step: "Verify Evidence", duration_ms: Math.round(llmDuration * 0.15), detail: `${verifiedCount}/${knowledge.claims.length} verified` };
-  const consensusStep: TraceStep = {
-    step: "Cross-Source Consensus",
-    duration_ms: Math.round(llmDuration * 0.10),
-    detail: `${strongConsensus}/${knowledge.claims.length} agreement${contradictionCount > 0 ? `, ${contradictionCount} contradiction${contradictionCount > 1 ? "s" : ""}` : ""}`,
-  };
-  const graphStep: TraceStep = { step: "Build Evidence Graph", duration_ms: Math.round(llmDuration * 0.10), detail: `${knowledge.sources.length} sources` };
-  const answerStep: TraceStep = { step: "Generate Answer", duration_ms: Math.round(llmDuration * 0.35), detail: "OpenRouter" };
+  return { knowledge, pageTexts, queryType: analysis.type };
+}
 
-  trace.push(extractStep, verifyStep, consensusStep, graphStep, answerStep);
-  emit("trace", extractStep);
-  emit("trace", verifyStep);
-  emit("trace", consensusStep);
-  emit("trace", graphStep);
-  emit("trace", answerStep);
+/**
+ * Run the answer pipeline with streaming progress events.
+ * Supports fast, thorough, and deep depth modes.
+ */
+export async function answerQueryStreaming(
+  query: string,
+  env: Env,
+  cache: CacheService,
+  emit: SSEWriter,
+  depth: "fast" | "thorough" | "deep" = "fast",
+): Promise<BrowseResult> {
+  // Check cache first (includes depth in key)
+  const cacheKey = `answer:${depth}:${hashKey(query)}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) {
+    const result = JSON.parse(cached) as BrowseResult;
+    result.trace = [{ step: "Cache Hit", duration_ms: 0, detail: "Served from cache" }, ...result.trace];
+    emit("trace", { step: "Cache Hit", duration_ms: 0, detail: "Served from cache" });
+    emit("result", result);
+    return result;
+  }
 
+  // Deep mode: delegate to deep reasoning agent with SSE emit
+  if (depth === "deep") {
+    const { answerQueryDeep } = await import("./deep.js");
+    const result = await answerQueryDeep(query, env, cache, undefined, undefined, (event, data) => {
+      emit(event, data);
+      // Stream tokens are not available in deep mode (uses extractKnowledge, not streamAnswer)
+      // but trace + reasoning_step events flow through
+    });
+    await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    emit("result", result);
+    return result;
+  }
+
+  const trace: TraceStep[] = [];
+
+  // First pass (with streaming tokens)
+  const { knowledge, pageTexts } = await streamingSinglePass(
+    query, env, cache, emit, trace,
+  );
+
+  // Thorough mode: if confidence is low, rephrase and do a second pass
+  if (depth === "thorough" && knowledge.confidence < THOROUGH_CONFIDENCE_THRESHOLD) {
+    const rephraseStart = Date.now();
+    emit("trace", { step: "Analyzing", duration_ms: 0, detail: "Low confidence — rephrasing query..." });
+
+    const rephrasedQuery = await rephraseQuery(query, env.OPENROUTER_API_KEY);
+    emitTrace(trace, emit, {
+      step: "Rephrase Query",
+      duration_ms: Date.now() - rephraseStart,
+      detail: `"${rephrasedQuery.slice(0, 80)}"`,
+    });
+
+    // Second pass with rephrased query
+    const { knowledge: pass2 } = await streamingSinglePass(
+      rephrasedQuery, env, cache, emit, trace, "pass 2", pageTexts,
+    );
+
+    // Pick whichever pass produced higher confidence
+    const best = pass2.confidence > knowledge.confidence ? pass2 : knowledge;
+    const other = pass2.confidence > knowledge.confidence ? knowledge : pass2;
+    emitTrace(trace, emit, {
+      step: "Select Best Result",
+      duration_ms: 0,
+      detail: `Pass ${pass2.confidence > knowledge.confidence ? "2" : "1"} selected (${Math.round(best.confidence * 100)}% vs ${Math.round(other.confidence * 100)}%)`,
+    });
+
+    const result: BrowseResult = { ...best, trace };
+    await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
+    emit("result", result);
+    return result;
+  }
+
+  // Fast mode: single pass is done
   const result: BrowseResult = { ...knowledge, trace };
-
-  // Cache
   await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
-
-  // Send final result
   emit("result", result);
-
   return result;
 }

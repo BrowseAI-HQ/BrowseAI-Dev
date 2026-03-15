@@ -15,6 +15,12 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
   "Build Evidence Graph": <Globe className="w-4 h-4" />,
   "Generate Answer": <Sparkles className="w-4 h-4" />,
   "Cache Hit": <CheckCircle2 className="w-4 h-4" />,
+  "Rephrase Query": <Brain className="w-4 h-4" />,
+  "Select Best Result": <CheckCircle2 className="w-4 h-4" />,
+  "Gap Analysis": <Brain className="w-4 h-4" />,
+  "Deep Complete": <CheckCircle2 className="w-4 h-4" />,
+  "Final Verification": <Shield className="w-4 h-4" />,
+  "Neural Rerank": <Sparkles className="w-4 h-4" />,
 };
 
 // Steps that are "in-progress" indicators (duration_ms = 0, emitted before the real step)
@@ -78,7 +84,9 @@ export function StreamingPipeline({ steps, sources, done }: Props) {
           {displaySteps.map((step, i) => {
             const active = isActive(step);
             const completed = !active && (step.duration_ms > 0 || done);
-            const icon = STEP_ICONS[step.step] || <Circle className="w-4 h-4" />;
+            // Match icons for steps with labels like "Search Web (pass 2)" or "Gap Analysis (step 2)"
+            const baseStep = step.step.replace(/\s*\(.*\)$/, "");
+            const icon = STEP_ICONS[step.step] || STEP_ICONS[baseStep] || <Circle className="w-4 h-4" />;
 
             return (
               <motion.div
