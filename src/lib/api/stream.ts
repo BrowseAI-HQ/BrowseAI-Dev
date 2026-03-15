@@ -25,11 +25,20 @@ export interface PremiumQuota {
   premiumActive: boolean;
 }
 
+export type ReasoningStepEvent = {
+  step: number;
+  query: string;
+  gapAnalysis: string;
+  claimCount: number;
+  confidence: number;
+};
+
 export type StreamEvent =
   | { type: "trace"; data: TraceEvent }
   | { type: "sources"; data: SourcePreview[] }
   | { type: "result"; data: BrowseResult }
   | { type: "error"; data: { error: string } }
+  | { type: "reasoning_step"; data: ReasoningStepEvent }
   | { type: "done"; data?: { shareId?: string; quota?: PremiumQuota } };
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
@@ -47,7 +56,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
  */
 export async function streamAnswer(
   query: string,
-  depth: "fast" | "thorough" = "fast",
+  depth: "fast" | "thorough" | "deep" = "fast",
   onEvent: (event: StreamEvent) => void,
 ): Promise<BrowseResult> {
   const authHeaders = await getAuthHeaders();
@@ -103,6 +112,7 @@ export async function streamAnswer(
             currentEvent === "sources" ? { type: "sources", data } :
             currentEvent === "result" ? { type: "result", data } :
             currentEvent === "error" ? { type: "error", data } :
+            currentEvent === "reasoning_step" ? { type: "reasoning_step", data } :
             currentEvent === "done" ? { type: "done" } :
             { type: "done" };
 

@@ -500,10 +500,9 @@ export function registerBrowseRoutes(
       };
 
       // Deep mode requires premium — fall back to thorough for streaming too
-      // (streaming currently only supports fast mode, but gate it for future use)
       const streamDepth = parsed.data.depth === "deep" && !premiumActive ? "thorough" : parsed.data.depth;
 
-      const result = await answerQueryStreaming(parsed.data.query, reqEnv, cache, emit);
+      const result = await answerQueryStreaming(parsed.data.query, reqEnv, cache, emit, streamDepth);
 
       // Save to store and include shareId in done event
       const client = detectClient(request);

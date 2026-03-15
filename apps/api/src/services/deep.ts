@@ -210,10 +210,21 @@ export async function answerQueryDeep(
   const reasoningSteps: ReasoningStep[] = [];
   const previousQueries: string[] = [query];
 
+  /** Flush any new trace steps added by singlePass to the SSE stream. */
+  let lastFlushed = 0;
+  function flushTrace() {
+    if (!emit) return;
+    for (let i = lastFlushed; i < trace.length; i++) {
+      emit("trace", trace[i]);
+    }
+    lastFlushed = trace.length;
+  }
+
   // Step 1: Initial pass
   const { knowledge: initial, pageTexts, queryType } = await singlePass(
     query, env, cache, trace, undefined, "step 1", undefined, sessionContext, options
   );
+  flushTrace();
 
   reasoningSteps.push({
     step: 1,
@@ -234,6 +245,7 @@ export async function answerQueryDeep(
       duration_ms: 0,
       detail: `Confidence ${Math.round(initial.confidence * 100)}% — no follow-up needed`,
     });
+    flushTrace();
     return { ...initial, trace, reasoningSteps };
   }
 
@@ -260,10 +272,7 @@ export async function answerQueryDeep(
         ? "Research complete — no significant gaps"
         : `${gaps.gaps.length} gap(s): ${gaps.gaps.join("; ")}`,
     });
-
-    if (emit) {
-      emit("trace", trace[trace.length - 1]);
-    }
+    flushTrace();
 
     // Stop if research is complete or no follow-up queries
     if (gaps.complete || gaps.followUpQueries.length === 0) {
@@ -272,6 +281,7 @@ export async function answerQueryDeep(
         duration_ms: 0,
         detail: `Research converged at step ${step - 1}`,
       });
+      flushTrace();
       break;
     }
 
@@ -284,6 +294,7 @@ export async function answerQueryDeep(
           followUpQuery, env, cache, trace, allPageTexts,
           `step ${step}`, undefined, undefined, options,
         );
+        flushTrace();
 
         // Merge knowledge
         allClaims = mergeClaims(allClaims, followUp.claims);
@@ -318,6 +329,7 @@ export async function answerQueryDeep(
           duration_ms: 0,
           detail: `Query "${followUpQuery}" failed — continuing with existing evidence`,
         });
+        flushTrace();
       }
     }
 
@@ -328,11 +340,13 @@ export async function answerQueryDeep(
         duration_ms: 0,
         detail: `Confidence ${Math.round(bestConfidence * 100)}% reached at step ${step}`,
       });
+      flushTrace();
       break;
     }
   }
 
   // Final: re-verify merged claims against all page texts
+  if (emit) emit("trace", { step: "Analyzing", duration_ms: 0, detail: "Final verification of merged evidence..." });
   const finalVerifyStart = Date.now();
   let finalResult: Omit<BrowseResult, "trace">;
 
@@ -370,6 +384,7 @@ export async function answerQueryDeep(
     duration_ms: Date.now() - finalVerifyStart,
     detail: `${allClaims.length} claims, ${allSources.length} sources across ${reasoningSteps.length} steps`,
   });
+  flushTrace();
 
   return {
     ...finalResult,
