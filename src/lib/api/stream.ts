@@ -80,7 +80,7 @@ export async function streamAnswer(
       throw new Error(json.error || `API call failed: ${res.status}`);
     } catch (e: any) {
       if (e.message.startsWith("API call failed") || e.message !== "Unexpected end of JSON input") throw e;
-      throw new Error(`API call failed: ${res.status}`);
+      throw new Error(`API call failed: ${res.status}`, { cause: e });
     }
   }
 
