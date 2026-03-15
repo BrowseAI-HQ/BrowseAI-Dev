@@ -882,31 +882,31 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
             {/* No account */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border flex flex-col">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account</h3>
               <ul className="space-y-2.5 text-sm">
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 free queries/hour on the website</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 queries/hour on website</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BM25 keyword verification</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BYOK via MCP, SDK &amp; REST API for unlimited access</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BYOK via MCP, SDK &amp; REST API</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Unlimited with your own keys</li>
               </ul>
             </motion.div>
 
             {/* Free login */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-card border border-accent/30">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-card border border-accent/30 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-accent">Free Account</h3>
                 <Badge variant="outline" className="text-[10px] text-accent border-accent/30">Recommended</Badge>
               </div>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-2.5 text-sm flex-1">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Generous access to premium verification pipeline</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> NLI semantic verification + multi-provider search with BAI key</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough mode with multi-pass consistency</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Graceful fallback to keyword verification when quota resets</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BrowseAI Dev API key (one key for everything)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Premium verification pipeline</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> NLI + multi-provider search</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough mode + multi-pass</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> One BAI key for everything</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
               </ul>
               <Button
@@ -915,13 +915,13 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 className="mt-4 w-full text-xs border-accent/30 text-accent hover:bg-accent/10"
                 onClick={() => user ? navigate("/dashboard#api-keys") : setLoginOpen(true)}
               >
-                {user ? "Go to Dashboard" : "Sign in — it\u2019s free"}
+                {user ? "Go to Dashboard" : "Sign in \u2014 it\u2019s free"}
               </Button>
               <LoginModal open={loginOpen} onOpenChange={setLoginOpen} redirectTo="/dashboard#api-keys" />
             </motion.div>
 
             {/* Pro */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-card border border-border relative overflow-hidden">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-card border border-border relative overflow-hidden flex flex-col">
               <div className="absolute top-3 right-3">
                 <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20">
                   <Sparkles className="w-3 h-3 text-accent" />
@@ -930,7 +930,8 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               </div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Pro</h3>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Unlimited premium verification — no fallback, no quotas</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Unlimited premium verification</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> No quotas, no fallback</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Managed keys — no BYOK needed</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> 15+ sources per query</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" /> Multi-model verification</li>
