@@ -29,6 +29,7 @@ const Sessions = () => {
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [knowledge, setKnowledge] = useState<KnowledgeEntry[]>([]);
   const [query, setQuery] = useState("");
+  const [depth, setDepth] = useState<"fast" | "thorough" | "deep">("fast");
   const [asking, setAsking] = useState(false);
   const [lastResult, setLastResult] = useState<SessionAskResult | null>(null);
   const [newSessionName, setNewSessionName] = useState("");
@@ -120,7 +121,7 @@ const Sessions = () => {
     setAsking(true);
     setLastResult(null);
     try {
-      const result = await sessionAsk(activeSession.id, query.trim());
+      const result = await sessionAsk(activeSession.id, query.trim(), depth);
       setLastResult(result);
       setQuery("");
       // Refresh knowledge and session data
@@ -356,16 +357,28 @@ const Sessions = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleAsk()}
                   placeholder="Ask a question (recalls prior knowledge automatically)..."
                   disabled={asking}
-                  className="w-full h-12 pl-12 pr-24 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-sm"
+                  className="w-full h-12 pl-12 pr-32 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-sm"
                 />
-                <Button
-                  onClick={handleAsk}
-                  disabled={!query.trim() || asking}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-4 h-8 text-sm font-semibold gap-2"
-                >
-                  {asking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  <span className="hidden sm:inline">{asking ? "Researching..." : "Ask"}</span>
-                </Button>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                  <button
+                    onClick={() => setDepth(depth === "fast" ? "thorough" : depth === "thorough" ? "deep" : "fast")}
+                    className={`h-8 px-2 rounded-lg border text-[10px] font-mono transition-colors ${
+                      depth === "deep" ? "bg-purple-500/10 border-purple-500/40 text-purple-400" :
+                      depth === "thorough" ? "bg-accent/10 border-accent/40 text-accent" :
+                      "bg-secondary border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {depth === "deep" ? "Deep" : depth === "thorough" ? "Thorough" : "Fast"}
+                  </button>
+                  <Button
+                    onClick={handleAsk}
+                    disabled={!query.trim() || asking}
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-4 h-8 text-sm font-semibold gap-2"
+                  >
+                    {asking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    <span className="hidden sm:inline">{asking ? "Researching..." : "Ask"}</span>
+                  </Button>
+                </div>
               </div>
             </div>
 
