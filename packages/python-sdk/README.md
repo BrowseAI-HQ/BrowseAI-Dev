@@ -137,9 +137,11 @@ Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
 
 Free BAI key users get a generous daily quota (50 premium queries/day). When exceeded, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours. Check `client.last_quota` after any API call for current usage.
 
-BYOK users get BM25 keyword verification — fast and reliable, but without the premium pipeline.
+**No account needed** — BYOK works out of the box with no signup, no limits, and BM25 keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
 
 ## BYOK (Bring Your Own Keys)
+
+No signup required — just pass your own keys:
 
 ```python
 client = BrowseAI(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")

@@ -510,7 +510,7 @@ const Index = () => {
                 {user ? "Go to Dashboard" : "Get your free API key"}
               </Button>
               <p className="text-xs text-muted-foreground mt-3">
-                No credit card required. No usage limits. Sign in, grab your key, and start using premium features immediately.
+                Works without an account — MCP, SDK, and API all work with BYOK. Sign in to unlock NLI verification, multi-provider search, and more.
               </p>
             </div>
           </motion.div>
@@ -890,13 +890,13 @@ curl -X POST https://browseai.dev/api/browse/answer \\
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
             {/* No account */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border flex flex-col">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account Needed</h3>
               <ul className="space-y-2.5 text-sm">
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 queries/hour on website</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BM25 keyword verification</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BYOK via MCP, SDK &amp; REST API</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Unlimited with your own keys</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> MCP, Python SDK &amp; REST API</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Unlimited with BYOK — no signup</li>
               </ul>
             </motion.div>
 
@@ -907,12 +907,12 @@ curl -X POST https://browseai.dev/api/browse/answer \\
                 <Badge variant="outline" className="text-[10px] text-accent border-accent/30">Recommended</Badge>
               </div>
               <ul className="space-y-2.5 text-sm flex-1">
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Everything above, plus:</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Premium verification pipeline</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Everything above, unlimited</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Generous premium verification</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> NLI + multi-provider search</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Thorough mode + multi-pass</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> One BAI key for everything</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Query history &amp; dashboard</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Falls back to unlimited basic</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> One BAI key + history</li>
               </ul>
               <Button
                 variant="outline"

@@ -246,7 +246,9 @@ pnpm dev
 
 ## API Keys
 
-Three ways to authenticate:
+**No account needed** — MCP, Python SDK, and REST API all work with BYOK (bring your own keys) out of the box. No signup, no limits. Sign in for free to unlock premium verification features.
+
+Four ways to authenticate:
 
 | Method | How | Verification | Limits |
 |--------|-----|-------------|--------|
