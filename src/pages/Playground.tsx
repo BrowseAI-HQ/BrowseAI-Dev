@@ -147,6 +147,7 @@ const Playground = () => {
   const [copied, setCopied] = useState(false);
   const [feedbackSent, setFeedbackSent] = useState<string | null>(null);
   const [showScenarios, setShowScenarios] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   const runScenario = (scenario: typeof TUTORIAL_SCENARIOS[number]) => {
     setActiveTab(scenario.tab);
@@ -360,11 +361,21 @@ const Playground = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl bg-red-400/10 border border-red-400/30 text-red-400 text-sm"
+            className="p-4 rounded-xl bg-red-400/10 border border-red-400/30 text-sm space-y-3"
           >
-            {response.error}
+            <p className="text-red-400">{response.error}</p>
+            {response.error.includes("Demo limit") && !user && (
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" className="text-xs border-accent/30 text-accent hover:bg-accent/10" onClick={() => setLoginOpen(true)}>
+                  Sign in — get a free BAI key
+                </Button>
+                <span className="text-xs text-muted-foreground">Unlimited queries + premium verification</span>
+              </div>
+            )}
           </motion.div>
         )}
+
+        <LoginModal open={loginOpen} onOpenChange={setLoginOpen} redirectTo="/dashboard#api-keys" />
 
         {/* ── Answer result (rich rendering) ── */}
         {isAnswerResult && (

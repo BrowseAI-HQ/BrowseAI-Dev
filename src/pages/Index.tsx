@@ -4,14 +4,13 @@ import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, ExternalLink, Brain,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, ExternalLink, Brain, Key,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ApiKeySettings } from "@/components/ApiKeySettings";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
@@ -215,7 +214,15 @@ const Index = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <ApiKeySettings />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground text-xs gap-1.5"
+            onClick={() => user ? navigate("/dashboard#api-keys") : setLoginOpen(true)}
+          >
+            <Key className="w-4 h-4" />
+            <span className="hidden sm:inline">Free BAI Key</span>
+          </Button>
           {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
         </div>
       </motion.nav>
@@ -871,7 +878,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Use it your way</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Everything works without an account. Sign in to unlock more — or just use BYOK and go.
+              Try it on the website or use your own keys via MCP, SDK &amp; API. Sign in for a free BAI key with premium verification.
             </p>
           </motion.div>
 
@@ -880,11 +887,10 @@ curl -X POST https://browseai.dev/api/browse/answer \\
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="p-6 rounded-xl bg-card border border-border">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">No Account</h3>
               <ul className="space-y-2.5 text-sm">
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 free queries/hour</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 5 free queries/hour on the website</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BM25 keyword verification</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BYOK for unlimited access</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> MCP + REST API + Python SDK</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> BYOK via MCP, SDK &amp; REST API for unlimited access</li>
               </ul>
             </motion.div>
 

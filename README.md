@@ -251,10 +251,10 @@ Three ways to authenticate:
 | Method | How | Verification | Limits |
 |--------|-----|-------------|--------|
 | **BrowseAI Dev API Key** | `Authorization: Bearer bai_xxx` | Full premium — NLI reranking, multi-provider search, multi-pass consistency | Unlimited + sessions, sharing, forking |
-| **BYOK** | `X-Tavily-Key` + `X-OpenRouter-Key` headers | BM25 keyword verification | Unlimited, free (search/answer only — no sessions) |
-| **Demo** | No auth needed | BM25 keyword verification | 5 queries/hour per IP |
+| **BYOK** (MCP, SDK, API) | `X-Tavily-Key` + `X-OpenRouter-Key` headers | BM25 keyword verification | Unlimited, free (search/answer only — no sessions) |
+| **Demo** (website) | No auth needed | BM25 keyword verification | 5 queries/hour per IP |
 
-Get a BrowseAI Dev API key from the [dashboard](https://browseai.dev/dashboard) — it bundles your keys into one key and unlocks the premium verification pipeline (NLI semantic matching, multi-provider search, consistency checking).
+Sign in at [browseai.dev](https://browseai.dev) to create a free BAI key — it bundles your keys into one key and unlocks the premium verification pipeline (NLI semantic matching, multi-provider search, consistency checking). BYOK works for all packages (MCP, Python SDK, REST API) without an account.
 
 ## Project Structure
 

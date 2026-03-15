@@ -184,7 +184,7 @@ async function checkDemoLimit(
   const current = await cache.get(key);
   const count = current ? parseInt(current, 10) : 0;
   if (count >= DEMO_LIMIT) {
-    return `Demo limit reached (${DEMO_LIMIT}/hour). Add your own free API keys in Settings for unlimited access.`;
+    return `Demo limit reached (${DEMO_LIMIT}/hour). Sign in and create a free BAI key at browseai.dev/dashboard for unlimited access with premium features.`;
   }
   await cache.set(key, String(count + 1), DEMO_WINDOW_SECONDS);
   return null;
