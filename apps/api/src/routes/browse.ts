@@ -16,6 +16,7 @@ import { compareAnswers } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
 import { recordFeedback, applyFeedbackToType } from "../lib/learning.js";
+import { setCalibrationData } from "../lib/gemini.js";
 import { createSearchProvider } from "../lib/searchProvider.js";
 import type { CacheService } from "../services/cache.js";
 import type { ResultStore } from "../services/store.js";
@@ -48,36 +49,24 @@ function extractBrowseApiKey(request: FastifyRequest): string | null {
 
 /**
  * Resolve request environment. Priority:
- * 1. BYOK headers (X-Tavily-Key, X-OpenRouter-Key)
- * 2. BrowseAI Dev API key (bai_xxx) → resolve to stored keys
- * 3. Default env keys
+ * 1. Explicit bai_ key in header → resolve to stored keys + premium features
+ * 2. Signed-in user with stored keys → stored keys + premium features
+ * 3. BYOK headers (X-Tavily-Key, X-OpenRouter-Key) → their keys, no premium
+ * 4. Demo → server keys, 5/hr, no premium
+ *
+ * If a bai_ user's stored keys fail (exhausted limits etc.), fall to demo (5/hr, no premium).
+ * We never subsidize bai_ users with server keys.
  */
 async function getRequestEnv(
   request: FastifyRequest,
   env: Env,
   apiKeyService: ApiKeyService | null,
   cache: CacheService
-): Promise<{ env: Env; isOwnKeys: boolean; userId: string | null }> {
+): Promise<{ env: Env; isOwnKeys: boolean; userId: string | null; hasBaiKey: boolean }> {
   // Try to get userId from JWT (for logged-in web users)
   let userId = await getUserIdFromRequest(request);
 
-  // Priority 1: BYOK headers
-  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
-  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
-
-  if (tavilyKey || openrouterKey) {
-    return {
-      env: {
-        ...env,
-        ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
-        ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
-      },
-      isOwnKeys: true,
-      userId,
-    };
-  }
-
-  // Priority 2: BrowseAI Dev API key
+  // Priority 1: Explicit bai_ key in header (X-API-Key or Authorization: Bearer bai_xxx)
   if (apiKeyService) {
     const browseKey = extractBrowseApiKey(request);
     if (browseKey) {
@@ -101,9 +90,11 @@ async function getRequestEnv(
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
+            // bai_ key users get full premium pipeline (NLI + Brave)
           },
           isOwnKeys: true,
           userId,
+          hasBaiKey: true,
         };
       }
 
@@ -112,9 +103,9 @@ async function getRequestEnv(
     }
   }
 
-  // Priority 3: Auto-resolve stored keys for signed-in users
-  // When a user has saved API keys (via dashboard), use them automatically
-  // so they don't hit the demo limit on the website UI
+  // Priority 2: Signed-in user with stored keys (bai_ key holder using the website UI)
+  // Their stored Tavily/OpenRouter keys are used, with premium features enabled.
+  // This takes precedence over BYOK headers — bai_ users always use their stored keys.
   if (apiKeyService && userId) {
     try {
       const userCacheKey = `user_keys:${userId}`;
@@ -136,21 +127,50 @@ async function getRequestEnv(
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
+            // Signed-in users with stored keys get premium pipeline
           },
           isOwnKeys: true,
           userId,
+          hasBaiKey: true,
         };
       }
     } catch (e) {
-      // Decryption or DB failure — fall through to server keys (no demo limit for authenticated users)
+      // Decryption or DB failure — fall through, don't use server keys for bai_ users
       console.warn("Auto-resolve stored keys failed for user", userId, e);
     }
   }
 
-  // Priority 4: Default env
-  // Authenticated users (valid JWT) bypass demo limits even when using server keys
-  const isAuthenticated = !!userId;
-  return { env, isOwnKeys: isAuthenticated, userId };
+  // Priority 3: BYOK headers (no bai_ key, no stored keys)
+  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
+  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
+
+  if (tavilyKey || openrouterKey) {
+    return {
+      env: {
+        ...env,
+        ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
+        ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
+        // BYOK users don't get premium features — those are bai_ key perks
+        HF_API_KEY: undefined,
+        BRAVE_API_KEY: undefined,
+      },
+      isOwnKeys: true,
+      userId,
+      hasBaiKey: false,
+    };
+  }
+
+  // Priority 4: Demo (server keys, 5/hr rate limit, no premium features)
+  return {
+    env: {
+      ...env,
+      HF_API_KEY: undefined,
+      BRAVE_API_KEY: undefined,
+    },
+    isOwnKeys: false,
+    userId,
+    hasBaiKey: false,
+  };
 }
 
 async function checkDemoLimit(
@@ -175,7 +195,7 @@ function detectClient(request: FastifyRequest): string {
   const ua = (request.headers["user-agent"] || "").toLowerCase();
   if (ua.includes("browseai-python")) return "python-sdk";
   if (ua.includes("browse-ai-mcp") || ua.includes("mcp")) return "mcp";
-  if (request.headers["x-browse-client"]) return String(request.headers["x-browse-client"]);
+  if (request.headers["x-browse-client"]) return String(request.headers["x-browse-client"]).slice(0, 50).replace(/[^a-zA-Z0-9_.-]/g, "");
   if (request.headers.origin || request.headers.referer) return "web";
   if (ua.includes("curl")) return "curl";
   if (ua.includes("python")) return "python";
@@ -452,7 +472,7 @@ export function registerBrowseRoutes(
     } catch (e: any) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Comparison failed");
-      return reply.status(status).send({ success: false, error, detail: e.message });
+      return reply.status(status).send({ success: false, error });
     }
   });
 
@@ -531,8 +551,9 @@ export function registerBrowseRoutes(
       return reply.status(404).send({ success: false, error: "Result not found" });
     }
 
-    // Record feedback in learning engine
+    // Record feedback in learning engine + persist to Supabase for calibration
     recordFeedback({ resultId, rating, claimIndex });
+    await store.saveFeedback(resultId, rating, claimIndex);
 
     // Link feedback to query type via Search Web trace step: "N results (...) [factual]"
     const searchTrace = stored.result.trace?.find(t => t.step.startsWith("Search Web"));
@@ -540,6 +561,11 @@ export function registerBrowseRoutes(
     if (typeMatch) {
       applyFeedbackToType(typeMatch[1], rating);
     }
+
+    // Refresh confidence calibration every 10 feedbacks (non-blocking)
+    store.getCalibrationData().then(buckets => {
+      if (buckets.length > 0) setCalibrationData(buckets);
+    }).catch(() => {});
 
     return { success: true, result: { recorded: true } };
   });

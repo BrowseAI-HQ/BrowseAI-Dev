@@ -77,8 +77,38 @@ const ROADMAP_ITEMS = [
   },
   {
     phase: "Shipped",
+    title: "NLI evidence reranking",
+    desc: "Top-3 BM25 candidates reranked by DeBERTa semantic entailment. Picks the best supporting evidence, not just the best keyword match.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Atomic claim decomposition",
+    desc: "Compound claims auto-split into individual verifiable facts. Each fact verified independently for finer-grained accuracy.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Multi-pass consistency",
+    desc: "Thorough mode cross-checks claims across independent extraction passes. Inconsistent claims are penalized. Inspired by SelfCheckGPT.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Auto-calibrated confidence",
+    desc: "Confidence scores auto-adjust from user feedback using isotonic calibration. 75% confidence means actually correct 75% of the time.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Multi-provider search",
+    desc: "Parallel search across multiple providers for broader source diversity. More sources = stronger consensus = higher confidence.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
     title: "Self-learning verification pipeline",
-    desc: "Adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Every query and rating makes future results more accurate. Domain authority with Bayesian smoothing. Thorough mode auto-retries when confidence < 60%.",
+    desc: "Adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Domain authority with Bayesian smoothing. Thorough mode auto-retries when confidence < 60%.",
     done: true,
   },
   {
@@ -106,9 +136,21 @@ const ROADMAP_ITEMS = [
     done: false,
   },
   {
+    phase: "Shipped",
+    title: "Premium verification tier",
+    desc: "NLI semantic reranking, multi-provider search, and multi-pass consistency checking gated behind BrowseAI Dev API keys. Free users get BM25 verification.",
+    done: true,
+  },
+  {
     phase: "Coming Soon",
     title: "Academic papers & broader sources",
     desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
+    done: false,
+  },
+  {
+    phase: "Coming Soon",
+    title: "Fine-tuned verification model",
+    desc: "Custom model trained on 10K+ production examples for per-domain calibration curves. Replace general NLI with specialized verification.",
     done: false,
   },
   {

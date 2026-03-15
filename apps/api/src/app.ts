@@ -12,6 +12,7 @@ import { registerSessionRoutes } from "./routes/session.js";
 import { createSupabaseSessionStore, createNoopSessionStore } from "./services/session.js";
 import { initDomainAuthority, loadDomainIntelState, setDomainIntelCache } from "./lib/verify.js";
 import { loadLearningState, setLearningCache } from "./lib/learning.js";
+import { setCalibrationData } from "./lib/gemini.js";
 
 export async function buildApp() {
   const env = await loadEnv();
@@ -61,6 +62,14 @@ export async function buildApp() {
   const { coCitationCount, usefulnessCount } = await loadDomainIntelState(cache);
   if (coCitationCount > 0 || usefulnessCount > 0) {
     console.log(`Restored domain intelligence: ${coCitationCount} co-citation, ${usefulnessCount} usefulness scores`);
+  }
+
+  // Load confidence calibration from feedback data (auto-adjusts over time)
+  const calibrationBuckets = await store.getCalibrationData();
+  if (calibrationBuckets.length > 0) {
+    setCalibrationData(calibrationBuckets);
+    const totalFeedback = calibrationBuckets.reduce((sum, b) => sum + b.count, 0);
+    console.log(`Loaded calibration data from ${totalFeedback} feedback samples`);
   }
 
   const sessionStore =

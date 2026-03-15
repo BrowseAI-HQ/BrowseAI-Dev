@@ -31,11 +31,15 @@ npx pnpm --filter browse-ai build  # Build MCP only
 ## Architecture decisions
 
 - **LLM:** Google Gemini 2.5 Flash via OpenRouter (`packages/shared/src/constants.ts`)
-- **Search:** Tavily API for web search
+- **Search:** Multi-provider search — primary search API + secondary provider for source diversity (parallel execution, deduplicated results).
 - **Verification pipeline:** Hybrid BM25 + NLI semantic entailment → cross-source consensus → NLI contradiction detection (`apps/api/src/lib/verify.ts`, `apps/api/src/lib/nli.ts`). Falls back to BM25-only when `HF_API_KEY` is not set.
-- **Confidence scores:** 7-factor evidence-based algorithm in `apps/api/src/lib/gemini.ts` — NOT LLM self-assessed. Factors: source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score. Contradiction penalty applied.
+- **NLI reranking:** Top-3 BM25 candidates per claim reranked by DeBERTa NLI entailment scores. Picks best supporting evidence semantically, not just by keyword match.
+- **Atomic claim decomposition:** Compound claims auto-split into individual verifiable facts before verification. Splitters: `and`, `;`, `while`/`whereas`/`but`.
+- **Multi-pass consistency:** In thorough mode, claims cross-checked across two independent extraction passes. Confirmed claims boosted (+0.08), unconfirmed penalized (-0.05). SelfCheckGPT-inspired.
+- **Confidence scores:** 7-factor evidence-based algorithm in `apps/api/src/lib/gemini.ts` — NOT LLM self-assessed. Auto-calibrated from user feedback via isotonic regression (70% calibrated + 30% original blending). Factors: verification rate (25%), domain authority (20%), source count (15%), consensus (15%), domain diversity (10%), claim grounding (10%), citation depth (5%). Contradiction penalty applied.
 - **Domain authority:** 10,000+ domains in Supabase (260 curated + Majestic Million), 5-tier scoring with Bayesian dynamic blending from real query verification data. Cold-start safe via prior weight smoothing.
-- **Thorough mode:** `depth: "thorough"` auto-retries with rephrased query when first-pass confidence < 60%. Available across API, MCP, and Python SDK.
+- **Thorough mode:** `depth: "thorough"` auto-retries with rephrased query when first-pass confidence < 60%. Runs multi-pass consistency checking. Available across API, MCP, and Python SDK.
+- **Tier gating:** `bai_` API key users get premium pipeline (NLI reranking, multi-provider search, multi-pass consistency). BYOK/demo users get BM25-only verification. Controlled via `hasBaiKey` flag in `getRequestEnv`.
 - **Caching:** Upstash Redis (via Vercel KV) with smart TTL (time-sensitive queries get shorter TTL). Falls back to in-memory if KV env vars not set. Cache key includes depth param.
 - **Demo rate limit:** 5/hour per IP for unauthenticated users. BYOK headers (`X-Tavily-Key`, `X-OpenRouter-Key`) bypass it.
 - **API keys:** Users can bring their own keys via headers, or use a BrowseAI Dev API key (`bai_xxx` prefix), or fall back to server-side keys with demo limits.

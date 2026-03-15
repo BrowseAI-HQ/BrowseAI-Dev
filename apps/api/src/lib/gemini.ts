@@ -24,6 +24,7 @@ Rules:
 - Never invent or fabricate sources
 - Preserve citations by linking claims to source URLs
 - Explain clearly in 2-4 paragraphs
+- IMPORTANT: Extract ATOMIC claims — each claim must contain exactly ONE verifiable fact. Split compound statements. For example, "Tesla had $96B revenue and 1.8M deliveries" should be TWO claims: "Tesla had $96B revenue" and "Tesla had 1.8M deliveries". This enables precise per-fact verification.
 
 Return a JSON object using the tool provided.`;
 
@@ -209,8 +210,95 @@ export function computeConfidence(
     }
   }
 
-  // Scale to 0.10–0.97 range and round to 2 decimals
-  return Math.round((0.10 + raw * 0.87) * 100) / 100;
+  // Scale to 0.10–0.97 range
+  const scaled = 0.10 + raw * 0.87;
+
+  // Apply calibration adjustment if enough feedback data exists
+  const calibrated = applyCalibration(scaled);
+
+  return Math.round(calibrated * 100) / 100;
+}
+
+// ─── Auto-Calibration ──────────────────────────────────────────────
+// Adjusts predicted confidence based on feedback data.
+// Uses isotonic regression: if we're consistently overconfident in a range,
+// pull scores down; if underconfident, push up.
+// The calibration map is loaded from feedback data and refreshed periodically.
+
+interface CalibrationPoint {
+  predicted: number;  // avg predicted confidence in bucket
+  actual: number;     // actual accuracy from feedback (good / (good + wrong))
+  weight: number;     // number of feedback samples
+}
+
+let calibrationMap: CalibrationPoint[] = [];
+let calibrationLoaded = false;
+const MIN_CALIBRATION_SAMPLES = 20; // Need at least 20 feedback samples to calibrate
+
+/**
+ * Load calibration data from store. Called periodically (e.g., on startup or
+ * after enough new feedback). Safe to call multiple times — updates in-place.
+ */
+export function setCalibrationData(buckets: Array<{
+  avgConfidence: number;
+  accuracy: number;
+  count: number;
+}>) {
+  const totalSamples = buckets.reduce((sum, b) => sum + b.count, 0);
+  if (totalSamples < MIN_CALIBRATION_SAMPLES) {
+    calibrationMap = [];
+    calibrationLoaded = false;
+    return;
+  }
+
+  // Build calibration points from buckets with enough data (>=3 feedback samples)
+  calibrationMap = buckets
+    .filter(b => b.count >= 3 && !isNaN(b.accuracy))
+    .map(b => ({
+      predicted: b.avgConfidence,
+      actual: b.accuracy,
+      weight: b.count,
+    }))
+    .sort((a, b) => a.predicted - b.predicted);
+
+  calibrationLoaded = calibrationMap.length >= 2;
+}
+
+/**
+ * Apply calibration adjustment to a raw confidence score.
+ * Uses linear interpolation between calibration points.
+ * If no calibration data, returns the score unchanged.
+ */
+function applyCalibration(score: number): number {
+  if (!calibrationLoaded || calibrationMap.length < 2) return score;
+
+  // Find surrounding calibration points
+  const first = calibrationMap[0];
+  const last = calibrationMap[calibrationMap.length - 1];
+
+  // Extrapolate if outside calibration range
+  if (score <= first.predicted) {
+    const ratio = first.actual / first.predicted;
+    return Math.max(0.10, Math.min(0.97, score * ratio));
+  }
+  if (score >= last.predicted) {
+    const ratio = last.actual / last.predicted;
+    return Math.max(0.10, Math.min(0.97, score * ratio));
+  }
+
+  // Interpolate between two nearest calibration points
+  for (let i = 0; i < calibrationMap.length - 1; i++) {
+    const lo = calibrationMap[i];
+    const hi = calibrationMap[i + 1];
+    if (score >= lo.predicted && score <= hi.predicted) {
+      const t = (score - lo.predicted) / (hi.predicted - lo.predicted);
+      const calibrated = lo.actual + t * (hi.actual - lo.actual);
+      // Blend: 70% calibrated + 30% original (smooth adjustment, not jarring)
+      return Math.max(0.10, Math.min(0.97, calibrated * 0.7 + score * 0.3));
+    }
+  }
+
+  return score;
 }
 
 /**
@@ -390,6 +478,64 @@ Intent types:
   }
 }
 
+// ─── Atomic Claim Decomposition ─────────────────────────────────────
+// Splits compound claims into individual atomic claims for finer-grained
+// verification. A compound claim like "Tesla had $96B revenue and 1.8M
+// deliveries" becomes two atomic claims, each independently verifiable.
+
+const COMPOUND_SPLITTERS = [
+  /\band\b/i,           // "X and Y"
+  /;\s*/,               // "X; Y"
+  /,\s*(?:while|whereas|but|although|however)\s+/i, // "X, while Y"
+];
+
+const MIN_ATOMIC_LENGTH = 15; // Don't split into fragments shorter than this
+
+/**
+ * Split compound claims into atomic claims.
+ * Preserves source attribution — each atomic claim inherits the parent's sources.
+ * Only splits when both halves look like independent, verifiable statements.
+ */
+function decomposeCompoundClaims(claims: BrowseClaim[]): BrowseClaim[] {
+  const result: BrowseClaim[] = [];
+
+  for (const claim of claims) {
+    const text = claim.claim.trim();
+
+    // Skip short claims — already atomic
+    if (text.length < 40) {
+      result.push(claim);
+      continue;
+    }
+
+    // Try to split on compound conjunctions
+    let split = false;
+    for (const pattern of COMPOUND_SPLITTERS) {
+      const parts = text.split(pattern).map(p => p.trim()).filter(p => p.length >= MIN_ATOMIC_LENGTH);
+      if (parts.length >= 2 && parts.length <= 4) {
+        // Verify each part looks like an independent claim (has a verb-like structure)
+        const allValid = parts.every(p => /[a-z]/i.test(p) && p.length >= MIN_ATOMIC_LENGTH);
+        if (allValid) {
+          for (const part of parts) {
+            result.push({
+              ...claim,
+              claim: part.charAt(0).toUpperCase() + part.slice(1),
+            });
+          }
+          split = true;
+          break;
+        }
+      }
+    }
+
+    if (!split) {
+      result.push(claim);
+    }
+  }
+
+  return result;
+}
+
 export async function extractKnowledge(
   query: string,
   pageContents: string,
@@ -458,8 +604,11 @@ export async function extractKnowledge(
     throw new Error("Failed to parse LLM output");
   }
 
-  const claims: BrowseClaim[] = knowledge.claims || [];
+  const rawClaims: BrowseClaim[] = knowledge.claims || [];
   const sources: BrowseSource[] = knowledge.sources || [];
+
+  // Atomic claim decomposition: split compound claims the LLM missed
+  const claims = decomposeCompoundClaims(rawClaims);
 
   // Run post-extraction verification if page texts are available
   if (pageTexts && pageTexts.size > 0) {

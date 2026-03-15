@@ -5,11 +5,25 @@ export const BrowseSourceSchema = z.object({
   title: z.string(),
   domain: z.string(),
   quote: z.string(),
+  verified: z.boolean().optional(),
+  authority: z.number().min(0).max(1).optional(),
+});
+
+export const NLIScoreSchema = z.object({
+  entailment: z.number(),
+  contradiction: z.number(),
+  neutral: z.number(),
+  label: z.enum(["entailment", "neutral", "contradiction"]),
 });
 
 export const BrowseClaimSchema = z.object({
   claim: z.string(),
   sources: z.array(z.string()),
+  verified: z.boolean().optional(),
+  verificationScore: z.number().min(0).max(1).optional(),
+  consensusCount: z.number().int().optional(),
+  consensusLevel: z.enum(["strong", "moderate", "weak", "none"]).optional(),
+  nliScore: NLIScoreSchema.optional(),
 });
 
 export const TraceStepSchema = z.object({
@@ -18,12 +32,20 @@ export const TraceStepSchema = z.object({
   detail: z.string().optional(),
 });
 
+export const ContradictionSchema = z.object({
+  claimA: z.string(),
+  claimB: z.string(),
+  topic: z.string(),
+  nliConfidence: z.number().min(0).max(1).optional(),
+});
+
 export const BrowseResultSchema = z.object({
   answer: z.string(),
   claims: z.array(BrowseClaimSchema),
   sources: z.array(BrowseSourceSchema),
   confidence: z.number().min(0).max(1),
   trace: z.array(TraceStepSchema),
+  contradictions: z.array(ContradictionSchema).optional(),
 });
 
 export const SearchRequestSchema = z.object({

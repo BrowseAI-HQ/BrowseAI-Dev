@@ -14,10 +14,21 @@ Your question → Web search → Fetch pages → Extract claims → Build eviden
 
 Every answer includes:
 - **Claims** with source URLs, verification status, and consensus level
-- **7-factor confidence score** (0-1) — evidence-based, not LLM self-assessed
-- **Source quotes** verified against actual page text via BM25
+- **7-factor confidence score** (0-1) — evidence-based, not LLM self-assessed, auto-calibrated from feedback
+- **Source quotes** verified against actual page text via hybrid BM25 + NLI matching
+- **Atomic claim decomposition** — compound facts split and verified independently
 - **Execution trace** with timing
-- **Thorough mode** — pass `depth: "thorough"` to auto-retry with rephrased queries when confidence < 60%
+- **Thorough mode** — pass `depth: "thorough"` to auto-retry with rephrased queries when confidence < 60%, with multi-pass consistency checking
+
+### Premium Features (with `BROWSE_API_KEY`)
+
+Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
+- **NLI semantic reranking** — evidence matched by meaning, not just keywords
+- **Multi-provider search** — parallel search across multiple sources for broader coverage
+- **Multi-pass consistency** — claims cross-checked across independent extraction passes
+- **Research Sessions** — persistent memory across queries
+
+Without a `BROWSE_API_KEY`, all tools work with BM25 keyword verification — fast and reliable.
 
 ## Quick Start
 
@@ -100,7 +111,7 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 
 | Tool | Description |
 |------|-------------|
-| `browse_search` | Search the web via Tavily |
+| `browse_search` | Search the web via multi-provider search |
 | `browse_open` | Fetch and parse a page into clean text |
 | `browse_extract` | Extract structured knowledge from a page |
 | `browse_answer` | Full pipeline: search + extract + cite. Supports `depth: "thorough"` for auto-retry |
@@ -111,8 +122,9 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 | `browse_session_share` | Share a session publicly (returns share URL) |
 | `browse_session_knowledge` | Export all claims from a session |
 | `browse_session_fork` | Fork a shared session to continue the research |
+| `browse_feedback` | Submit accuracy feedback on a result |
 
-> **Note:** Session tools (`browse_session_*`) require a BrowseAI Dev API key (`bai_xxx`) for identity and ownership. Set `BROWSE_API_KEY` in your env config. BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
+> **Note:** Session tools (`browse_session_*`) require a BrowseAI Dev API key (`bai_xxx`) for identity and ownership. Set `BROWSE_API_KEY` in your env config. BYOK users can use search/answer but cannot use sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ## Example
 
@@ -164,9 +176,10 @@ All API calls include automatic retry with exponential backoff on transient fail
 
 ## Tech Stack
 
-- **Search**: Tavily API
+- **Search**: Multi-provider (parallel search across sources)
 - **Parsing**: @mozilla/readability + linkedom
 - **AI**: OpenRouter (100+ models)
+- **Verification**: Hybrid BM25 + NLI semantic entailment
 - **Protocol**: Model Context Protocol (MCP)
 
 ## Agent Skills

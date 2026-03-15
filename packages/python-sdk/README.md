@@ -127,6 +127,16 @@ async with AsyncBrowseAI(api_key="bai_xxx") as client:
     forked = await client.fork_session(share.share_id)
 ```
 
+## Premium Features (with API Key)
+
+Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
+- **NLI semantic reranking** — evidence matched by meaning, not just keywords
+- **Multi-provider search** — parallel search across multiple sources for broader coverage
+- **Multi-pass consistency** — claims cross-checked across independent extraction passes (in thorough mode)
+- **Research Sessions** — persistent memory across queries
+
+BYOK users get BM25 keyword verification — fast and reliable, but without the premium pipeline.
+
 ## BYOK (Bring Your Own Keys)
 
 ```python
