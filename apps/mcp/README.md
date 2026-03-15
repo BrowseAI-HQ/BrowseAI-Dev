@@ -28,6 +28,8 @@ Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes
 - **Research Sessions** — persistent memory across queries
 
+Free BAI key users get a generous daily quota (50 premium queries/day). When exceeded, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours.
+
 Without a `BROWSE_API_KEY`, all tools work with BM25 keyword verification — fast and reliable.
 
 ## Quick Start

@@ -223,7 +223,12 @@ const Index = () => {
             <Key className="w-4 h-4" />
             <span className="hidden sm:inline">Free BAI Key</span>
           </Button>
-          {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
+          {!authLoading && (user ? <UserMenu /> : (
+            <Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5" onClick={() => setLoginOpen(true)}>
+              <LogIn className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign in</span>
+            </Button>
+          ))}
         </div>
       </motion.nav>
 
@@ -917,7 +922,6 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               >
                 {user ? "Go to Dashboard" : "Sign in \u2014 it\u2019s free"}
               </Button>
-              <LoginModal open={loginOpen} onOpenChange={setLoginOpen} redirectTo="/dashboard#api-keys" />
             </motion.div>
 
             {/* Pro */}
@@ -1056,6 +1060,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
         </div>
       </footer>
     </div>
+    <LoginModal open={loginOpen} onOpenChange={setLoginOpen} redirectTo="/dashboard" />
     </>
   );
 };

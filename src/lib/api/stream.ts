@@ -19,12 +19,18 @@ export interface SourcePreview {
   title: string;
 }
 
+export interface PremiumQuota {
+  used: number;
+  limit: number;
+  premiumActive: boolean;
+}
+
 export type StreamEvent =
   | { type: "trace"; data: TraceEvent }
   | { type: "sources"; data: SourcePreview[] }
   | { type: "result"; data: BrowseResult }
   | { type: "error"; data: { error: string } }
-  | { type: "done" };
+  | { type: "done"; data?: { shareId?: string; quota?: PremiumQuota } };
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();

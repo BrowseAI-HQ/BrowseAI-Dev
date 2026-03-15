@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
   Globe, Copy, Check, Code2, ChevronDown, ChevronUp, ExternalLink,
-  ThumbsUp, ThumbsDown, Brain, FileText, Beaker,
+  ThumbsUp, ThumbsDown, Brain, FileText, Beaker, LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -243,7 +243,12 @@ const Playground = () => {
             <FileText className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Recipes</span>
           </Button>
-          {!authLoading && (user ? <UserMenu /> : <LoginModal />)}
+          {!authLoading && (user ? <UserMenu /> : (
+            <Button variant="ghost" size="sm" className="text-muted-foreground text-xs gap-1.5" onClick={() => setLoginOpen(true)}>
+              <LogIn className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign in</span>
+            </Button>
+          ))}
         </div>
       </nav>
 
@@ -375,7 +380,7 @@ const Playground = () => {
           </motion.div>
         )}
 
-        <LoginModal open={loginOpen} onOpenChange={setLoginOpen} redirectTo="/dashboard#api-keys" />
+        <LoginModal open={loginOpen} onOpenChange={setLoginOpen} redirectTo="/dashboard" />
 
         {/* ── Answer result (rich rendering) ── */}
         {isAnswerResult && (

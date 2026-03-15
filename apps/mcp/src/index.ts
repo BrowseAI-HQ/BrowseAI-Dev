@@ -91,6 +91,10 @@ async function apiCall(path: string, body: Record<string, unknown>) {
   });
   const data = await res.json();
   if (!res.ok || !data.success) throw new Error(data.error || `API failed: ${res.status}`);
+  // Include quota info in result if present
+  if (data.quota) {
+    return { ...data.result, _quota: data.quota };
+  }
   return data.result;
 }
 

@@ -255,7 +255,16 @@ Three ways to authenticate:
 | **BYOK** (MCP, SDK, API) | `X-Tavily-Key` + `X-OpenRouter-Key` headers | BM25 keyword verification | Unlimited, free (search/answer only — no sessions) |
 | **Demo** (website) | No auth needed | BM25 keyword verification | 5 queries/hour per IP |
 
-Sign in at [browseai.dev](https://browseai.dev) to create a free BAI key — it bundles your keys into one key and unlocks the premium verification pipeline (NLI semantic matching, multi-provider search, consistency checking) with generous usage. When your premium quota resets, queries gracefully fall back to BM25 + Tavily (still works, just basic verification). Pro removes all limits. BYOK works for all packages (MCP, Python SDK, REST API) without an account.
+Sign in at [browseai.dev](https://browseai.dev) to create a free BAI key — it bundles your keys into one key and unlocks the premium verification pipeline (NLI semantic matching, multi-provider search, consistency checking) with a generous daily quota (50 premium queries/day). When the quota is reached, queries gracefully fall back to BM25 keyword verification — still works, just basic matching. Quota resets every 24 hours. Pro removes all limits. BYOK works for all packages (MCP, Python SDK, REST API) without an account.
+
+API responses include quota info when using a BAI key:
+```json
+{
+  "success": true,
+  "result": { ... },
+  "quota": { "used": 12, "limit": 50, "premiumActive": true }
+}
+```
 
 ## Project Structure
 

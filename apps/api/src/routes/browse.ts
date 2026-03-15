@@ -29,6 +29,10 @@ import type { ZodError } from "zod";
 const DEMO_LIMIT = 5;
 const DEMO_WINDOW_SECONDS = 3600;
 
+/** Free BAI key users get 50 premium queries/day before graceful fallback to BM25 */
+const FREE_PREMIUM_DAILY_LIMIT = 50;
+const PREMIUM_WINDOW_SECONDS = 86400; // 24 hours
+
 /** Convert Zod error to a human-readable string */
 function zodMessage(err: ZodError): string {
   const issues = err.issues.map(i => i.message).join("; ");
@@ -57,12 +61,34 @@ function extractBrowseApiKey(request: FastifyRequest): string | null {
  * If a bai_ user's stored keys fail (exhausted limits etc.), fall to demo (5/hr, no premium).
  * We never subsidize bai_ users with server keys.
  */
+/**
+ * Check if a BAI key user has exceeded their daily premium quota.
+ * Returns { exceeded, used, limit } — when exceeded, caller strips premium keys.
+ */
+async function checkPremiumQuota(
+  userId: string,
+  cache: CacheService
+): Promise<{ exceeded: boolean; used: number; limit: number }> {
+  const key = `premium_quota:${userId}`;
+  const current = await cache.get(key);
+  const used = current ? parseInt(current, 10) : 0;
+  return { exceeded: used >= FREE_PREMIUM_DAILY_LIMIT, used, limit: FREE_PREMIUM_DAILY_LIMIT };
+}
+
+/** Increment premium usage counter after a successful premium query */
+async function incrementPremiumUsage(userId: string, cache: CacheService): Promise<void> {
+  const key = `premium_quota:${userId}`;
+  const current = await cache.get(key);
+  const count = current ? parseInt(current, 10) : 0;
+  await cache.set(key, String(count + 1), PREMIUM_WINDOW_SECONDS);
+}
+
 async function getRequestEnv(
   request: FastifyRequest,
   env: Env,
   apiKeyService: ApiKeyService | null,
   cache: CacheService
-): Promise<{ env: Env; isOwnKeys: boolean; userId: string | null; hasBaiKey: boolean }> {
+): Promise<{ env: Env; isOwnKeys: boolean; userId: string | null; hasBaiKey: boolean; premiumActive: boolean; premiumQuota?: { used: number; limit: number } }> {
   // Try to get userId from JWT (for logged-in web users)
   let userId = await getUserIdFromRequest(request);
 
@@ -85,16 +111,22 @@ async function getRequestEnv(
 
       if (resolved) {
         userId = resolved.userId;
+        // Check daily premium quota — graceful fallback when exceeded
+        const quota = await checkPremiumQuota(userId, cache);
+        const premiumActive = !quota.exceeded;
         return {
           env: {
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
-            // bai_ key users get full premium pipeline (NLI + Brave)
+            // Strip premium keys if quota exceeded — falls back to BM25
+            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined }),
           },
           isOwnKeys: true,
           userId,
           hasBaiKey: true,
+          premiumActive,
+          premiumQuota: { used: quota.used, limit: quota.limit },
         };
       }
 
@@ -122,16 +154,21 @@ async function getRequestEnv(
       }
 
       if (resolved) {
+        // Check daily premium quota — graceful fallback when exceeded
+        const quota = await checkPremiumQuota(userId, cache);
+        const premiumActive = !quota.exceeded;
         return {
           env: {
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
-            // Signed-in users with stored keys get premium pipeline
+            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined }),
           },
           isOwnKeys: true,
           userId,
           hasBaiKey: true,
+          premiumActive,
+          premiumQuota: { used: quota.used, limit: quota.limit },
         };
       }
     } catch (e) {
@@ -157,6 +194,7 @@ async function getRequestEnv(
       isOwnKeys: true,
       userId,
       hasBaiKey: false,
+      premiumActive: false,
     };
   }
 
@@ -170,6 +208,7 @@ async function getRequestEnv(
     isOwnKeys: false,
     userId,
     hasBaiKey: false,
+    premiumActive: false,
   };
 }
 
@@ -324,7 +363,7 @@ export function registerBrowseRoutes(
         .send({ success: false, error: zodMessage(parsed.error) });
 
     try {
-      const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      const { env: reqEnv, isOwnKeys, userId, premiumActive, premiumQuota } = await getRequestEnv(request, env, apiKeyService, cache);
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
       // Build answer options with optional search provider
@@ -400,7 +439,16 @@ export function registerBrowseRoutes(
         }
       }
 
-      return { success: true, result: { ...result, shareId } };
+      // Increment premium quota counter (fire-and-forget) if premium was used
+      if (premiumActive && userId) {
+        incrementPremiumUsage(userId, cache).catch(() => {});
+      }
+
+      return {
+        success: true,
+        result: { ...result, shareId },
+        ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }),
+      };
     } catch (e: any) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Answer generation failed");
@@ -417,7 +465,7 @@ export function registerBrowseRoutes(
         .send({ success: false, error: zodMessage(parsed.error) });
 
     try {
-      const { env: reqEnv, isOwnKeys, userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      const { env: reqEnv, isOwnKeys, userId, premiumActive, premiumQuota } = await getRequestEnv(request, env, apiKeyService, cache);
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
 
@@ -440,7 +488,12 @@ export function registerBrowseRoutes(
       const cacheHit = result.trace?.[0]?.step === "Cache Hit";
       const shareId = await store.save(parsed.data.query, result, userId || undefined, "answer", { client, cacheHit });
 
-      reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId })}\n\n`);
+      // Increment premium quota counter (fire-and-forget) if premium was used
+      if (premiumActive && userId) {
+        incrementPremiumUsage(userId, cache).catch(() => {});
+      }
+
+      reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId, ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }) })}\n\n`);
       reply.raw.end();
     } catch (e: any) {
       request.log.error(e);

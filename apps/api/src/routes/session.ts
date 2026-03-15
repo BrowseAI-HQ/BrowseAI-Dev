@@ -13,29 +13,34 @@ function zodMessage(err: ZodError): string {
   return err.issues.map((i) => i.message).join("; ") || "Invalid request";
 }
 
-/** Resolve request env (simplified — reuses the same BYOK/API key logic) */
+/** Free BAI key users get 50 premium queries/day before graceful fallback */
+const FREE_PREMIUM_DAILY_LIMIT = 50;
+const PREMIUM_WINDOW_SECONDS = 86400;
+
+async function checkPremiumQuota(userId: string, cache: CacheService): Promise<{ exceeded: boolean; used: number; limit: number }> {
+  const key = `premium_quota:${userId}`;
+  const current = await cache.get(key);
+  const used = current ? parseInt(current, 10) : 0;
+  return { exceeded: used >= FREE_PREMIUM_DAILY_LIMIT, used, limit: FREE_PREMIUM_DAILY_LIMIT };
+}
+
+async function incrementPremiumUsage(userId: string, cache: CacheService): Promise<void> {
+  const key = `premium_quota:${userId}`;
+  const current = await cache.get(key);
+  const count = current ? parseInt(current, 10) : 0;
+  await cache.set(key, String(count + 1), PREMIUM_WINDOW_SECONDS);
+}
+
+/** Resolve request env — mirrors browse.ts getRequestEnv with tier gating + quota */
 async function getRequestEnv(
   request: FastifyRequest,
   env: Env,
   apiKeyService: ApiKeyService | null,
   cache: CacheService
-): Promise<{ env: Env; userId: string | null }> {
+): Promise<{ env: Env; userId: string | null; premiumActive: boolean }> {
   let userId = await getUserIdFromRequest(request);
 
-  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
-  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
-  if (tavilyKey || openrouterKey) {
-    return {
-      env: {
-        ...env,
-        ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
-        ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
-      },
-      userId,
-    };
-  }
-
-  // BrowseAI Dev API key resolution
+  // Priority 1: BrowseAI Dev API key resolution
   if (apiKeyService) {
     const xApiKey = request.headers["x-api-key"] as string | undefined;
     const browseKey = xApiKey?.startsWith("bai_") ? xApiKey : null;
@@ -46,16 +51,24 @@ async function getRequestEnv(
       if (resolved && !cached) await cache.set(cacheKey, JSON.stringify(resolved), 60);
       if (resolved) {
         userId = resolved.userId;
+        const quota = await checkPremiumQuota(resolved.userId, cache);
+        const premiumActive = !quota.exceeded;
         return {
-          env: { ...env, SERP_API_KEY: resolved.tavilyKey, OPENROUTER_API_KEY: resolved.openrouterKey },
+          env: {
+            ...env,
+            SERP_API_KEY: resolved.tavilyKey,
+            OPENROUTER_API_KEY: resolved.openrouterKey,
+            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined }),
+          },
           userId,
+          premiumActive,
         };
       }
       throw { statusCode: 401, message: "Invalid BrowseAI Dev API key." };
     }
   }
 
-  // Priority 3: Auto-resolve stored keys for signed-in users
+  // Priority 2: Auto-resolve stored keys for signed-in users
   if (apiKeyService && userId) {
     try {
       const userCacheKey = `user_keys:${userId}`;
@@ -72,22 +85,47 @@ async function getRequestEnv(
       }
 
       if (resolved) {
+        const quota = await checkPremiumQuota(userId, cache);
+        const premiumActive = !quota.exceeded;
         return {
           env: {
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
+            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined }),
           },
           userId,
+          premiumActive,
         };
       }
     } catch (e) {
-      // Decryption or DB failure — fall through to server-side keys
       console.warn("Auto-resolve stored keys failed for user", userId, e);
     }
   }
 
-  return { env, userId };
+  // Priority 3: BYOK headers — no premium features
+  const tavilyKey = request.headers["x-tavily-key"] as string | undefined;
+  const openrouterKey = request.headers["x-openrouter-key"] as string | undefined;
+  if (tavilyKey || openrouterKey) {
+    return {
+      env: {
+        ...env,
+        ...(tavilyKey && { SERP_API_KEY: tavilyKey }),
+        ...(openrouterKey && { OPENROUTER_API_KEY: openrouterKey }),
+        HF_API_KEY: undefined,
+        BRAVE_API_KEY: undefined,
+      },
+      userId,
+      premiumActive: false,
+    };
+  }
+
+  // Priority 4: Demo — no premium features
+  return {
+    env: { ...env, HF_API_KEY: undefined, BRAVE_API_KEY: undefined },
+    userId,
+    premiumActive: false,
+  };
 }
 
 export function registerSessionRoutes(
@@ -163,7 +201,7 @@ export function registerSessionRoutes(
       const session = await sessionStore.getSession(id);
       if (!session) return reply.status(404).send({ success: false, error: "Session not found" });
 
-      const { env: reqEnv, userId } = await getRequestEnv(request, env, apiKeyService, cache);
+      const { env: reqEnv, userId, premiumActive } = await getRequestEnv(request, env, apiKeyService, cache);
 
       // Phase 1: Recall existing knowledge relevant to this query
       const recallStart = Date.now();
@@ -220,6 +258,11 @@ export function registerSessionRoutes(
       );
       sessionStore.storeKnowledge(id, newClaims, parsed.data.query).catch(() => {});
       sessionStore.touchSession(id).catch(() => {});
+
+      // Increment premium quota counter if premium was used
+      if (premiumActive && userId) {
+        incrementPremiumUsage(userId, cache).catch(() => {});
+      }
 
       // Save to main store too
       const shareId = await store.save(

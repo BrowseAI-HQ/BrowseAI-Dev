@@ -75,6 +75,15 @@ class SearchProviderConfig(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class PremiumQuota(BaseModel):
+    """Premium verification quota info returned with answer responses."""
+    used: int
+    limit: int
+    premium_active: bool = Field(alias="premiumActive")
+
+    model_config = {"populate_by_name": True}
+
+
 class SearchResult(BaseModel):
     url: str
     title: str

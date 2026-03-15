@@ -40,6 +40,7 @@ npx pnpm --filter browse-ai build  # Build MCP only
 - **Domain authority:** 10,000+ domains in Supabase (260 curated + Majestic Million), 5-tier scoring with Bayesian dynamic blending from real query verification data. Cold-start safe via prior weight smoothing.
 - **Thorough mode:** `depth: "thorough"` auto-retries with rephrased query when first-pass confidence < 60%. Runs multi-pass consistency checking. Available across API, MCP, and Python SDK.
 - **Tier gating:** `bai_` API key users get premium pipeline (NLI reranking, multi-provider search, multi-pass consistency). BYOK/demo users get BM25-only verification. Controlled via `hasBaiKey` flag in `getRequestEnv`.
+- **Premium quota:** Free BAI key users get 50 premium queries/day (`FREE_PREMIUM_DAILY_LIMIT`). Tracked via Redis counter (`premium_quota:{userId}`, 24hr TTL). When exceeded, premium keys (HF_API_KEY, BRAVE_API_KEY) are stripped — graceful fallback to BM25 keyword verification. Quota info returned in API responses as `{ quota: { used, limit, premiumActive } }`. Increment happens after successful answer/stream queries only.
 - **Caching:** Upstash Redis (via Vercel KV) with smart TTL (time-sensitive queries get shorter TTL). Falls back to in-memory if KV env vars not set. Cache key includes depth param.
 - **Demo rate limit:** 5/hour per IP for unauthenticated users. BYOK headers (`X-Tavily-Key`, `X-OpenRouter-Key`) bypass it.
 - **API keys:** Users can bring their own keys via headers, or use a BrowseAI Dev API key (`bai_xxx` prefix), or fall back to server-side keys with demo limits.

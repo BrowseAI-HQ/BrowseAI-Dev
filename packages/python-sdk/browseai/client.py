@@ -21,6 +21,7 @@ from .models import (
     CompareResult,
     KnowledgeEntry,
     PageResult,
+    PremiumQuota,
     RecallResult,
     SearchProviderConfig,
     SearchResult,
@@ -96,6 +97,7 @@ class BrowseAI:
             raise ValueError("Provide api_key or both tavily_key and openrouter_key")
 
         self._headers = _build_headers(api_key, tavily_key, openrouter_key)
+        self._last_quota: PremiumQuota | None = None
         self._client = httpx.Client(
             base_url=base_url,
             headers=self._headers,
@@ -119,12 +121,19 @@ class BrowseAI:
             **kwargs,
         )
 
+    @property
+    def last_quota(self) -> PremiumQuota | None:
+        """Premium quota info from the last API call (if available)."""
+        return self._last_quota
+
     def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         response = self._client.post(path, json=body)
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
             raise BrowseAIError(data.get("error", "Unknown error"))
+        if "quota" in data:
+            self._last_quota = PremiumQuota(**data["quota"])
         return data["result"]
 
     def _get(self, path: str) -> dict[str, Any]:
@@ -315,6 +324,7 @@ class AsyncBrowseAI:
             raise ValueError("Provide api_key or both tavily_key and openrouter_key")
 
         self._headers = _build_headers(api_key, tavily_key, openrouter_key)
+        self._last_quota: PremiumQuota | None = None
         self._client = httpx.AsyncClient(
             base_url=base_url,
             headers=self._headers,
@@ -338,12 +348,19 @@ class AsyncBrowseAI:
             **kwargs,
         )
 
+    @property
+    def last_quota(self) -> PremiumQuota | None:
+        """Premium quota info from the last API call (if available)."""
+        return self._last_quota
+
     async def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         response = await self._client.post(path, json=body)
         _handle_error(response)
         data = response.json()
         if not data.get("success"):
             raise BrowseAIError(data.get("error", "Unknown error"))
+        if "quota" in data:
+            self._last_quota = PremiumQuota(**data["quota"])
         return data["result"]
 
     async def _get(self, path: str) -> dict[str, Any]:

@@ -138,7 +138,7 @@ const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
     title: "Premium verification tier",
-    desc: "NLI semantic reranking, multi-provider search, and multi-pass consistency checking gated behind BrowseAI Dev API keys. Free users get BM25 verification.",
+    desc: "NLI semantic reranking, multi-provider search, and multi-pass consistency checking with BAI keys. 50 premium queries/day with graceful fallback to BM25. BYOK/demo get BM25 verification.",
     done: true,
   },
   {

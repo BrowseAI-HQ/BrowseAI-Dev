@@ -100,6 +100,14 @@ export const RecallSchema = z.object({
   limit: z.number().int().min(1).max(50).optional().default(10),
 });
 
+// ── Premium Quota schema ──
+
+export const PremiumQuotaSchema = z.object({
+  used: z.number().int().min(0),
+  limit: z.number().int().min(0),
+  premiumActive: z.boolean(),
+});
+
 // ── Feedback schema ──
 
 export const FeedbackRequestSchema = z.object({

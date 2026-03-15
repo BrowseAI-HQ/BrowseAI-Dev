@@ -131,6 +131,17 @@ export type FeedbackRequest = {
   claimIndex?: number;
 };
 
+// ── Premium Quota ──
+
+export type PremiumQuota = {
+  /** Number of premium queries used in current period */
+  used: number;
+  /** Maximum premium queries allowed per period */
+  limit: number;
+  /** Whether premium features (NLI, multi-provider) are currently active */
+  premiumActive: boolean;
+};
+
 export type ApiResponse<T> =
-  | { success: true; result: T }
+  | { success: true; result: T; quota?: PremiumQuota }
   | { success: false; error: string };
