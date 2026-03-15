@@ -58,6 +58,6 @@
   "devDependencies": {
     "tsx": "^4.19.0",
     "typescript": "^5.8.3",
-    "@types/node": "^22.16.5"
+    "@types/node": "^25.5.0"
   }
 }
