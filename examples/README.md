@@ -15,6 +15,10 @@ Quick single-file examples to get started fast.
 | Example | Description |
 |---------|-------------|
 | [research-agent.py](research-agent.py) | Simple research agent with citations and confidence scores |
+| [deep-research-agent.py](deep-research-agent.py) | Multi-step deep reasoning with gap analysis and reasoning steps |
+| [streaming-agent.py](streaming-agent.py) | Real-time SSE streaming — trace steps, sources, answer tokens |
+| [contradiction-detector.py](contradiction-detector.py) | Surface contradictions across sources on controversial topics |
+| [enterprise-search.py](enterprise-search.py) | Custom data sources (Elasticsearch, Confluence) + zero retention |
 | [code-research-agent.py](code-research-agent.py) | Agent that researches libraries and docs before writing code |
 | [hallucination-detector.py](hallucination-detector.py) | Compare raw LLM answers vs evidence-backed answers |
 | [langchain-agent.py](langchain-agent.py) | Drop BrowseAI Dev into a LangChain agent pipeline |

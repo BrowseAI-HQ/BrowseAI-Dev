@@ -149,6 +149,49 @@ Free BAI key users get a generous daily quota (50 premium queries/day). When exc
 
 **No account needed** — BYOK works out of the box with no signup, no limits, and BM25 keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
 
+## Contradictions
+
+Detect conflicts across sources on controversial topics:
+
+```python
+result = client.ask("Is coffee good for your health?", depth="thorough")
+if result.contradictions:
+    for c in result.contradictions:
+        print(f"Conflict on '{c.topic}':")
+        print(f"  A: {c.claim_a}")
+        print(f"  B: {c.claim_b}")
+```
+
+## Enterprise Search Providers
+
+Use your own data sources instead of public web search:
+
+```python
+# Elasticsearch
+result = client.ask("What is our refund policy?", search_provider={
+    "type": "elasticsearch",
+    "endpoint": "https://es.company.com/kb/_search",
+    "authHeader": "Bearer token",
+    "index": "docs",
+})
+
+# Confluence
+result = client.ask("PCI compliance?", search_provider={
+    "type": "confluence",
+    "endpoint": "https://company.atlassian.net/wiki/rest/api",
+    "authHeader": "Basic base64-creds",
+    "spaceKey": "ENG",
+})
+
+# Zero data retention (compliance mode)
+result = client.ask("Patient protocols", search_provider={
+    "type": "elasticsearch",
+    "endpoint": "https://es.hipaa.company.com/medical/_search",
+    "authHeader": "Bearer token",
+    "dataRetention": "none",
+})
+```
+
 ## BYOK (Bring Your Own Keys)
 
 No signup required — just pass your own keys:

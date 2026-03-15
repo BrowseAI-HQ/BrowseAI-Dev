@@ -132,7 +132,7 @@ const Results = () => {
           <StreamingPipeline
             steps={traceSteps}
             sources={previewSources}
-            done={streamDone}
+            done={false}
             depth={depth}
           />
         )}
