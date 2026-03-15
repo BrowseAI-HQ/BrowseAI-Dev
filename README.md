@@ -50,7 +50,7 @@ Three depth levels control research thoroughness:
 |-------|----------|----------|
 | `fast` (default) | Single search → extract → verify pass | Quick lookups, real-time agents |
 | `thorough` | Auto-retries with rephrased query when confidence < 60%, multi-pass consistency checking | Important research, fact-checking |
-| `deep` | Multi-step agentic reasoning: iterative gap analysis, follow-up searches, knowledge merging across up to 4 steps | Complex research questions, comprehensive analysis |
+| `deep` | Multi-step agentic reasoning: iterative gap analysis, follow-up searches, knowledge merging across up to 3 steps | Complex research questions, comprehensive analysis |
 
 ```bash
 # Thorough mode
@@ -67,11 +67,11 @@ curl -X POST https://browseai.dev/api/browse/answer \
   -d '{"query": "Compare CRISPR approaches for sickle cell disease", "depth": "deep"}'
 ```
 
-Deep mode responses include `reasoningSteps` showing the multi-step research process. Without a BAI key, deep mode gracefully falls back to thorough.
+Deep mode responses include `reasoningSteps` showing the multi-step research process (step number, query, gap analysis, claim count, confidence per step). Without a BAI key, deep mode gracefully falls back to thorough.
 
 ### Streaming API
 
-Get real-time progress with per-token answer streaming. The streaming endpoint sends Server-Sent Events (SSE) as each pipeline step completes:
+Get real-time progress with per-token answer streaming. The streaming endpoint sends Server-Sent Events (SSE) as each pipeline step completes. Deep mode steps are grouped by research pass for clean progress display:
 
 ```bash
 curl -N -X POST https://browseai.dev/api/browse/answer/stream \

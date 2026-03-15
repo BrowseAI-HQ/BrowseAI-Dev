@@ -23,8 +23,8 @@ import { fetchWithRetry } from "../lib/retry.js";
 import { computeConfidence } from "../lib/gemini.js";
 import { verifyEvidence } from "../lib/verify.js";
 
-const MAX_FOLLOW_UP_STEPS = 3;
-const DEEP_CONFIDENCE_THRESHOLD = 0.85;
+const MAX_FOLLOW_UP_STEPS = 2;
+const DEEP_CONFIDENCE_THRESHOLD = 0.75;
 
 type GapAnalysisResult = {
   complete: boolean;
@@ -61,13 +61,14 @@ async function analyzeKnowledgeGaps(
         messages: [
           {
             role: "system",
-            content: `You are a research gap analyzer. Given a research question and evidence gathered so far, identify what's missing and suggest 1-2 follow-up search queries.
+            content: `You are a research gap analyzer. Given a research question and evidence gathered so far, identify what's missing and suggest exactly 1 follow-up search query.
 
 Rules:
-- Only suggest queries that would meaningfully improve the answer
+- Only suggest a query that would meaningfully improve the answer
 - Don't repeat queries already searched (listed below)
 - If the answer is comprehensive enough, set complete=true
-- Focus on factual gaps, missing perspectives, or unverified claims`,
+- Be conservative — only suggest a follow-up if there's a clear factual gap
+- Prefer setting complete=true over suggesting marginal follow-ups`,
           },
           {
             role: "user",
@@ -126,8 +127,8 @@ Analyze gaps and suggest follow-up queries.`,
     const result = JSON.parse(toolCall.function.arguments);
     return {
       complete: result.complete ?? false,
-      gaps: (result.gaps || []).slice(0, 3),
-      followUpQueries: (result.followUpQueries || []).slice(0, 2),
+      gaps: (result.gaps || []).slice(0, 2),
+      followUpQueries: (result.followUpQueries || []).slice(0, 1),
     };
   } catch {
     return { complete: false, gaps: [], followUpQueries: [] };

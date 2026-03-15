@@ -417,7 +417,7 @@ const Index = () => {
                 { phase: "Shipped", text: "Self-learning pipeline — adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop" },
                 { phase: "Shipped", text: "Token streaming — real-time SSE streaming with per-token answer delivery, automatic retry with exponential backoff on all external APIs" },
                 { phase: "Shipped", text: "Neural cross-encoder re-ranker — semantic query-document scoring via cross-encoder for more relevant source selection before page fetching" },
-                { phase: "Shipped", text: "Deep reasoning mode — multi-step agentic research with iterative gap analysis, follow-up searches, and knowledge merging across up to 4 reasoning steps" },
+                { phase: "Shipped", text: "Deep reasoning mode — multi-step agentic research with iterative gap analysis, follow-up searches, and knowledge merging across up to 3 reasoning steps" },
                 { phase: "Shipped", text: "Research Memory — persistent sessions that accumulate knowledge across queries, with automatic recall of prior findings" },
                 { phase: "Shipped", text: "Query Planning — intelligent decomposition of complex queries into focused sub-queries with intent labels" },
                 { phase: "In Progress", text: "Knowledge graph & entity extraction — map relationships between claims and entities, build reusable queryable knowledge" },

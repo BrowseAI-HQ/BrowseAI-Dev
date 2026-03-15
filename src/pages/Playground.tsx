@@ -218,12 +218,14 @@ const Playground = () => {
     setResponse(null);
     setShowRawJson(false);
     setFeedbackSent(null);
-    // Delay run slightly so tab/depth state settles
-    setTimeout(() => run(scenario.query), 50);
+    // Pass depth + tab directly to avoid stale closure
+    setTimeout(() => run(scenario.query, scenario.depth, scenario.tab), 50);
   };
 
-  const run = async (overrideInput?: string) => {
+  const run = async (overrideInput?: string, overrideDepth?: "fast" | "thorough" | "deep", overrideTab?: string) => {
     const q = overrideInput || input;
+    const currentDepth = overrideDepth || depth;
+    const currentTab = overrideTab || activeTab;
     if (!q.trim()) return;
     setLoading(true);
     setResponse(null);
@@ -231,16 +233,16 @@ const Playground = () => {
     setFeedbackSent(null);
     try {
       let result;
-      if (activeTab === "search") {
+      if (currentTab === "search") {
         result = await browseSearch(q, 5);
-      } else if (activeTab === "open") {
+      } else if (currentTab === "open") {
         result = await browseOpen(q);
-      } else if (activeTab === "extract") {
+      } else if (currentTab === "extract") {
         result = await browseExtract(q);
-      } else if (activeTab === "compare") {
+      } else if (currentTab === "compare") {
         result = await browseCompare(q);
       } else {
-        result = await browseKnowledge(q, depth);
+        result = await browseKnowledge(q, currentDepth);
         if (result.quota) {
           setQuota(result.quota);
         }

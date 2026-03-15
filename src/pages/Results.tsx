@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Share2, GitCompare, Check, Zap } from "lucide-react";
+import { ArrowLeft, Share2, GitCompare, Check, Zap, Brain } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { BrowseResult } from "@/lib/api/browse";
 import { streamAnswer, type TraceEvent, type SourcePreview, type StreamEvent, type PremiumQuota } from "@/lib/api/stream";
@@ -132,6 +133,7 @@ const Results = () => {
             steps={traceSteps}
             sources={previewSources}
             done={streamDone}
+            depth={depth}
           />
         )}
 
@@ -148,6 +150,35 @@ const Results = () => {
         {result && !loading && (
           <>
             <FinalAnswer answer={result.answer} confidence={result.confidence} />
+
+            {/* Deep reasoning steps */}
+            {result.reasoningSteps && result.reasoningSteps.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3"
+              >
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-purple-400" />
+                  Deep Reasoning ({result.reasoningSteps.length} steps)
+                </h3>
+                <div className="space-y-2">
+                  {result.reasoningSteps.map((rs: any, i: number) => (
+                    <div key={i} className="p-3 rounded-lg bg-purple-400/5 border border-purple-400/20 text-sm space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] px-1.5 border-purple-400/30 text-purple-400">Step {rs.step}</Badge>
+                        <span className="text-xs text-muted-foreground">{rs.claimCount} claims · {Math.round(rs.confidence * 100)}% confidence</span>
+                      </div>
+                      <p className="text-xs font-mono text-muted-foreground">"{rs.query}"</p>
+                      {rs.gapAnalysis && rs.gapAnalysis !== "Initial research pass" && (
+                        <p className="text-xs text-muted-foreground/70">Gap: {rs.gapAnalysis}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+
             <EvidenceGraph claims={result.claims} sources={result.sources} contradictions={result.contradictions} />
             <TracePipeline trace={result.trace} />
             <AgentJson result={result} />
