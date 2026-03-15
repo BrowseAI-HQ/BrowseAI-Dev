@@ -13,15 +13,6 @@ interface DepthToggleProps {
   size?: "sm" | "md" | "pill";
 }
 
-/** Format seconds into a human-readable reset time */
-export function formatResetTime(seconds?: number): string {
-  if (!seconds || seconds <= 0) return "~24h";
-  const hours = Math.floor(seconds / 3600);
-  const mins = Math.ceil((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}h ${mins}m`;
-  return `${mins}m`;
-}
-
 /**
  * Returns true if the user cannot search at the current depth.
  * Use this to disable search/ask buttons.
@@ -35,6 +26,15 @@ export function isDepthBlocked(
   if (!isLoggedIn) return true;
   if (quota && !quota.premiumActive) return true;
   return false;
+}
+
+/** Format seconds into a human-readable reset time */
+export function formatResetTime(seconds?: number): string {
+  if (!seconds || seconds <= 0) return "~24h";
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.ceil((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
 }
 
 export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggleProps) {
