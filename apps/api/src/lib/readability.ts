@@ -59,8 +59,8 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
   }
 
   return {
-    title: sanitizeText(article.title),
-    content: sanitizeText(article.textContent),
+    title: sanitizeText(article.title ?? ""),
+    content: sanitizeText(article.textContent ?? ""),
     excerpt: sanitizeText(article.excerpt || ""),
     siteName: article.siteName ? sanitizeText(article.siteName) : null,
     byline: article.byline ? sanitizeText(article.byline) : null,

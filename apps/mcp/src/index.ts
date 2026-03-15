@@ -186,7 +186,7 @@ async function fetchPage(url: string) {
 
   const page = {
     title: article.title,
-    content: article.textContent.slice(0, MAX_PAGE_CONTENT_LENGTH * 2),
+    content: (article.textContent ?? "").slice(0, MAX_PAGE_CONTENT_LENGTH * 2),
     excerpt: article.excerpt || "",
     siteName: article.siteName,
   };

@@ -215,6 +215,7 @@ const Results = () => {
 
         {result && !loading && (
           <>
+            <FinalAnswer answer={result.answer} confidence={result.confidence} />
 
             <EvidenceGraph claims={result.claims} sources={result.sources} contradictions={result.contradictions} />
             <TracePipeline trace={result.trace} />
