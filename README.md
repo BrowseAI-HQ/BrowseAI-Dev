@@ -373,18 +373,140 @@ API responses include quota info when using a BAI key:
 
 Async support: `AsyncBrowseAI` with the same API.
 
+### Enterprise Search Providers
+
+Use BrowseAI Dev with your own data sources instead of — or alongside — public web search. Supports Elasticsearch, Confluence, and custom endpoints with optional zero data retention for compliance.
+
+```python
+# Elasticsearch
+result = client.ask("What is our refund policy?", search_provider={
+    "type": "elasticsearch",
+    "endpoint": "https://es.internal.company.com/kb/_search",
+    "authHeader": "Bearer es-token-xxx",
+    "index": "docs",
+})
+
+# Confluence
+result = client.ask("PCI compliance process?", search_provider={
+    "type": "confluence",
+    "endpoint": "https://company.atlassian.net/wiki/rest/api",
+    "authHeader": "Basic base64-creds",
+    "spaceKey": "ENG",
+})
+
+# Zero data retention (nothing stored, cached, or logged)
+result = client.ask("Patient protocols", search_provider={
+    "type": "elasticsearch",
+    "endpoint": "https://es.hipaa.company.com/medical/_search",
+    "authHeader": "Bearer token",
+    "dataRetention": "none",
+})
+```
+
+```bash
+# REST API — enterprise search
+curl -X POST https://browseai.dev/api/browse/answer \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer bai_xxx" \
+  -d '{
+    "query": "What is our refund policy?",
+    "searchProvider": {
+      "type": "elasticsearch",
+      "endpoint": "https://es.internal.company.com/kb/_search",
+      "authHeader": "Bearer es-token-xxx",
+      "index": "docs"
+    }
+  }'
+```
+
+### Response Structure
+
+Every answer includes structured fields for programmatic trust decisions:
+
+```json
+{
+  "answer": "Quantum computing uses qubits...",
+  "confidence": 0.82,
+  "claims": [
+    {
+      "claim": "Qubits can exist in superposition",
+      "sources": ["https://en.wikipedia.org/wiki/Qubit"],
+      "verified": true,
+      "verificationScore": 0.87,
+      "consensusCount": 3,
+      "consensusLevel": "strong",
+      "nliScore": { "entailment": 0.92, "contradiction": 0.03, "neutral": 0.05, "label": "entailment" }
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Qubit",
+      "title": "Qubit - Wikipedia",
+      "domain": "en.wikipedia.org",
+      "quote": "A qubit is the basic unit of quantum information...",
+      "verified": true,
+      "authority": 0.70
+    }
+  ],
+  "contradictions": [
+    {
+      "claimA": "Quantum computers are faster for all tasks",
+      "claimB": "Quantum advantage only applies to specific problems",
+      "topic": "quantum computing performance",
+      "nliConfidence": 0.89
+    }
+  ],
+  "reasoningSteps": [
+    { "step": 1, "query": "quantum computing basics", "gapAnalysis": "Initial research pass", "claimCount": 8, "confidence": 0.65 },
+    { "step": 2, "query": "quantum computing vs classical comparison", "gapAnalysis": "Missing classical vs quantum comparison", "claimCount": 14, "confidence": 0.82 }
+  ],
+  "trace": [
+    { "step": "Search Web", "duration_ms": 423, "detail": "5 results" },
+    { "step": "Fetch Pages", "duration_ms": 1205, "detail": "4 pages" }
+  ]
+}
+```
+
+**Key fields:**
+- `confidence` — 7-factor evidence-based score (0-1), not LLM self-assessed
+- `claims[].verified` — whether the claim was verified against source text
+- `claims[].consensusLevel` — `"strong"` (3+ sources), `"moderate"`, or `"weak"`
+- `claims[].nliScore` — NLI semantic entailment breakdown (when HF_API_KEY set)
+- `contradictions` — detected conflicts between claims (with NLI confidence)
+- `reasoningSteps` — deep mode only: multi-step research iterations with gap analysis
+- `trace` — execution timeline for debugging and monitoring
+
 ## Examples
 
 See the [examples/](examples/) directory for ready-to-run agent recipes:
 
+### Agent Recipes
+
 | Example | Description |
 |---------|-------------|
 | [research-agent.py](examples/research-agent.py) | Simple research agent with citations |
+| [deep-research-agent.py](examples/deep-research-agent.py) | Multi-step deep reasoning with gap analysis |
+| [streaming-agent.py](examples/streaming-agent.py) | Real-time SSE streaming with progress events |
+| [contradiction-detector.py](examples/contradiction-detector.py) | Surface contradictions across sources |
+| [enterprise-search.py](examples/enterprise-search.py) | Custom data sources + zero retention mode |
 | [code-research-agent.py](examples/code-research-agent.py) | Research libraries/docs before writing code |
 | [hallucination-detector.py](examples/hallucination-detector.py) | Compare raw LLM vs evidence-backed answers |
 | [langchain-agent.py](examples/langchain-agent.py) | BrowseAI Dev as a LangChain tool |
 | [crewai-research-team.py](examples/crewai-research-team.py) | Multi-agent research team with CrewAI |
 | [research-session.py](examples/research-session.py) | Research sessions with persistent memory |
+
+### Tutorials
+
+| Tutorial | What You'll Build |
+|----------|-------------------|
+| [coding-agent/](examples/coding-agent/) | Agent that researches before writing code — never recommends deprecated libraries |
+| [support-agent/](examples/support-agent/) | Agent that verifies answers before responding — escalates when confidence is low |
+| [content-agent/](examples/content-agent/) | Agent that writes blog posts where every stat has a citation |
+| [fact-checker-bot/](examples/fact-checker-bot/) | Discord bot that verifies any claim with `!verify` and `!compare` |
+| [is-this-true/](examples/is-this-true/) | Web app — paste any sentence, get a confidence score and sources |
+| [debate-settler/](examples/debate-settler/) | CLI tool — two claims battle it out, evidence decides the winner |
+| [docs-verifier/](examples/docs-verifier/) | Verify every factual claim in your README or docs |
+| [podcast-prep/](examples/podcast-prep/) | Research brief builder for podcast interviews |
 
 ## Environment Variables
 

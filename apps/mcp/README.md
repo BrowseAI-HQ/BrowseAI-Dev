@@ -130,18 +130,32 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browse-ai
 
 > **Note:** Session tools (`browse_session_*`) require a BrowseAI Dev API key (`bai_xxx`) for identity and ownership. Set `BROWSE_API_KEY` in your env config. BYOK users can use search/answer but cannot use sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
-## Example
+## Examples
 
-Ask Claude: *"Use browse_answer to explain what causes aurora borealis"*
+**Quick lookup:**
+> *"Use browse_answer to explain what causes aurora borealis"*
 
-For higher accuracy: *"Use browse_answer with depth thorough to research quantum computing"*
+**Higher accuracy:**
+> *"Use browse_answer with depth thorough to research quantum computing"*
 
-For deep research: *"Use browse_answer with depth deep to compare CRISPR approaches for sickle cell disease"*
+**Deep research (multi-step):**
+> *"Use browse_answer with depth deep to compare CRISPR approaches for sickle cell disease"*
 
-Response:
+**Contradiction detection:**
+> *"Use browse_answer with depth thorough to check if coffee is good for health, and show me any contradictions"*
+
+**Research session:**
+> *"Create a session called quantum-research, then ask about quantum entanglement, then ask how entanglement is used in computing"*
+
+**Enterprise search:**
+> *"Use browse_answer to search our Elasticsearch at https://es.company.com/kb/_search for our refund policy"*
+
+### Response structure
+
 ```json
 {
   "answer": "Aurora borealis occurs when charged particles from the Sun...",
+  "confidence": 0.92,
   "claims": [
     {
       "claim": "Aurora borealis is caused by solar wind particles...",
@@ -161,7 +175,8 @@ Response:
       "authority": 0.70
     }
   ],
-  "confidence": 0.92
+  "contradictions": [],
+  "reasoningSteps": []
 }
 ```
 

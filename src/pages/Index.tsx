@@ -424,7 +424,7 @@ const Index = () => {
                 { phase: "Shipped", text: "Premium verification tier — NLI reranking, multi-provider search, and consistency checking gated behind API keys. Free users get BM25 verification." },
                 { phase: "Coming Soon", text: "Academic papers & broader sources — Semantic Scholar, arXiv, code search, real-time data feeds" },
                 { phase: "Coming Soon", text: "Fine-tuned verification model — custom model trained on 10K+ production examples for per-domain calibration" },
-                { phase: "Coming Soon", text: "Enterprise search adapters — plug into Elasticsearch, Confluence, or any custom endpoint with zero data retention" },
+                { phase: "Shipped", text: "Enterprise search adapters — plug into Elasticsearch, Confluence, or any custom endpoint with zero data retention" },
               ];
               const visible = showAllRoadmap ? roadmapItems : roadmapItems.slice(0, 4);
               return (
