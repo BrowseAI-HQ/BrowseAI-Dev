@@ -95,6 +95,18 @@ describe("verifyEvidence", () => {
     expect(result.contradictions[0].claimB).toContain("Coffee");
   });
 
+  it("does NOT flag parallel claims about different subjects as contradictions", async () => {
+    const claims: BrowseClaim[] = [
+      { claim: "Wind energy does not create harmful emissions during operation", sources: [] },
+      { claim: "Energy from solar doesn't release harmful emissions into the atmosphere", sources: [] },
+    ];
+
+    const result = await verifyEvidence(claims, [], new Map());
+
+    // Both claims have same negation polarity — parallel statements, not contradictions
+    expect(result.contradictions.length).toBe(0);
+  });
+
   it("computes domain authority for known TLDs", async () => {
     const sources: BrowseSource[] = [
       { url: "https://nasa.gov/science", title: "NASA", domain: "nasa.gov", quote: "Q" },

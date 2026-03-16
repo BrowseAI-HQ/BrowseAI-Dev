@@ -1158,9 +1158,18 @@ async function detectContradictionsNLI(
     }
 
     if (result.value.isContradiction) {
+      const { i, j } = candidates[k];
+      // Filter false positives: parallel claims about different subjects
+      // e.g. "wind energy doesn't create emissions" vs "solar doesn't release emissions"
+      // Both have same negation polarity → not a real contradiction
+      const negI = countNegations(claims[i]);
+      const negJ = countNegations(claims[j]);
+      const samePolarity = (negI > 0 && negJ > 0) || (negI === 0 && negJ === 0);
+      if (samePolarity) continue; // Skip: same assertion about different subjects
+
       contradictions.push({
-        claimA: claims[candidates[k].i],
-        claimB: claims[candidates[k].j],
+        claimA: claims[i],
+        claimB: claims[j],
         topic: candidates[k].topic,
         nliConfidence: Math.round(result.value.score * 100) / 100,
       });
