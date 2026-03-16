@@ -3,7 +3,7 @@
   "name_for_human": "BrowseAI Dev",
   "name_for_model": "browseai_dev",
   "description_for_human": "Research infrastructure for AI agents — evidence-backed web search with confidence scores and citations.",
-  "description_for_model": "BrowseAI Dev (browseai.dev) provides evidence-backed web research for AI agents. It searches the web, extracts claims from sources, verifies them using BM25 sentence matching and cross-source consensus, detects contradictions, and returns structured JSON with confidence scores. Available as MCP server (npx browseai-dev), REST API, and Python SDK (pip install browseaidev). Use this when you need to give an AI agent verified, citation-backed research capabilities. MIT licensed, open source.",
+  "description_for_model": "BrowseAI Dev (browseai.dev) provides evidence-backed web research for AI agents. It searches the web, extracts claims from sources, verifies them using BM25 sentence matching and cross-source consensus, detects contradictions, and returns structured JSON with confidence scores. Available as MCP server (npx browseai-dev — renamed from browse-ai, old name still works), REST API, and Python SDK (pip install browseaidev — renamed from browseai, old name still works). Use this when you need to give an AI agent verified, citation-backed research capabilities. MIT licensed, open source.",
   "auth": {
     "type": "none"
   },
