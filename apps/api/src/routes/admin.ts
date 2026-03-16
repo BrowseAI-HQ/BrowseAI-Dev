@@ -27,14 +27,15 @@ export function registerAdminRoutes(
     const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
     if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
 
-    // Fetch in parallel: analytics, waitlist count, admin list, client breakdown, package stats, users
-    const [analytics, waitlistData, adminList, clientBreakdown, packageStats, usersData] = await Promise.all([
+    // Fetch in parallel: analytics, waitlist count, admin list, client breakdown, package stats, users, user queries
+    const [analytics, waitlistData, adminList, clientBreakdown, packageStats, usersData, userQueries] = await Promise.all([
       store.getAnalyticsSummary(),
       fetchWaitlistCount(supabaseUrl, serviceRoleKey),
       fetchAdminList(supabaseUrl, serviceRoleKey),
       fetchClientBreakdown(supabaseUrl, serviceRoleKey),
       fetchPackageStats(),
       fetchUsers(supabaseUrl, serviceRoleKey),
+      fetchUserQueryBreakdown(supabaseUrl, serviceRoleKey),
     ]);
 
     return reply.send({
@@ -47,6 +48,7 @@ export function registerAdminRoutes(
         packageStats,
         users: usersData.users,
         totalUsers: usersData.total,
+        userQueries,
         learning: getLearningStats(),
       },
     });
@@ -384,6 +386,47 @@ async function fetchUsers(supabaseUrl: string, serviceRoleKey: string) {
     last_sign_in_at: u.last_sign_in_at,
   }));
   return { users, total: users.length };
+}
+
+async function fetchUserQueryBreakdown(supabaseUrl: string, serviceRoleKey: string) {
+  // Get recent results with user_id
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/browse_results?select=user_id,query,tool,created_at&order=created_at.desc&limit=5000`,
+    {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!res.ok) return [];
+  const rows: { user_id: string | null; query: string; tool: string; created_at: string }[] = await res.json();
+
+  // Group by user_id
+  const byUser = new Map<string, { count: number; lastQuery: string; lastAt: string; tools: Map<string, number> }>();
+  for (const row of rows) {
+    const uid = row.user_id || "anonymous";
+    const entry = byUser.get(uid);
+    if (entry) {
+      entry.count++;
+      entry.tools.set(row.tool, (entry.tools.get(row.tool) || 0) + 1);
+    } else {
+      const tools = new Map<string, number>();
+      tools.set(row.tool, 1);
+      byUser.set(uid, { count: 1, lastQuery: row.query, lastAt: row.created_at, tools });
+    }
+  }
+
+  return [...byUser.entries()]
+    .map(([userId, data]) => ({
+      userId,
+      queryCount: data.count,
+      lastQuery: data.lastQuery,
+      lastAt: data.lastAt,
+      tools: Object.fromEntries(data.tools),
+    }))
+    .sort((a, b) => b.queryCount - a.queryCount);
 }
 
 async function fetchClientBreakdown(supabaseUrl: string, serviceRoleKey: string) {

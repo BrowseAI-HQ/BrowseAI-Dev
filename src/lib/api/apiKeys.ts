@@ -139,6 +139,7 @@ export interface AdminMetrics {
     pypi: { weeklyDownloads: number; totalDownloads: number; new?: { weekly: number; total: number }; old?: { weekly: number; total: number } } | null;
     github: { stars: number; forks: number; openIssues: number } | null;
   };
+  userQueries: { userId: string; queryCount: number; lastQuery: string; lastAt: string; tools: Record<string, number> }[];
 }
 
 export async function fetchAdminMetrics(): Promise<AdminMetrics> {

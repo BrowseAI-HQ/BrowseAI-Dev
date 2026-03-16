@@ -364,6 +364,57 @@ const Admin = () => {
             </Card>
           )}
 
+          {/* User Query Breakdown */}
+          {metrics && metrics.userQueries && metrics.userQueries.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-accent" />
+                  Queries by User
+                  <Badge variant="outline" className="text-xs ml-auto">
+                    {metrics.userQueries.reduce((s, u) => s + u.queryCount, 0)} total
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1 max-h-96 overflow-y-auto">
+                  {metrics.userQueries.map((uq) => {
+                    const matchedUser = metrics.users.find(u => u.id === uq.userId);
+                    const label = matchedUser ? (matchedUser.name || matchedUser.email) : uq.userId === "anonymous" ? "Anonymous" : uq.userId.slice(0, 8) + "...";
+                    return (
+                      <div key={uq.userId} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
+                        {matchedUser?.avatar_url ? (
+                          <img src={matchedUser.avatar_url} alt="" className="w-6 h-6 rounded-full shrink-0" />
+                        ) : (
+                          <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-medium truncate block">{label}</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">
+                            Last: {uq.lastQuery}
+                          </span>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          {Object.entries(uq.tools).map(([tool, count]) => (
+                            <Badge key={tool} variant="outline" className="text-[10px]">
+                              {tool}: {count}
+                            </Badge>
+                          ))}
+                        </div>
+                        <span className="text-sm font-bold text-accent shrink-0 w-12 text-right">
+                          {uq.queryCount}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground shrink-0 w-16 text-right">
+                          {timeAgo(uq.lastAt)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Registered Users */}
           {metrics && metrics.users.length > 0 && (
             <Card>
