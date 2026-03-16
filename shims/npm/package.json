@@ -1,7 +1,8 @@
 {
   "name": "browse-ai",
   "version": "0.3.0",
-  "description": "This package has been renamed to browseai-dev. Installing browse-ai will automatically install browseai-dev.",
+  "description": "Research infrastructure for AI agents. Renamed to browseai-dev — installing browse-ai automatically installs browseai-dev. MCP server, REST API, Python SDK.",
+  "keywords": ["browse-ai", "browseai-dev", "browseai", "mcp", "mcp-server", "ai-agent", "web-search", "research", "citations", "fact-checking", "claude", "cursor", "windsurf", "model-context-protocol"],
   "license": "MIT",
   "repository": {
     "type": "git",

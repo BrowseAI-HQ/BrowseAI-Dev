@@ -26,7 +26,12 @@
     "autogpt",
     "llamaindex",
     "evidence",
-    "fact-checking"
+    "fact-checking",
+    "browse-ai",
+    "browseai",
+    "browseaidev",
+    "hallucination-prevention",
+    "confidence-scoring"
   ],
   "license": "MIT",
   "repository": {

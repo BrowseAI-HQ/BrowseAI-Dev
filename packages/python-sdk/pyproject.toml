@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [{ name = "BrowseAI Dev" }]
-keywords = ["ai", "research", "search", "agents", "mcp", "langchain", "crewai", "rag", "deep-search", "web-search", "citations", "evidence", "llm", "agent-tools", "autogpt", "llamaindex", "fact-checking", "ai-search"]
+keywords = ["ai", "research", "search", "agents", "mcp", "langchain", "crewai", "rag", "deep-search", "web-search", "citations", "evidence", "llm", "agent-tools", "autogpt", "llamaindex", "fact-checking", "ai-search", "browseai", "browse-ai", "browseaidev", "browseai-dev", "confidence-scoring", "hallucination-prevention"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

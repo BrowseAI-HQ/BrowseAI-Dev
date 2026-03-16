@@ -10,6 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 dependencies = ["browseaidev>=0.1.7"]
+keywords = ["browseai", "browseaidev", "ai-agent", "mcp", "web-search", "research", "citations", "fact-checking", "confidence-scoring", "python-sdk"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
