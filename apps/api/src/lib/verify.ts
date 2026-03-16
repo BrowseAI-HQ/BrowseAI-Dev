@@ -618,7 +618,7 @@ function maybeAutoPersistDomainIntel(): void {
   usefulnessUpdatesSincePersist++;
   if (usefulnessUpdatesSincePersist >= DOMAIN_INTEL_PERSIST_INTERVAL && domainIntelCache) {
     usefulnessUpdatesSincePersist = 0;
-    persistDomainIntelState().catch(() => { /* non-critical */ });
+    persistDomainIntelState().catch((err) => console.warn("Failed to persist domain intel state:", err));
   }
 }
 

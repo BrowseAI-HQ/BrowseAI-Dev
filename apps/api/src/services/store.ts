@@ -127,7 +127,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         headers: { Prefer: "count=exact" },
       });
       const count = res.headers.get("content-range")?.split("/")[1];
-      return count ? parseInt(count) : 0;
+      return count ? parseInt(count, 10) : 0;
     },
 
     async getUserHistory(userId: string, limit = 20) {
@@ -144,7 +144,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         { headers: { Prefer: "count=exact" } }
       );
       const totalCount = totalRes.headers.get("content-range")?.split("/")[1];
-      const totalQueries = totalCount ? parseInt(totalCount) : 0;
+      const totalQueries = totalCount ? parseInt(totalCount, 10) : 0;
 
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -153,7 +153,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         { headers: { Prefer: "count=exact" } }
       );
       const monthCount = monthRes.headers.get("content-range")?.split("/")[1];
-      const thisMonth = monthCount ? parseInt(monthCount) : 0;
+      const thisMonth = monthCount ? parseInt(monthCount, 10) : 0;
 
       return { totalQueries, thisMonth };
     },
@@ -339,7 +339,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
           for (const domain of domains) {
             const entry = stats.get(domain) || { total: 0, verified: 0 };
             entry.total++;
-            if ((claim as any).verified) entry.verified++;
+            if (claim.verified) entry.verified++;
             stats.set(domain, entry);
           }
         }
@@ -362,7 +362,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         headers: { Prefer: "count=exact" },
       });
       const totalCount = totalRes.headers.get("content-range")?.split("/")[1];
-      const totalQueries = totalCount ? parseInt(totalCount) : 0;
+      const totalQueries = totalCount ? parseInt(totalCount, 10) : 0;
 
       // Queries today
       const todayStart = new Date();
@@ -372,7 +372,7 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         { headers: { Prefer: "count=exact" } }
       );
       const todayCount = todayRes.headers.get("content-range")?.split("/")[1];
-      const queriesToday = todayCount ? parseInt(todayCount) : 0;
+      const queriesToday = todayCount ? parseInt(todayCount, 10) : 0;
 
       // Fetch recent results for averages
       const recentRes = await supabaseFetch(

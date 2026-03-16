@@ -324,6 +324,8 @@ const Playground = () => {
         <div className="relative">
           <button
             onClick={() => setShowScenarios(!showScenarios)}
+            aria-haspopup="listbox"
+            aria-expanded={showScenarios}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card hover:border-accent/40 transition-colors text-sm"
           >
             <Beaker className="w-3.5 h-3.5 text-accent" />
@@ -335,11 +337,13 @@ const Playground = () => {
             <motion.div
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
+              role="listbox"
               className="absolute z-20 top-12 left-0 w-full sm:w-[500px] bg-card border border-border rounded-xl shadow-lg overflow-hidden"
             >
               {TUTORIAL_SCENARIOS.map((scenario) => (
                 <button
                   key={scenario.name}
+                  role="option"
                   onClick={() => runScenario(scenario)}
                   className="w-full flex items-start gap-3 p-4 hover:bg-secondary/50 transition-colors text-left border-b border-border last:border-0"
                 >
@@ -386,12 +390,13 @@ const Playground = () => {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && run()}
                   placeholder={PLACEHOLDERS[tab]}
+                  aria-label="Research query"
                   className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
                 />
                 {tab === "answer" && (
                   <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
                 )}
-                <Button onClick={() => run()} disabled={loading || !input.trim() || (activeTab === "answer" && isDepthBlocked(depth, !!user, quota))} className="bg-accent text-accent-foreground h-12 px-5">
+                <Button onClick={() => run()} disabled={loading || !input.trim() || (activeTab === "answer" && isDepthBlocked(depth, !!user, quota))} className="bg-accent text-accent-foreground h-12 px-5" aria-label="Run query">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                 </Button>
               </div>

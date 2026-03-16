@@ -14,12 +14,14 @@ export type BrowseClaim = {
   verificationScore?: number;
   consensusCount?: number;
   consensusLevel?: "strong" | "moderate" | "weak" | "none";
+  nliScore?: number;
 };
 
 export type Contradiction = {
   claimA: string;
   claimB: string;
   topic: string;
+  nliConfidence?: number;
 };
 
 export type BrowseResult = {
@@ -41,6 +43,7 @@ export type BrowseResult = {
     claimCount: number;
     confidence: number;
   }[];
+  effectiveDepth?: "fast" | "thorough" | "deep";
 };
 
 export type CompareResult = {

@@ -232,9 +232,9 @@ export function registerAdminRoutes(
           })),
         },
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
-      return reply.status(500).send({ success: false, error: `Import failed: ${e.message}` });
+      return reply.status(500).send({ success: false, error: `Import failed: ${e instanceof Error ? e.message : "Unknown error"}` });
     }
   });
 

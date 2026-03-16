@@ -32,7 +32,7 @@ function defaultIsRetryable(error: unknown): boolean {
   if (error instanceof DOMException && error.name === "AbortError") return true;
 
   // Check error message for known transient patterns
-  const msg = (error as any)?.message?.toLowerCase() || "";
+  const msg = (error instanceof Error ? error.message : "").toLowerCase();
   if (msg.includes("rate limit")) return true;
   if (msg.includes("timeout")) return true;
   if (msg.includes("econnreset") || msg.includes("econnrefused")) return true;

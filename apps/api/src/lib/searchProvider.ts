@@ -57,6 +57,22 @@ function validateEndpointUrl(endpoint: string): void {
   if (host === "169.254.169.254" || host === "metadata.google.internal") {
     throw new Error("Enterprise endpoints cannot target cloud metadata services");
   }
+
+  // Block IPv6-mapped IPv4 addresses (e.g. ::ffff:127.0.0.1)
+  if (host.includes("::ffff:")) {
+    throw new Error("Enterprise endpoints cannot target IPv6-mapped IPv4 addresses");
+  }
+
+  // Block octal IP notation (e.g. 0177.0.0.1)
+  if (/^0\d/.test(host)) {
+    throw new Error("Enterprise endpoints cannot use octal IP notation");
+  }
+
+  // Block decimal IP notation (e.g. 2130706433 = 127.0.0.1)
+  // Also catches any raw numeric IP address
+  if (/^\d+$/.test(host)) {
+    throw new Error("Enterprise endpoints cannot use decimal/numeric IP addresses");
+  }
 }
 
 // ── Interface ──
@@ -163,12 +179,12 @@ export class ElasticsearchProvider implements SearchProvider {
     const data = await res.json();
     const hits = data.hits?.hits || [];
 
-    return hits.map((hit: any) => {
+    return hits.map((hit: { _source?: Record<string, unknown>; _score?: number; _id?: string }) => {
       const src = hit._source || {};
       const content = src.content || src.body || src.text || src.description || "";
       return {
-        url: src.url || `${this.endpoint}/${this.index}/${hit._id}`,
-        title: sanitizeText(src.title || hit._id || ""),
+        url: (src.url as string) || `${this.endpoint}/${this.index}/${hit._id}`,
+        title: sanitizeText((src.title as string) || hit._id || ""),
         snippet: sanitizeText(typeof content === "string" ? content.slice(0, 500) : ""),
         score: hit._score ? hit._score / 10 : 0.5, // normalize ES scores roughly
       };
@@ -186,7 +202,11 @@ export class ConfluenceProvider implements SearchProvider {
 
   async search(query: string, limit = 10): Promise<SearchResult[]> {
     // Sanitize inputs for CQL injection prevention
-    const sanitizeCql = (s: string) => s.replace(/["\\()~=]/g, " ").trim();
+    const sanitizeCql = (s: string) => s
+      .replace(/["'`\\()~=;{}]/g, " ")
+      .replace(/\b(AND|OR|NOT)\b/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     const safeQuery = sanitizeCql(query);
     const cql = this.spaceKey
       ? `space = "${sanitizeCql(this.spaceKey)}" AND text ~ "${safeQuery}"`
@@ -212,7 +232,7 @@ export class ConfluenceProvider implements SearchProvider {
     const data = await res.json();
     const results = data.results || [];
 
-    return results.map((item: any, i: number) => {
+    return results.map((item: { title?: string; id?: string; body?: { view?: { value?: string } }; _links?: { webui?: string } }, i: number) => {
       const bodyHtml = item.body?.view?.value || "";
       // Strip HTML tags for snippet
       const bodyText = bodyHtml.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -264,7 +284,7 @@ export class CustomEndpointProvider implements SearchProvider {
       throw new Error("Custom search endpoint must return { results: [...] } or an array");
     }
 
-    return results.map((r: any, i: number) => ({
+    return results.map((r: { url?: string; title?: string; snippet?: string; content?: string; description?: string; score?: number }, i: number) => ({
       url: r.url || "",
       title: sanitizeText(r.title || ""),
       snippet: sanitizeText(r.snippet || r.content || r.description || ""),

@@ -54,7 +54,7 @@ export function registerApiKeyRoutes(
           ...result.record,
         },
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to create API key" });
     }
@@ -66,7 +66,7 @@ export function registerApiKeyRoutes(
     try {
       const keys = await apiKeyService.list(userId);
       return { success: true, result: keys };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to list API keys" });
     }
@@ -93,7 +93,7 @@ export function registerApiKeyRoutes(
           warning: "All API keys removed. You're now on the free demo tier (5 queries/hour). Add keys again anytime to get unlimited access.",
         }),
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to revoke API key" });
     }

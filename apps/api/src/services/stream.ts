@@ -14,71 +14,28 @@
  *   deep     — multi-step agentic research with gap analysis
  */
 
-import { createHash } from "crypto";
 import { search } from "./search.js";
 import type { SearchResult } from "./search.js";
 import { openPage } from "./scrape.js";
 import { streamAnswer, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
-import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
+import type { QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
-import { isLowQualityDomain, rerankSources } from "../lib/verify.js";
+import { rerankSources } from "../lib/verify.js";
 import { getAdaptivePageCount } from "../lib/learning.js";
 import { MAX_PAGE_CONTENT_LENGTH } from "@browse/shared";
 import type { BrowseResult, TraceStep } from "@browse/shared";
 import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
+import {
+  hashKey,
+  getCacheTTL,
+  filterLowQuality,
+  enforceDomainDiversity,
+  mergeSearchResults,
+  ADAPTIVE_PAGE_COUNT,
+} from "./searchUtils.js";
 
-const MAX_PER_DOMAIN = 2;
 const THOROUGH_CONFIDENCE_THRESHOLD = 0.6;
-
-const ADAPTIVE_PAGE_COUNT: Record<QueryType, number> = {
-  factual: 6,
-  comparison: 10,
-  "how-to": 6,
-  "time-sensitive": 8,
-  opinion: 10,
-};
-
-const TIME_SENSITIVE = /\b(today|tonight|yesterday|latest|current|now|live|breaking|this week|this month|this year|price|stock|score|weather|202[4-9])\b/i;
-
-function hashKey(s: string): string {
-  return createHash("sha256").update(s.toLowerCase().trim()).digest("hex").slice(0, 24);
-}
-
-function getCacheTTL(query: string): number {
-  return TIME_SENSITIVE.test(query) ? 300 : 1800;
-}
-
-function filterLowQuality(results: SearchResult[]): SearchResult[] {
-  return results.filter((r) => !isLowQualityDomain(r.url));
-}
-
-function enforceDomainDiversity(results: SearchResult[], maxPerDomain: number = MAX_PER_DOMAIN): SearchResult[] {
-  const domainCounts = new Map<string, number>();
-  const diverse: SearchResult[] = [];
-  for (const r of results) {
-    let domain: string;
-    try { domain = new URL(r.url).hostname.replace(/^www\./, ""); } catch { continue; }
-    const count = domainCounts.get(domain) || 0;
-    if (count < maxPerDomain) {
-      diverse.push(r);
-      domainCounts.set(domain, count + 1);
-    }
-  }
-  return diverse;
-}
-
-function mergeSearchResults(a: SearchResult[], b: SearchResult[]): SearchResult[] {
-  const seen = new Set<string>();
-  const merged: SearchResult[] = [];
-  for (const r of [...a, ...b]) {
-    if (!seen.has(r.url)) {
-      seen.add(r.url);
-      merged.push(r);
-    }
-  }
-  return merged.sort((x, y) => y.score - x.score);
-}
 
 export type SSEWriter = (event: string, data: unknown) => void;
 
@@ -267,9 +224,9 @@ async function streamingSinglePass(
   const llmDuration = Date.now() - llmStart;
 
   // Emit final summary steps (with actual claim/source counts now available)
-  const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;
+  const verifiedCount = knowledge.claims.filter((c) => c.verified === true).length;
   const strongConsensus = knowledge.claims.filter(
-    (c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
+    (c) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
   ).length;
   const contradictionCount = knowledge.contradictions?.length || 0;
   emitTrace(trace, emit, {

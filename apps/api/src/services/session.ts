@@ -72,7 +72,7 @@ export function createSupabaseSessionStore(
     },
 
     async getSession(id) {
-      const res = await sbFetch(`/sessions?id=eq.${id}&select=*`);
+      const res = await sbFetch(`/sessions?id=eq.${sanitizePostgrestParam(id)}&select=*`);
       if (!res.ok) return null;
       const rows = await res.json();
       if (!rows[0]) return null;
@@ -80,13 +80,13 @@ export function createSupabaseSessionStore(
     },
 
     async deleteSession(id) {
-      const res = await sbFetch(`/sessions?id=eq.${id}`, { method: "DELETE" });
+      const res = await sbFetch(`/sessions?id=eq.${sanitizePostgrestParam(id)}`, { method: "DELETE" });
       return res.ok;
     },
 
     async listSessions(userId) {
       const res = await sbFetch(
-        `/sessions?user_id=eq.${userId}&select=*&order=updated_at.desc&limit=50`
+        `/sessions?user_id=eq.${sanitizePostgrestParam(userId)}&select=*&order=updated_at.desc&limit=50`
       );
       if (!res.ok) return [];
       const rows = await res.json();
@@ -121,7 +121,7 @@ export function createSupabaseSessionStore(
       }
 
       // Update session claim count + updated_at
-      await sbFetch(`/sessions?id=eq.${sessionId}`, {
+      await sbFetch(`/sessions?id=eq.${sanitizePostgrestParam(sessionId)}`, {
         method: "PATCH",
         body: JSON.stringify({
           claim_count: entries.length, // Will be added via RPC later; for now set directly
@@ -149,7 +149,7 @@ export function createSupabaseSessionStore(
         .join(",");
 
       const res = await sbFetch(
-        `/knowledge_entries?session_id=eq.${sessionId}&or=(${orConditions})&order=created_at.desc&limit=${limit}&select=*`
+        `/knowledge_entries?session_id=eq.${sanitizePostgrestParam(sessionId)}&or=(${orConditions})&order=created_at.desc&limit=${limit}&select=*`
       );
 
       if (!res.ok) return [];
@@ -167,7 +167,7 @@ export function createSupabaseSessionStore(
 
     async getKnowledge(sessionId, limit = 50) {
       const res = await sbFetch(
-        `/knowledge_entries?session_id=eq.${sessionId}&select=*&order=created_at.desc&limit=${limit}`
+        `/knowledge_entries?session_id=eq.${sanitizePostgrestParam(sessionId)}&select=*&order=created_at.desc&limit=${limit}`
       );
       if (!res.ok) return [];
       const rows = await res.json();
@@ -179,7 +179,7 @@ export function createSupabaseSessionStore(
       // Using RPC would be ideal, but for now PATCH with a select+increment
       const session = await this.getSession(sessionId);
       if (!session) return;
-      await sbFetch(`/sessions?id=eq.${sessionId}`, {
+      await sbFetch(`/sessions?id=eq.${sanitizePostgrestParam(sessionId)}`, {
         method: "PATCH",
         body: JSON.stringify({
           query_count: session.queryCount + 1,
@@ -217,7 +217,7 @@ export function createSupabaseSessionStore(
         if (hash === shareId) {
           // Found the session — return its knowledge
           const knowledgeRes = await sbFetch(
-            `/knowledge_entries?session_id=eq.${row.id}&select=*&order=created_at.desc&limit=100`
+            `/knowledge_entries?session_id=eq.${sanitizePostgrestParam(row.id)}&select=*&order=created_at.desc&limit=100`
           );
           const entries = knowledgeRes.ok ? (await knowledgeRes.json()).map(toKnowledgeEntry) : [];
           return {
@@ -307,6 +307,12 @@ export function createNoopSessionStore(): SessionStore {
   };
 }
 
+/** Sanitize a value for PostgREST query parameters to prevent filter injection */
+function sanitizePostgrestParam(value: string): string {
+  // Only allow alphanumeric, hyphens, underscores (safe for IDs and UUIDs)
+  return value.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
 // ── Helpers ──
 
 const STOP_WORDS = new Set([
@@ -332,27 +338,27 @@ function extractKeywords(query: string): string[] {
     .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 }
 
-function toSession(row: any): Session {
+function toSession(row: Record<string, unknown>): Session {
   return {
-    id: row.id,
-    name: row.name,
-    userId: row.user_id,
-    claimCount: row.claim_count || 0,
-    queryCount: row.query_count || 0,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    id: row.id as string,
+    name: row.name as string,
+    userId: row.user_id as string | undefined,
+    claimCount: (row.claim_count as number) || 0,
+    queryCount: (row.query_count as number) || 0,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
   };
 }
 
-function toKnowledgeEntry(row: any): KnowledgeEntry {
+function toKnowledgeEntry(row: Record<string, unknown>): KnowledgeEntry {
   return {
-    id: row.id,
-    sessionId: row.session_id,
-    claim: row.claim,
-    sources: row.sources || [],
-    verified: row.verified ?? false,
-    confidence: row.confidence ?? 0,
-    originQuery: row.origin_query,
-    createdAt: row.created_at,
+    id: row.id as string,
+    sessionId: row.session_id as string,
+    claim: row.claim as string,
+    sources: (row.sources as string[]) || [],
+    verified: (row.verified as boolean) ?? false,
+    confidence: (row.confidence as number) ?? 0,
+    originQuery: row.origin_query as string,
+    createdAt: row.created_at as string,
   };
 }

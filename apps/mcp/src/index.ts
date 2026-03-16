@@ -154,7 +154,7 @@ async function tavilySearch(query: string, limit = 5) {
   });
   if (!res.ok) throw new Error(`Tavily search failed: ${res.status}`);
   const data = await res.json();
-  const results = data.results.map((r: any) => ({
+  const results = data.results.map((r: { url: string; title: string; content: string; score: number }) => ({
     url: r.url,
     title: r.title,
     snippet: r.content,
@@ -180,7 +180,7 @@ async function fetchPage(url: string) {
 
   const html = await res.text();
   const { document } = parseHTML(html);
-  const reader = new Readability(document as any);
+  const reader = new Readability(document as unknown as Document);
   const article = reader.parse();
   if (!article) throw new Error(`Could not parse ${url}`);
 
@@ -273,7 +273,11 @@ async function extractKnowledge(query: string, pageContents: string) {
   const data = await res.json();
   const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
   if (!toolCall) throw new Error("LLM did not return structured output");
-  return JSON.parse(toolCall.function.arguments);
+  try {
+    return JSON.parse(toolCall.function.arguments);
+  } catch (e) {
+    throw new Error(`Failed to parse LLM tool call arguments: ${(e as Error).message}. Raw: ${toolCall.function.arguments}`, { cause: e });
+  }
 }
 
 // --- Raw LLM call (no sources, for compare) ---
@@ -304,12 +308,43 @@ async function rawLLMAnswer(query: string): Promise<string> {
 
 // --- Full pipeline ---
 type TraceStep = { step: string; duration_ms: number; detail?: string };
+type NLIScore = {
+  entailment: number;
+  contradiction: number;
+  neutral: number;
+  label: "entailment" | "neutral" | "contradiction";
+};
+type Contradiction = {
+  claimA: string;
+  claimB: string;
+  topic: string;
+  nliConfidence?: number;
+};
+type ReasoningStep = {
+  step: number;
+  query: string;
+  gapAnalysis: string;
+  claimCount: number;
+  confidence: number;
+};
 type BrowseResult = {
   answer: string;
-  claims: { claim: string; sources: string[] }[];
-  sources: { url: string; title: string; domain: string; quote: string }[];
+  claims: {
+    claim: string;
+    sources: string[];
+    verified?: boolean;
+    verificationScore?: number;
+    consensusCount?: number;
+    consensusLevel?: "strong" | "moderate" | "weak" | "none";
+    nliScore?: NLIScore;
+  }[];
+  sources: { url: string; title: string; domain: string; quote: string; verified?: boolean; authority?: number }[];
   confidence: number;
   trace: TraceStep[];
+  contradictions?: Contradiction[];
+  reasoningSteps?: ReasoningStep[];
+  shareId?: string;
+  effectiveDepth?: "fast" | "thorough" | "deep";
 };
 
 async function answerPipeline(query: string): Promise<BrowseResult> {
@@ -325,11 +360,11 @@ async function answerPipeline(query: string): Promise<BrowseResult> {
 
   const scrapeStart = Date.now();
   const pages = await Promise.allSettled(
-    searchResults.slice(0, 5).map((r: any) => fetchPage(r.url))
+    searchResults.slice(0, 5).map((r: { url: string }) => fetchPage(r.url))
   );
   const successfulPages = pages
     .filter(
-      (p): p is PromiseFulfilledResult<any> => p.status === "fulfilled"
+      (p): p is PromiseFulfilledResult<{ title: string; content: string }> => p.status === "fulfilled"
     )
     .map((p) => p.value);
   trace.push({
@@ -340,7 +375,7 @@ async function answerPipeline(query: string): Promise<BrowseResult> {
 
   const pageContents = successfulPages
     .map(
-      (p: any, i: number) =>
+      (p, i) =>
         `[Source ${i + 1}] URL: ${searchResults[i]?.url}\nTitle: ${p.title}\n\n${p.content.slice(0, MAX_PAGE_CONTENT_LENGTH)}`
     )
     .join("\n\n---\n\n");
@@ -462,8 +497,12 @@ function registerTools(server: McpServer) {
         return { content };
       }
       const result = await answerPipeline(query);
+      let text = JSON.stringify(result, null, 2);
+      if (depth && depth !== "fast") {
+        text += `\n\n> Note: depth="${depth}" requested but BYOK mode uses standard search depth. Use a BrowseAI API key for thorough/deep modes.`;
+      }
       return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        content: [{ type: "text", text }],
       };
     }
   );
@@ -629,6 +668,9 @@ function registerTools(server: McpServer) {
       claim_index: z.number().int().min(0).optional().describe("Optional: index of the specific claim that was wrong"),
     },
     async ({ result_id, rating, claim_index }) => {
+      if (!API_MODE) {
+        return { content: [{ type: "text", text: "Feedback requires a BrowseAI API key (BROWSE_API_KEY). Set it to enable feedback." }] };
+      }
       const body: Record<string, unknown> = { resultId: result_id, rating };
       if (claim_index !== undefined) body.claimIndex = claim_index;
       const result = await apiCall("/browse/feedback", body);

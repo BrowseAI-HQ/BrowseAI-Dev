@@ -26,6 +26,21 @@ function isAllowedUrl(url: string): boolean {
       hostname === "[::1]" ||
       /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
     ) return false;
+
+    // Block IPv6-mapped IPv4 addresses (e.g. ::ffff:127.0.0.1)
+    if (hostname.includes("::ffff:")) return false;
+
+    // Block octal IP notation (e.g. 0177.0.0.1)
+    if (/^0\d/.test(hostname)) return false;
+
+    // Block decimal IP notation (e.g. 2130706433 = 127.0.0.1)
+    if (/^\d+$/.test(hostname)) return false;
+
+    // Warn on non-HTTPS URLs — HTTP is higher SSRF risk
+    if (parsed.protocol === "http:") {
+      console.warn(`[SSRF] Non-HTTPS URL requested: ${url}`);
+    }
+
     return true;
   } catch {
     return false;
@@ -37,6 +52,11 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
     throw new Error("URL not allowed: only public http/https URLs are supported");
   }
 
+  // Note: fetch follows redirects by default. For enterprise endpoints in
+  // searchProvider.ts this is mitigated by the HTTPS-only requirement, which
+  // prevents redirect-to-internal-IP attacks. For readability fetches, the
+  // isAllowedUrl pre-check reduces risk but cannot guard against DNS rebinding
+  // or redirect chains to internal IPs post-resolution.
   const res = await fetchWithRetry(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (compatible; BrowseAI-Dev/1.0)",
@@ -51,7 +71,8 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
 
   const html = await res.text();
   const { document } = parseHTML(html);
-  const reader = new Readability(document as any);
+  // linkedom's Document type is compatible but not identical to Readability's expected Document
+  const reader = new Readability(document as unknown as Document);
   const article = reader.parse();
 
   if (!article) {

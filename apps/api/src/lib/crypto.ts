@@ -46,6 +46,9 @@ export function decryptValue(
   ivBase64: string,
   encryptionKeyHex: string
 ): string {
+  if (!ciphertextWithTag.includes(".")) {
+    throw new Error("Malformed ciphertext: missing separator");
+  }
   const key = Buffer.from(encryptionKeyHex, "hex");
   const iv = Buffer.from(ivBase64, "base64");
   const [ciphertext, authTagBase64] = ciphertextWithTag.split(".");

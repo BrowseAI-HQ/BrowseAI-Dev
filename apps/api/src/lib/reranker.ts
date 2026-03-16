@@ -103,14 +103,14 @@ function normalizeScores(
 
   // Format 2: array of { score } objects
   if (typeof raw[0] === "object" && raw[0] !== null && "score" in raw[0]) {
-    return raw.map((r: any) => r.score);
+    return (raw as Array<{ score: number }>).map((r) => r.score);
   }
 
   // Format 3: array of arrays of { label, score } (classification models)
   if (Array.isArray(raw[0]) && raw[0].length > 0 && "label" in raw[0][0]) {
-    return raw.map((r: any) => {
+    return (raw as Array<Array<{ label: string; score: number }>>).map((r) => {
       // Take the score for the positive/LABEL_1 class
-      const positive = r.find((c: any) => c.label === "LABEL_1" || c.label === "entailment");
+      const positive = r.find((c) => c.label === "LABEL_1" || c.label === "entailment");
       return positive?.score ?? r[0]?.score ?? 0;
     });
   }

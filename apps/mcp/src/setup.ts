@@ -79,7 +79,7 @@ export async function runSetup() {
   const configPath = getConfigPath();
   console.log(`\n  Config path: ${configPath}`);
 
-  let config: any = { mcpServers: {} };
+  let config: Record<string, unknown> & { mcpServers: Record<string, unknown> } = { mcpServers: {} };
 
   if (existsSync(configPath)) {
     try {

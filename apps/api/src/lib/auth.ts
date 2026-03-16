@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { createHmac, createVerify } from "crypto";
+import { createHmac, createVerify, timingSafeEqual } from "crypto";
 
 const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET;
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -144,10 +144,21 @@ export async function getUserIdFromRequest(request: FastifyRequest): Promise<str
       const expectedSig = createHmac("sha256", SUPABASE_JWT_SECRET)
         .update(signingInput)
         .digest("base64url");
-      if (expectedSig !== parts[2]) return null;
+      const expectedBuf = Buffer.from(expectedSig, "utf8");
+      const actualBuf = Buffer.from(parts[2], "utf8");
+      if (expectedBuf.length !== actualBuf.length || !timingSafeEqual(expectedBuf, actualBuf)) return null;
     } else if (header.alg === "ES256") {
       if (!await verifyES256(parts, header)) return null;
     }
+
+    // Verify issuer — must match Supabase auth endpoint
+    if (SUPABASE_URL) {
+      const expectedIssuer = `${SUPABASE_URL.replace(/\/+$/, "")}/auth/v1`;
+      if (payload.iss !== expectedIssuer) return null;
+    }
+
+    // Verify audience — Supabase uses "authenticated" for signed-in users
+    if (payload.aud !== "authenticated") return null;
 
     return payload.sub || null;
   } catch {

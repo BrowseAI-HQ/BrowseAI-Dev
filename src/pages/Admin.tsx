@@ -371,7 +371,7 @@ const Admin = () => {
                   {metrics.users.map((u) => (
                     <div key={u.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors">
                       {u.avatar_url ? (
-                        <img src={u.avatar_url} alt="" className="w-6 h-6 rounded-full shrink-0" />
+                        <img src={u.avatar_url} alt="User avatar" className="w-6 h-6 rounded-full shrink-0" />
                       ) : (
                         <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                       )}
@@ -513,6 +513,7 @@ const Admin = () => {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label="Remove admin"
                       className="h-6 w-6 text-muted-foreground hover:text-destructive"
                       onClick={() => handleRemoveAdmin(admin.email)}
                     >

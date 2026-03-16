@@ -270,6 +270,7 @@ const Index = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !isDepthBlocked(depth, !!user, null) && handleSearch()}
+                aria-label="Search query"
                 className="w-full h-14 pl-12 pr-16 sm:pr-36 rounded-xl bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base"
               />
               <Button
@@ -564,13 +565,13 @@ const Index = () => {
   "answer": "Aurora borealis occurs when charged particles from the Sun...",
   "claims": [
     { "claim": "Caused by solar wind particles...", "sources": ["https://..."],
-      "verified": true, "verificationScore": 0.82 }
+      "verified": true, "verificationScore": 0.82, "consensusLevel": "strong" }
   ],
   "sources": [
     { "url": "https://...", "domain": "nasa.gov", "quote": "An aurora is...",
       "verified": true, "authority": 0.95 }
   ],
-  "depth": "deep",
+  "effectiveDepth": "deep",
   "confidence": 0.92,
   "trace": [
     { "step": "Search Web", "duration_ms": 340, "detail": "5 results" },

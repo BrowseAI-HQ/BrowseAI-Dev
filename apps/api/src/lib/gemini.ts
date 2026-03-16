@@ -570,7 +570,7 @@ export async function extractKnowledge(
     }
     if (res.status === 429)
       throw new Error("Rate limit exceeded. Please try again later.");
-    if (res.status === 402) throw new Error("AI credits exhausted.");
+    if (res.status === 402) throw new Error("OpenRouter credits exhausted. Top up your account at openrouter.ai.");
     throw new Error(`LLM API failed (${res.status}): ${text}`);
   }
 

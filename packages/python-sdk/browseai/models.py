@@ -93,6 +93,7 @@ class PremiumQuota(BaseModel):
     used: int
     limit: int
     premium_active: bool = Field(alias="premiumActive")
+    resets_in_seconds: int | None = Field(default=None, alias="resetsInSeconds")
 
     model_config = {"populate_by_name": True}
 

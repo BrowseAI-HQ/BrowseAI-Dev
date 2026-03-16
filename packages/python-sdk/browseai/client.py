@@ -292,7 +292,11 @@ class SessionClient:
 
     def delete(self) -> None:
         """Delete this session and all its knowledge."""
-        self._client._client.delete(f"/session/{self.id}")
+        response = self._client._client.delete(f"/session/{self.id}")
+        _handle_error(response)
+        data = response.json()
+        if not data.get("success"):
+            raise BrowseAIError(data.get("error", "Unknown error"))
 
 
 class AsyncBrowseAI:
@@ -502,4 +506,8 @@ class AsyncSessionClient:
 
     async def delete(self) -> None:
         """Delete this session and all its knowledge."""
-        await self._client._client.delete(f"/session/{self.id}")
+        response = await self._client._client.delete(f"/session/{self.id}")
+        _handle_error(response)
+        data = response.json()
+        if not data.get("success"):
+            raise BrowseAIError(data.get("error", "Unknown error"))

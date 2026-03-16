@@ -1,11 +1,10 @@
-import { createHash } from "crypto";
 import { search } from "./search.js";
 import type { SearchResult } from "./search.js";
 import { openPage } from "./scrape.js";
 import { extractKnowledge, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
-import type { QueryType, QueryAnalysis } from "../lib/gemini.js";
+import type { QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
-import { isLowQualityDomain, rerankSources, trackSourceUsefulness } from "../lib/verify.js";
+import { rerankSources, trackSourceUsefulness } from "../lib/verify.js";
 import { crossEncoderRerank } from "../lib/reranker.js";
 import {
   getAdaptiveBM25Threshold,
@@ -19,6 +18,15 @@ import type { BrowseResult, TraceStep } from "@browse/shared";
 import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
 import type { SearchProvider } from "../lib/searchProvider.js";
+import {
+  hashKey,
+  getCacheTTL,
+  filterLowQuality,
+  enforceDomainDiversity,
+  mergeSearchResults,
+  ADAPTIVE_PAGE_COUNT,
+  MAX_PER_DOMAIN,
+} from "./searchUtils.js";
 
 // ─── Multi-Pass Consistency (SelfCheckGPT-inspired) ──────────────────
 // Compares claims from two independent extraction passes.
@@ -106,69 +114,6 @@ export type AnswerOptions = {
 };
 
 const THOROUGH_CONFIDENCE_THRESHOLD = 0.6;
-const MAX_PER_DOMAIN = 2;
-
-/** Adaptive page count based on query type. Complex queries need more sources. */
-const ADAPTIVE_PAGE_COUNT: Record<QueryType, number> = {
-  factual: 6,
-  comparison: 10,
-  "how-to": 6,
-  "time-sensitive": 8,
-  opinion: 10,
-};
-
-function hashKey(s: string): string {
-  return createHash("sha256").update(s.toLowerCase().trim()).digest("hex").slice(0, 24);
-}
-
-// Time-sensitive keywords → short TTL, everything else → longer TTL
-const TIME_SENSITIVE = /\b(today|tonight|yesterday|latest|current|now|live|breaking|this week|this month|this year|price|stock|score|weather|202[4-9])\b/i;
-
-function getCacheTTL(query: string): number {
-  return TIME_SENSITIVE.test(query) ? 300 : 1800; // 5 min vs 30 min
-}
-
-/** Filter out known low-quality domains before fetching (saves slots for better sources). */
-function filterLowQuality(results: SearchResult[]): SearchResult[] {
-  return results.filter((r) => !isLowQualityDomain(r.url));
-}
-
-/**
- * Enforce domain diversity: max N results per domain, sorted by score.
- * Ensures we get perspectives from different sources rather than 5 pages from one site.
- */
-function enforceDomainDiversity(results: SearchResult[], maxPerDomain: number = MAX_PER_DOMAIN): SearchResult[] {
-  const domainCounts = new Map<string, number>();
-  const diverse: SearchResult[] = [];
-
-  // Results should already be sorted by score from Tavily
-  for (const r of results) {
-    let domain: string;
-    try { domain = new URL(r.url).hostname.replace(/^www\./, ""); } catch { continue; }
-    const count = domainCounts.get(domain) || 0;
-    if (count < maxPerDomain) {
-      diverse.push(r);
-      domainCounts.set(domain, count + 1);
-    }
-  }
-
-  return diverse;
-}
-
-/**
- * Merge two sets of search results, deduplicating by URL and re-sorting by score.
- */
-function mergeSearchResults(a: SearchResult[], b: SearchResult[]): SearchResult[] {
-  const seen = new Set<string>();
-  const merged: SearchResult[] = [];
-  for (const r of [...a, ...b]) {
-    if (!seen.has(r.url)) {
-      seen.add(r.url);
-      merged.push(r);
-    }
-  }
-  return merged.sort((x, y) => y.score - x.score);
-}
 
 /** Execute a search using either the pluggable provider or the default Tavily path. */
 function doSearch(
@@ -255,8 +200,9 @@ export async function singlePass(
       allResults = mergeSearchResults(allResults, variantResults);
       const added = allResults.length - before;
       if (added > 0) searchDetail += ` +${added} variant`;
-    } catch {
+    } catch (e) {
       // Variant search failed — continue with main results
+      console.warn("Variant search failed:", e instanceof Error ? e.message : e);
       searchDetail += " (variant failed)";
     }
   }
@@ -357,9 +303,9 @@ export async function singlePass(
   const llmDuration = Date.now() - llmStart;
 
   // Trace steps
-  const verifiedCount = knowledge.claims.filter((c: any) => c.verified === true).length;
+  const verifiedCount = knowledge.claims.filter((c) => c.verified === true).length;
   const strongConsensus = knowledge.claims.filter(
-    (c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
+    (c) => c.consensusLevel === "strong" || c.consensusLevel === "moderate"
   ).length;
   const contradictionCount = knowledge.contradictions?.length || 0;
 
@@ -401,15 +347,15 @@ export async function singlePass(
         if (!domain) continue;
         const d = domain.toLowerCase().replace(/^www\./, "");
         const existing = domainUseful.get(d) || { verified: false, consensus: false };
-        if ((claim as any).verified) existing.verified = true;
-        if ((claim as any).consensusLevel === "strong" || (claim as any).consensusLevel === "moderate") existing.consensus = true;
+        if (claim.verified) existing.verified = true;
+        if (claim.consensusLevel === "strong" || claim.consensusLevel === "moderate") existing.consensus = true;
         domainUseful.set(d, existing);
       }
     }
     for (const [domain, u] of domainUseful) {
       trackSourceUsefulness(domain, u.verified, u.consensus);
     }
-  } catch { /* non-critical */ }
+  } catch (e) { console.warn("Failed to track source usefulness:", e instanceof Error ? e.message : e); }
 
   return { knowledge, pageTexts, queryType: analysis.type };
 }
@@ -491,7 +437,7 @@ export async function answerQuery(
     });
 
     // Apply consistency adjustments to verification scores
-    const adjustedClaims = best.claims.map((claim: any, i: number) => {
+    const adjustedClaims = best.claims.map((claim, i) => {
       const adjustment = consistencyResult.adjustments[i] ?? 0;
       if (!claim.verificationScore) return claim;
       const adjusted = Math.max(0, Math.min(1, claim.verificationScore + adjustment));
@@ -522,8 +468,8 @@ export async function answerQuery(
       recordQuerySignals({
         queryType: queryType,
         confidence: result.confidence,
-        verificationRate: result.claims.filter((c: any) => c.verified).length / Math.max(result.claims.length, 1),
-        consensusScore: result.claims.filter((c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
+        verificationRate: result.claims.filter((c) => c.verified).length / Math.max(result.claims.length, 1),
+        consensusScore: result.claims.filter((c) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
         sourceCount: result.sources.length,
         claimCount: result.claims.length,
         contradictionCount: result.contradictions?.length || 0,
@@ -531,7 +477,7 @@ export async function answerQuery(
         depth: "thorough",
         thoroughImproved: pass2.confidence > knowledge.confidence,
       });
-    } catch { /* non-critical */ }
+    } catch (e) { console.warn("Failed to record thorough-mode learning signals:", e instanceof Error ? e.message : e); }
 
     return result;
   }
@@ -544,15 +490,15 @@ export async function answerQuery(
     recordQuerySignals({
       queryType: queryType,
       confidence: result.confidence,
-      verificationRate: result.claims.filter((c: any) => c.verified).length / Math.max(result.claims.length, 1),
-      consensusScore: result.claims.filter((c: any) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
+      verificationRate: result.claims.filter((c) => c.verified).length / Math.max(result.claims.length, 1),
+      consensusScore: result.claims.filter((c) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
       sourceCount: result.sources.length,
       claimCount: result.claims.length,
       contradictionCount: result.contradictions?.length || 0,
       responseTimeMs: Date.now() - queryStart,
       depth,
     });
-  } catch { /* non-critical */ }
+  } catch (e) { console.warn("Failed to record learning signals:", e instanceof Error ? e.message : e); }
 
   return result;
 }

@@ -206,6 +206,7 @@ const Sessions = () => {
                 <input
                   type="text"
                   placeholder="Session name (optional)"
+                  aria-label="Session name"
                   value={newSessionName}
                   onChange={(e) => setNewSessionName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreateSession()}
@@ -237,10 +238,11 @@ const Sessions = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-3" role="list">
                 {sessions.map((session) => (
                   <motion.div
                     key={session.id}
+                    role="listitem"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors cursor-pointer group"
@@ -269,6 +271,7 @@ const Sessions = () => {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label="Delete session"
                       className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();

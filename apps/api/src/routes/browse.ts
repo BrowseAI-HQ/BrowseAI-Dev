@@ -76,12 +76,12 @@ async function checkPremiumQuota(
   return { exceeded: used >= FREE_PREMIUM_DAILY_LIMIT, used, limit: FREE_PREMIUM_DAILY_LIMIT, resetsInSeconds };
 }
 
-/** Increment premium usage counter after a successful premium query */
-async function incrementPremiumUsage(userId: string, cache: CacheService): Promise<void> {
+/** Increment premium usage counter after a successful premium query (atomic) */
+async function incrementPremiumUsage(userId: string, cache: CacheService, cost: number = 1): Promise<void> {
   const key = `premium_quota:${userId}`;
-  const current = await cache.get(key);
-  const count = current ? parseInt(current, 10) : 0;
-  await cache.set(key, String(count + 1), PREMIUM_WINDOW_SECONDS);
+  for (let i = 0; i < cost; i++) {
+    await cache.incr(key, PREMIUM_WINDOW_SECONDS);
+  }
 }
 
 async function getRequestEnv(
@@ -204,12 +204,10 @@ async function checkDemoLimit(
   if (isOwnKeys) return null;
   const ip = request.ip;
   const key = `demo:${ip}`;
-  const current = await cache.get(key);
-  const count = current ? parseInt(current, 10) : 0;
-  if (count >= DEMO_LIMIT) {
+  const count = await cache.incr(key, DEMO_WINDOW_SECONDS);
+  if (count > DEMO_LIMIT) {
     return `Demo limit reached (${DEMO_LIMIT}/hour). Sign in and create a free BAI key at browseai.dev/dashboard for unlimited access with premium features.`;
   }
-  await cache.set(key, String(count + 1), DEMO_WINDOW_SECONDS);
   return null;
 }
 
@@ -226,20 +224,22 @@ function detectClient(request: FastifyRequest): string {
   return "api";
 }
 
-function isKeyError(e: any): boolean {
-  return e.message?.includes("Invalid") && e.message?.includes("key");
+function isKeyError(e: unknown): boolean {
+  const err = e as { message?: string };
+  return !!err.message?.includes("Invalid") && !!err.message?.includes("key");
 }
 
-function errorResponse(e: any, fallbackMsg: string): { status: number; error: string } {
-  if (e.statusCode && e.message) return { status: e.statusCode, error: e.message };
-  const msg = e.message || "";
+function errorResponse(e: unknown, fallbackMsg: string): { status: number; error: string } {
+  const err = e as { statusCode?: number; message?: string };
+  if (err.statusCode && err.message) return { status: err.statusCode, error: err.message };
+  const msg = err.message || "";
   // Specific key error categories (expired vs invalid vs forbidden)
   if (msg.includes("expired") || msg.includes("trial ended")) return { status: 402, error: msg };
   if (msg.includes("credits exhausted") || msg.includes("Top up")) return { status: 402, error: msg };
   if (msg.includes("forbidden") || msg.includes("revoked")) return { status: 403, error: msg };
   if (isKeyError(e)) return { status: 401, error: msg || "Invalid API key. Check your key in Settings." };
   if (msg.includes("Rate limit") || msg.includes("rate limit") || msg.includes("429")) return { status: 429, error: "Rate limit exceeded. Please try again in a minute." };
-  if (msg.includes("credits") || msg.includes("insufficient") || msg.includes("402")) return { status: 402, error: "Insufficient API credits. Top up your Tavily or OpenRouter account." };
+  if (msg.includes("credits") || msg.includes("insufficient") || msg.includes("402")) return { status: 402, error: msg };
   if (msg.includes("No search results")) return { status: 404, error: "No results found. Try rephrasing your question." };
   if (msg.includes("Tavily") || msg.includes("search failed")) return { status: 502, error: "Search service temporarily unavailable. Please try again." };
   if (msg.includes("LLM") || msg.includes("parse")) return { status: 502, error: "AI processing error. Please try again." };
@@ -278,7 +278,7 @@ export function registerBrowseRoutes(
         const browseResult = {
           answer: "",
           claims: [],
-          sources: result.results.map((r: any) => ({
+          sources: result.results.map((r: { url: string; title: string; content?: string }) => ({
             url: r.url,
             title: r.title,
             domain: new URL(r.url).hostname.replace(/^www\./, ""),
@@ -290,7 +290,7 @@ export function registerBrowseRoutes(
         store.save(parsed.data.query, browseResult, userId, "search", { client });
       }
       return { success: true, result };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Search failed");
       return reply.status(status).send({ success: false, error });
@@ -311,10 +311,11 @@ export function registerBrowseRoutes(
 
       const result = await openPage(parsed.data.url, cache);
       return { success: true, result: result.page };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
-      const msg = e.message?.includes("not allowed") ? e.message : "Failed to open page";
-      const { status, error } = e.statusCode ? { status: e.statusCode, error: e.message } : { status: 500, error: msg };
+      const err = e as { statusCode?: number; message?: string };
+      const msg = err.message?.includes("not allowed") ? err.message : "Failed to open page";
+      const { status, error } = err.statusCode ? { status: err.statusCode, error: err.message || msg } : { status: 500, error: msg };
       return reply.status(status).send({ success: false, error });
     }
   });
@@ -337,7 +338,7 @@ export function registerBrowseRoutes(
         cache
       );
       return { success: true, result };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Extraction failed");
       return reply.status(status).send({ success: false, error });
@@ -358,7 +359,7 @@ export function registerBrowseRoutes(
       // Build answer options with optional search provider
       const answerOpts: AnswerOptions = {};
       if (parsed.data.searchProvider) {
-        const providerConfig = parsed.data.searchProvider;
+        const providerConfig = parsed.data.searchProvider as import("@browse/shared").SearchProviderConfig;
         answerOpts.searchProvider = createSearchProvider({
           ...providerConfig,
           // API keys for enterprise providers come from the provider config, not env
@@ -369,12 +370,12 @@ export function registerBrowseRoutes(
 
       // Deep mode requires premium (uses our HF key for multiple re-rank + NLI passes).
       // Gracefully fall back to thorough if premium isn't active.
-      let effectiveDepth = parsed.data.depth;
+      let effectiveDepth = parsed.data.depth as "fast" | "thorough" | "deep";
       if (effectiveDepth === "deep" && !premiumActive) {
         effectiveDepth = "thorough";
       }
 
-      const result = await answerQuery(parsed.data.query, reqEnv, cache, effectiveDepth, undefined, answerOpts);
+      const result = await answerQuery(parsed.data.query as string, reqEnv, cache, effectiveDepth, undefined, answerOpts);
       const client = detectClient(request);
       const noRetention = answerOpts.dataRetention === "none";
       const cacheHit = result.trace?.[0]?.step === "Cache Hit";
@@ -391,7 +392,7 @@ export function registerBrowseRoutes(
             urlToDomain.set(s.url, s.domain?.replace(/^www\./, "") || "");
           }
           for (const claim of result.claims) {
-            const isVerified = (claim as any).verified === true;
+            const isVerified = claim.verified === true;
             for (const url of claim.sources || []) {
               const domain = urlToDomain.get(url);
               if (!domain) continue;
@@ -415,7 +416,7 @@ export function registerBrowseRoutes(
             verified_count: stats.verified,
             total_count: stats.total,
           }));
-          store.updateDomainScores(dbUpdates).catch(() => {});
+          store.updateDomainScores(dbUpdates).catch((err) => console.warn("Failed to persist domain scores:", err));
 
           // Also persist accumulated dynamic scores to domain_authority table
           const authorityUpdates = [...domainUpdates.keys()]
@@ -429,9 +430,9 @@ export function registerBrowseRoutes(
               };
             })
             .filter((u): u is NonNullable<typeof u> => u !== null);
-          store.saveDomainAuthority(authorityUpdates).catch(() => {});
-        } catch {
-          // Non-critical — don't fail the response
+          store.saveDomainAuthority(authorityUpdates).catch((err) => console.warn("Failed to persist domain authority:", err));
+        } catch (e) {
+          console.warn("Failed to update domain authority:", e instanceof Error ? e.message : e);
         }
       }
 
@@ -439,8 +440,7 @@ export function registerBrowseRoutes(
       // Deep mode counts as 3x since it uses multiple HF re-rank + NLI passes
       if (premiumActive && userId) {
         const quotaCost = effectiveDepth === "deep" ? 3 : 1;
-        const incrementAll = Array.from({ length: quotaCost }, () => incrementPremiumUsage(userId, cache));
-        Promise.all(incrementAll).catch(() => {});
+        incrementPremiumUsage(userId, cache, quotaCost).catch((err) => console.warn("Failed to increment premium quota:", err));
       }
 
       return {
@@ -448,7 +448,7 @@ export function registerBrowseRoutes(
         result: { ...result, shareId, effectiveDepth },
         ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }),
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Answer generation failed");
       return reply.status(status).send({ success: false, error });
@@ -481,9 +481,10 @@ export function registerBrowseRoutes(
       };
 
       // Deep mode requires premium — fall back to thorough for streaming too
-      const streamDepth = parsed.data.depth === "deep" && !premiumActive ? "thorough" : parsed.data.depth;
+      const reqDepth = parsed.data.depth as "fast" | "thorough" | "deep";
+      const streamDepth: "fast" | "thorough" | "deep" = reqDepth === "deep" && !premiumActive ? "thorough" : reqDepth;
 
-      const result = await answerQueryStreaming(parsed.data.query, reqEnv, cache, emit, streamDepth);
+      const result = await answerQueryStreaming(parsed.data.query as string, reqEnv, cache, emit, streamDepth);
 
       // Respect dataRetention from searchProvider config
       const noRetention = parsed.data.searchProvider?.dataRetention === "none";
@@ -497,13 +498,12 @@ export function registerBrowseRoutes(
       // Deep mode counts as 3x
       if (premiumActive && userId) {
         const quotaCost = streamDepth === "deep" ? 3 : 1;
-        const incrementAll = Array.from({ length: quotaCost }, () => incrementPremiumUsage(userId, cache));
-        Promise.all(incrementAll).catch(() => {});
+        incrementPremiumUsage(userId, cache, quotaCost).catch((err) => console.warn("Failed to increment premium quota:", err));
       }
 
       reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId, effectiveDepth: streamDepth, ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }) })}\n\n`);
       reply.raw.end();
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       const { error } = errorResponse(e, "Answer generation failed");
       // If headers already sent, send error as SSE event
@@ -530,7 +530,7 @@ export function registerBrowseRoutes(
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
       const result = await compareAnswers(parsed.data.query, reqEnv, cache);
       return { success: true, result };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Comparison failed");
       return reply.status(status).send({ success: false, error });
@@ -546,16 +546,21 @@ export function registerBrowseRoutes(
         return reply.status(404).send({ success: false, error: "Result not found" });
       }
       return { success: true, result: data };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to retrieve result" });
     }
   });
 
   // Stats: total queries answered
-  app.get("/browse/stats", async () => {
-    const count = await store.count();
-    return { success: true, result: { totalQueries: count } };
+  app.get("/browse/stats", async (_request, reply) => {
+    try {
+      const count = await store.count();
+      return { success: true, result: { totalQueries: count } };
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      return reply.status(500).send({ success: false, error: err.message || "Failed to fetch stats" });
+    }
   });
 
   // User stats (auth required)
@@ -575,18 +580,28 @@ export function registerBrowseRoutes(
   });
 
   // Top sources (public — great for marketing)
-  app.get("/browse/sources/top", async (request) => {
-    const { limit } = request.query as { limit?: string };
-    const topSources = await store.getTopSources(limit ? parseInt(limit) : 20);
-    return { success: true, result: topSources };
+  app.get("/browse/sources/top", async (request, reply) => {
+    try {
+      const { limit } = request.query as { limit?: string };
+      const topSources = await store.getTopSources(limit ? parseInt(limit, 10) : 20);
+      return { success: true, result: topSources };
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      return reply.status(500).send({ success: false, error: err.message || "Failed to fetch top sources" });
+    }
   });
 
   // Analytics summary (auth required)
   app.get("/browse/analytics/summary", async (request, reply) => {
-    const userId = await getUserIdFromRequest(request);
-    if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
-    const summary = await store.getAnalyticsSummary();
-    return { success: true, result: summary };
+    try {
+      const userId = await getUserIdFromRequest(request);
+      if (!userId) return reply.status(401).send({ success: false, error: "Not authenticated" });
+      const summary = await store.getAnalyticsSummary();
+      return { success: true, result: summary };
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      return reply.status(500).send({ success: false, error: err.message || "Failed to fetch analytics summary" });
+    }
   });
 
   // User feedback on a result (rate-limited: 10/hour per IP)
@@ -598,13 +613,14 @@ export function registerBrowseRoutes(
     // Rate limit feedback: 10/hour per IP to prevent learning poisoning
     const ip = request.ip || "unknown";
     const feedbackKey = `feedback:${ip}`;
-    const feedbackCount = parseInt((await cache.get(feedbackKey)) || "0");
-    if (feedbackCount >= 10) {
+    const feedbackCount = await cache.incr(feedbackKey, 3600);
+    if (feedbackCount > 10) {
       return reply.status(429).send({ success: false, error: "Feedback rate limit exceeded (10/hour)" });
     }
-    await cache.set(feedbackKey, String(feedbackCount + 1), 3600);
 
-    const { resultId, rating, claimIndex } = parsed.data;
+    const resultId = parsed.data.resultId as string;
+    const rating = parsed.data.rating as "good" | "bad" | "wrong";
+    const claimIndex = parsed.data.claimIndex as number | undefined;
 
     // Validate resultId exists before recording feedback
     const stored = await store.get(resultId);
@@ -626,7 +642,7 @@ export function registerBrowseRoutes(
     // Refresh confidence calibration every 10 feedbacks (non-blocking)
     store.getCalibrationData().then(buckets => {
       if (buckets.length > 0) setCalibrationData(buckets);
-    }).catch(() => {});
+    }).catch((err) => console.warn("Failed to refresh calibration data:", err));
 
     return { success: true, result: { recorded: true } };
   });

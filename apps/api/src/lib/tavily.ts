@@ -85,7 +85,7 @@ export async function validateTavilyKey(
     const text = await res.text();
     const err = categorizeTavilyError(res.status, text);
     return { valid: false, error: err.message };
-  } catch (e: any) {
-    return { valid: false, error: e.message || "Network error validating Tavily key" };
+  } catch (e: unknown) {
+    return { valid: false, error: e instanceof Error ? e.message : "Network error validating Tavily key" };
   }
 }

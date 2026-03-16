@@ -16,9 +16,12 @@ from .models import (
     CompareResult,
     Contradiction,
     KnowledgeEntry,
+    NLIScore,
     PageResult,
+    PremiumQuota,
     ReasoningStep,
     RecallResult,
+    SearchProviderConfig,
     SearchResult,
     Session,
     SessionAskResult,
@@ -47,6 +50,9 @@ __all__ = [
     "KnowledgeEntry",
     "SessionAskResult",
     "RecallResult",
+    "PremiumQuota",
+    "SearchProviderConfig",
+    "NLIScore",
 ]
 
 __version__ = "0.1.7"

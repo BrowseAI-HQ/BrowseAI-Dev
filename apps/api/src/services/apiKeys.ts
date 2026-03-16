@@ -57,6 +57,11 @@ export function createApiKeyService(
     return res;
   }
 
+  /** Sanitize a value for PostgREST query parameters to prevent filter injection */
+  function sanitizePostgrestParam(value: string): string {
+    return value.replace(/[^a-zA-Z0-9_-]/g, "");
+  }
+
   const service: ApiKeyService = {
     async create(userId, tavilyKey, openrouterKey, label = "Default") {
       const { plaintext, hash, prefix } = generateApiKey();
@@ -102,7 +107,7 @@ export function createApiKeyService(
 
     async list(userId) {
       const res = await supabaseFetch(
-        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=id,api_key_prefix,label,created_at,last_used_at,revoked&order=created_at.desc`
+        `/user_api_keys?user_id=eq.${sanitizePostgrestParam(userId)}&revoked=eq.false&select=id,api_key_prefix,label,created_at,last_used_at,revoked&order=created_at.desc`
       );
       if (!res.ok) return [];
       return res.json();
@@ -111,7 +116,7 @@ export function createApiKeyService(
     async revoke(userId, keyId) {
       // Stripe-style: revoke + wipe credentials, keep metadata for audit
       const res = await supabaseFetch(
-        `/user_api_keys?id=eq.${keyId}&user_id=eq.${userId}`,
+        `/user_api_keys?id=eq.${sanitizePostgrestParam(keyId)}&user_id=eq.${sanitizePostgrestParam(userId)}`,
         {
           method: "PATCH",
           body: JSON.stringify({
@@ -134,7 +139,7 @@ export function createApiKeyService(
 
       const hash = hashApiKey(apiKey);
       const res = await supabaseFetch(
-        `/user_api_keys?api_key_hash=eq.${hash}&revoked=eq.false&select=user_id,tavily_key_encrypted,tavily_key_iv,openrouter_key_encrypted,openrouter_key_iv`
+        `/user_api_keys?api_key_hash=eq.${sanitizePostgrestParam(hash)}&revoked=eq.false&select=user_id,tavily_key_encrypted,tavily_key_iv,openrouter_key_encrypted,openrouter_key_iv`
       );
 
       if (!res.ok) return null;
@@ -163,7 +168,7 @@ export function createApiKeyService(
     async resolveByUserId(userId) {
       // Get all active keys ordered by most recently used, then most recently created
       const res = await supabaseFetch(
-        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=api_key_hash,tavily_key_encrypted,tavily_key_iv,openrouter_key_encrypted,openrouter_key_iv&order=last_used_at.desc.nullslast,created_at.desc&limit=5`
+        `/user_api_keys?user_id=eq.${sanitizePostgrestParam(userId)}&revoked=eq.false&select=api_key_hash,tavily_key_encrypted,tavily_key_iv,openrouter_key_encrypted,openrouter_key_iv&order=last_used_at.desc.nullslast,created_at.desc&limit=5`
       );
 
       if (!res.ok) return null;
@@ -200,7 +205,7 @@ export function createApiKeyService(
 
     async countActive(userId) {
       const res = await supabaseFetch(
-        `/user_api_keys?user_id=eq.${userId}&revoked=eq.false&select=id`,
+        `/user_api_keys?user_id=eq.${sanitizePostgrestParam(userId)}&revoked=eq.false&select=id`,
         { headers: { Prefer: "count=exact" } }
       );
       if (!res.ok) return 0;
@@ -210,12 +215,12 @@ export function createApiKeyService(
 
     async updateLastUsed(keyHash) {
       await supabaseFetch(
-        `/user_api_keys?api_key_hash=eq.${keyHash}`,
+        `/user_api_keys?api_key_hash=eq.${sanitizePostgrestParam(keyHash)}`,
         {
           method: "PATCH",
           body: JSON.stringify({ last_used_at: new Date().toISOString() }),
         }
-      ).catch(() => {});
+      ).catch((err) => console.warn("Failed to update API key last_used_at:", err));
     },
   };
 

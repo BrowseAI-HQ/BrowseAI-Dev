@@ -34,14 +34,15 @@ export async function braveSearch(
     if (!res.ok) return [];
 
     const data = await res.json();
-    return (data.web?.results || []).map((r: any, i: number) => ({
+    return (data.web?.results || []).map((r: { title?: string; url: string; description?: string }, i: number) => ({
       title: r.title || "",
       url: r.url,
       description: r.description || "",
       // Brave doesn't provide relevance scores; approximate from position
       score: Math.max(0.3, 1 - i * 0.07),
     }));
-  } catch {
+  } catch (e) {
+    console.warn("Brave search failed:", e instanceof Error ? e.message : e);
     return [];
   }
 }

@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { CreateSessionSchema, SessionAskSchema, RecallSchema, AnswerRequestSchema } from "@browse/shared";
+import { CreateSessionSchema, SessionAskSchema, RecallSchema } from "@browse/shared";
+import type { BrowseClaim } from "@browse/shared";
 import { answerQuery } from "../services/answer.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import type { CacheService } from "../services/cache.js";
@@ -27,9 +28,7 @@ async function checkPremiumQuota(userId: string, cache: CacheService): Promise<{
 
 async function incrementPremiumUsage(userId: string, cache: CacheService): Promise<void> {
   const key = `premium_quota:${userId}`;
-  const current = await cache.get(key);
-  const count = current ? parseInt(current, 10) : 0;
-  await cache.set(key, String(count + 1), PREMIUM_WINDOW_SECONDS);
+  await cache.incr(key, PREMIUM_WINDOW_SECONDS);
 }
 
 /** Resolve request env — mirrors browse.ts getRequestEnv with tier gating + quota */
@@ -133,9 +132,10 @@ export function registerSessionRoutes(
       const { userId } = await getRequestEnv(request, env, apiKeyService, cache);
       const session = await sessionStore.createSession(parsed.data.name, userId || undefined);
       return { success: true, result: session };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
-      return reply.status(e.statusCode || 500).send({ success: false, error: e.message || "Failed to create session" });
+      const err = e as { statusCode?: number; message?: string };
+      return reply.status(err.statusCode || 500).send({ success: false, error: err.message || "Failed to create session" });
     }
   });
 
@@ -150,7 +150,7 @@ export function registerSessionRoutes(
         return reply.status(403).send({ success: false, error: "Not authorized to access this session" });
       }
       return { success: true, result: session };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to get session" });
     }
@@ -163,7 +163,7 @@ export function registerSessionRoutes(
       if (!userId) return reply.status(401).send({ success: false, error: "Authentication required" });
       const sessions = await sessionStore.listSessions(userId);
       return { success: true, result: sessions };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to list sessions" });
     }
@@ -182,7 +182,7 @@ export function registerSessionRoutes(
       }
       await sessionStore.deleteSession(id);
       return { success: true };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to delete session" });
     }
@@ -232,7 +232,8 @@ export function registerSessionRoutes(
       }
 
       // Deep mode requires premium — fall back to thorough if premium isn't active
-      const effectiveDepth = parsed.data.depth === "deep" && !premiumActive ? "thorough" : parsed.data.depth;
+      const depth = parsed.data.depth as "fast" | "thorough" | "deep";
+      const effectiveDepth: "fast" | "thorough" | "deep" = depth === "deep" && !premiumActive ? "thorough" : depth;
 
       // Phase 2: Run the answer pipeline with contextualized query + session context for LLM
       const result = await answerQuery(searchQuery, reqEnv, cache, effectiveDepth, sessionContext || undefined);
@@ -260,12 +261,12 @@ export function registerSessionRoutes(
       const newClaims = result.claims.filter(
         (c) => !recalled.some((r) => r.claim === c.claim)
       );
-      sessionStore.storeKnowledge(id, newClaims, parsed.data.query).catch(() => {});
-      sessionStore.touchSession(id).catch(() => {});
+      sessionStore.storeKnowledge(id, newClaims, parsed.data.query).catch((err) => console.warn("Failed to store session knowledge:", err));
+      sessionStore.touchSession(id).catch((err) => console.warn("Failed to touch session:", err));
 
       // Increment premium quota counter if premium was used
       if (premiumActive && userId) {
-        incrementPremiumUsage(userId, cache).catch(() => {});
+        incrementPremiumUsage(userId, cache).catch((err) => console.warn("Failed to increment premium usage:", err));
       }
 
       // Save to main store too
@@ -293,13 +294,14 @@ export function registerSessionRoutes(
         },
         ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }),
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
-      return reply.status(e.statusCode || 500).send({ success: false, error: e.message || "Session ask failed" });
+      const err = e as { statusCode?: number; message?: string };
+      return reply.status(err.statusCode || 500).send({ success: false, error: err.message || "Session ask failed" });
     }
   });
 
-  // Recall — query session knowledge without new web search
+  // Recall — query session knowledge without new web search (shared between agents and humans)
   app.post("/session/:id/recall", async (request, reply) => {
     const { id } = request.params as { id: string };
     const parsed = RecallSchema.safeParse(request.body);
@@ -319,7 +321,7 @@ export function registerSessionRoutes(
           count: entries.length,
         },
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Recall failed" });
     }
@@ -347,7 +349,7 @@ export function registerSessionRoutes(
           count: entries.length,
         },
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to export knowledge" });
     }
@@ -367,7 +369,7 @@ export function registerSessionRoutes(
 
       const shareId = await sessionStore.shareSession(id);
       return { success: true, result: { shareId } };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to share session" });
     }
@@ -380,7 +382,7 @@ export function registerSessionRoutes(
       const data = await sessionStore.getSharedSession(shareId);
       if (!data) return reply.status(404).send({ success: false, error: "Shared session not found" });
       return { success: true, result: data };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
       return reply.status(500).send({ success: false, error: "Failed to load shared session" });
     }
@@ -404,13 +406,13 @@ export function registerSessionRoutes(
 
       // Copy knowledge entries
       if (shared.entries.length > 0) {
-        const claims = shared.entries.map((e) => ({
+        const claims: BrowseClaim[] = shared.entries.map((e) => ({
           claim: e.claim,
           sources: e.sources,
           verified: e.verified,
           verificationScore: e.confidence,
         }));
-        await sessionStore.storeKnowledge(newSession.id, claims as any, "forked from shared session");
+        await sessionStore.storeKnowledge(newSession.id, claims, "forked from shared session");
       }
 
       return {
@@ -420,9 +422,10 @@ export function registerSessionRoutes(
           claimsForked: shared.entries.length,
         },
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       request.log.error(e);
-      return reply.status(e.statusCode || 500).send({ success: false, error: e.message || "Failed to fork session" });
+      const err = e as { statusCode?: number; message?: string };
+      return reply.status(err.statusCode || 500).send({ success: false, error: err.message || "Failed to fork session" });
     }
   });
 }

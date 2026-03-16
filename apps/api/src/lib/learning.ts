@@ -418,7 +418,7 @@ function maybeAutoPersist(): void {
   signalsSinceLastPersist++;
   if (signalsSinceLastPersist >= PERSIST_INTERVAL && persistCache) {
     signalsSinceLastPersist = 0;
-    persistLearningState().catch(() => { /* non-critical */ });
+    persistLearningState().catch((err) => console.warn("Failed to persist learning state:", err));
   }
 }
 
