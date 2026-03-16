@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "browseai"
+version = "0.2.0"
+description = "Research infrastructure for AI agents. This package now installs browseaidev — the updated package name for BrowseAI Dev."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = ["browseaidev>=0.1.7"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "https://browseai.dev"
+Repository = "https://github.com/BrowseAI-HQ/BrowseAI-Dev"
+Documentation = "https://browseai.dev/developers"
+
+[project.scripts]
+browseai = "browseaidev.cli:main"
