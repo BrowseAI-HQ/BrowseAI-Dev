@@ -317,35 +317,30 @@ async function fetchPackageStats(): Promise<{
   github: { stars: number; forks: number; openIssues: number } | null;
 }> {
   const [npm, pypi, github] = await Promise.all([
-    // npm weekly downloads
-    fetch("https://api.npmjs.org/downloads/point/last-week/browseai-dev")
-      .then(async (r) => {
-        if (!r.ok) return null;
-        const data = await r.json();
-        // Also get total (all-time) — npm only gives ranges, use last-year as proxy
-        const totalRes = await fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browseai-dev");
-        const totalData = totalRes.ok ? await totalRes.json() : null;
-        return {
-          weeklyDownloads: data.downloads || 0,
-          totalDownloads: totalData?.downloads || 0,
-        };
-      })
-      .catch(() => null),
-    // PyPI downloads (use pypistats API)
-    fetch("https://pypistats.org/api/packages/browseaidev/recent?period=week")
-      .then(async (r) => {
-        if (!r.ok) return null;
-        const data = await r.json();
-        // Get overall stats
-        const overallRes = await fetch("https://pypistats.org/api/packages/browseaidev/overall?mirrors=false");
-        const overallData = overallRes.ok ? await overallRes.json() : null;
-        const totalDownloads = overallData?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
-        return {
-          weeklyDownloads: data.data?.last_week || 0,
-          totalDownloads,
-        };
-      })
-      .catch(() => null),
+    // npm weekly downloads (combine old browse-ai + new browseai-dev)
+    Promise.all([
+      fetch("https://api.npmjs.org/downloads/point/last-week/browseai-dev").then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("https://api.npmjs.org/downloads/point/last-week/browse-ai").then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browseai-dev").then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("https://api.npmjs.org/downloads/point/2000-01-01:2030-01-01/browse-ai").then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([newWeek, oldWeek, newTotal, oldTotal]) => ({
+      weeklyDownloads: (newWeek?.downloads || 0) + (oldWeek?.downloads || 0),
+      totalDownloads: (newTotal?.downloads || 0) + (oldTotal?.downloads || 0),
+    })).catch(() => null),
+    // PyPI downloads (combine old browseai + new browseaidev)
+    Promise.all([
+      fetch("https://pypistats.org/api/packages/browseaidev/recent?period=week").then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("https://pypistats.org/api/packages/browseai/recent?period=week").then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("https://pypistats.org/api/packages/browseaidev/overall?mirrors=false").then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("https://pypistats.org/api/packages/browseai/overall?mirrors=false").then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([newWeek, oldWeek, newTotal, oldTotal]) => {
+      const newTotalDl = newTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
+      const oldTotalDl = oldTotal?.data?.reduce((s: number, d: { downloads: number }) => s + d.downloads, 0) || 0;
+      return {
+        weeklyDownloads: (newWeek?.data?.last_week || 0) + (oldWeek?.data?.last_week || 0),
+        totalDownloads: newTotalDl + oldTotalDl,
+      };
+    }).catch(() => null),
     // GitHub stats
     fetch("https://api.github.com/repos/BrowseAI-HQ/BrowseAI-Dev")
       .then(async (r) => {
