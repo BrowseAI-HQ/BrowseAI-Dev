@@ -13,6 +13,7 @@ import { BrowseLogo } from "@/components/BrowseLogo";
 const NAV_ITEMS = [
   { id: "pipeline", label: "Pipeline", icon: Layers },
   { id: "thorough-mode", label: "Thorough Mode", icon: Zap },
+  { id: "deep-mode", label: "Deep Mode", icon: Layers },
   { id: "research-sessions", label: "Research Sessions", icon: Brain },
   { id: "verification", label: "Verification", icon: Shield },
   { id: "confidence", label: "Confidence Score", icon: BarChart3 },
@@ -200,6 +201,87 @@ result = client.ask("What is quantum computing?", depth="thorough")`}</CodeBlock
 
             <CodeBlock label="Website">{`Toggle "Fast Mode" → "Thorough Mode" below the search bar, then search.
 Or append &depth=thorough to the results URL.`}</CodeBlock>
+          </Section>
+
+          {/* Deep Mode */}
+          <Section id="deep-mode" title="Deep Mode" icon={Layers}>
+            <p>
+              For complex research requiring comprehensive analysis, use <strong className="text-foreground">deep mode</strong>.
+              Unlike thorough mode (2 passes), deep mode runs an <strong className="text-foreground">iterative agentic research loop</strong> that
+              identifies knowledge gaps and fills them with targeted follow-up searches.
+            </p>
+
+            <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
+              <h4 className="text-sm font-semibold text-foreground mb-2">How deep mode works</h4>
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>Runs the full pipeline (search, fetch, extract, verify) — same as a fast pass</li>
+                <li>If confidence is below 85%, triggers <strong>gap analysis</strong> — LLM identifies what's missing</li>
+                <li>Generates targeted follow-up search queries to fill those gaps</li>
+                <li>Runs additional search passes for each follow-up query</li>
+                <li>Merges claims and sources across all passes (deduplicating by content overlap)</li>
+                <li>Re-verifies all merged claims against all page texts</li>
+                <li>Repeats steps 2-6 up to 3 times or until confidence reaches 85%</li>
+              </ol>
+            </div>
+
+            <div className="p-4 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+              <h4 className="text-sm font-semibold text-foreground mb-2">Quota &amp; requirements</h4>
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                <li>Deep mode costs <strong>3x</strong> a normal query against your premium quota</li>
+                <li>Requires a BrowseAI API key (<code className="bg-secondary px-1 rounded">bai_xxx</code>) — not available with BYOK</li>
+                <li>Falls back to thorough mode if premium quota is exceeded</li>
+                <li>Latency: 10-30s depending on how many follow-up rounds are needed</li>
+              </ul>
+            </div>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">When to use it</h4>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Multi-faceted research questions with several dimensions to cover</li>
+              <li>When you need the highest possible confidence and completeness</li>
+              <li>Topics where a single search pass can't surface all the relevant information</li>
+              <li>Agent workflows that need to minimize hallucination risk</li>
+            </ul>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Response extras</h4>
+            <p>
+              Deep mode responses include a <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">reasoningSteps</code> array showing
+              each research iteration — the query used, gaps identified, claim count, and running confidence.
+              This gives full transparency into the agent's research process.
+            </p>
+
+            <h4 className="text-sm font-semibold text-foreground pt-2">Usage</h4>
+
+            <CodeBlock label="REST API">{`curl -X POST https://browseai.dev/api/browse/answer \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer bai_xxx" \\
+  -d '{"query": "Compare RISC-V vs ARM for edge AI inference", "depth": "deep"}'`}</CodeBlock>
+
+            <CodeBlock label="Python SDK">{`from browseai import BrowseAI
+
+client = BrowseAI(api_key="bai_xxx")
+
+# Deep — iterative research with gap analysis
+result = client.ask(
+    "Compare RISC-V vs ARM for edge AI inference",
+    depth="deep"
+)
+
+# See the reasoning steps
+for step in result.reasoning_steps:
+    print(f"Step {step['step']}: {step['query']} → {step['confidence']:.0%}")`}</CodeBlock>
+
+            <CodeBlock label="MCP (Claude Desktop)">{`Ask Claude: "Use browse_answer with depth deep to compare RISC-V vs ARM for edge AI"`}</CodeBlock>
+
+            <CodeBlock label="Streaming (SSE)">{`curl -N -X POST https://browseai.dev/api/browse/answer/stream \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer bai_xxx" \\
+  -d '{"query": "Compare RISC-V vs ARM for edge AI", "depth": "deep"}'
+
+# Emits reasoning_step events as research progresses:
+# event: reasoning_step
+# data: {"step":1,"query":"Compare RISC-V vs ARM...","confidence":0.62}
+# event: reasoning_step
+# data: {"step":2,"query":"RISC-V edge AI benchmarks","confidence":0.78}`}</CodeBlock>
           </Section>
 
           {/* Research Sessions */}
@@ -499,7 +581,7 @@ Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/search</td><td className="py-2">Search the web</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/open</td><td className="py-2">Fetch and parse a page</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/extract</td><td className="py-2">Extract structured claims from a page</td></tr>
-                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer</td><td className="py-2">Full pipeline with citations. Accepts <code className="bg-secondary px-1 rounded">depth: "fast" | "thorough"</code></td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer</td><td className="py-2">Full pipeline with citations. Accepts <code className="bg-secondary px-1 rounded">depth: "fast" | "thorough" | "deep"</code></td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/compare</td><td className="py-2">Compare raw LLM vs evidence-backed answer</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer/stream</td><td className="py-2">Streaming answer via SSE — real-time progress events</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /session</td><td className="py-2">Create a research session</td></tr>
@@ -530,6 +612,7 @@ client = BrowseAI(api_key="bai_xxx")
 # Full pipeline
 result = client.ask("What is quantum computing?")
 result = client.ask("What is quantum computing?", depth="thorough")
+result = client.ask("What is quantum computing?", depth="deep")
 
 # Individual tools
 results = client.search("AI news", limit=5)
