@@ -6,7 +6,7 @@
 
 BrowseAI Dev is open-source research infrastructure that gives AI agents real-time web search with evidence-backed citations. It returns structured JSON (claims, sources, confidence, contradictions) that agents can programmatically evaluate — not a chat response.
 
-Available as MCP server (npm: browseai-dev), REST API, and Python SDK (PyPI: browseaidev). MIT licensed.
+Available as MCP server (npm: browseai-dev, renamed from browse-ai — old name still works), REST API, and Python SDK (PyPI: browseaidev, renamed from browseai — old name still works). MIT licensed.
 
 ## Why Use BrowseAI Dev?
 
@@ -253,8 +253,8 @@ Optional: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (persistence).
 - Documentation: https://browseai.dev/docs
 - Playground: https://browseai.dev/playground
 - GitHub: https://github.com/BrowseAI-HQ/BrowseAI-Dev
-- npm: https://www.npmjs.com/package/browseai-dev
-- PyPI: https://pypi.org/project/browseaidev/
+- npm: https://www.npmjs.com/package/browseai-dev (renamed from browse-ai, old name still works)
+- PyPI: https://pypi.org/project/browseaidev/ (renamed from browseai, old name still works)
 - Agent Skills: https://github.com/BrowseAI-HQ/browseAIDev_Skills
 - Discord: https://discord.gg/ubAuT4YQsT
 - License: MIT

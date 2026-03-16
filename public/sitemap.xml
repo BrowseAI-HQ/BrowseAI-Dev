@@ -36,6 +36,21 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://browseai.dev/llms.txt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://browseai.dev/llms-full.txt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://browseai.dev/.well-known/ai-plugin.json</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://browseai.dev/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
