@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "browseai"
-version = "0.4.0"
+version = "0.2.0"
 description = "Research infrastructure for AI agents. This package now installs browseaidev — the updated package name for BrowseAI Dev."
 readme = "README.md"
 license = "MIT"
