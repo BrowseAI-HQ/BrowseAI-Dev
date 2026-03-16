@@ -183,14 +183,20 @@ describe("Session routes", () => {
   });
 
   it("deletes a session", async () => {
+    const token = createTestJWT("user-del");
     const createRes = await app.inject({
       method: "POST",
       url: "/session",
       payload: { name: "Delete Me" },
+      headers: { authorization: `Bearer ${token}` },
     });
     const { id } = createRes.json().result;
 
-    const res = await app.inject({ method: "DELETE", url: `/session/${id}` });
+    const res = await app.inject({
+      method: "DELETE",
+      url: `/session/${id}`,
+      headers: { authorization: `Bearer ${token}` },
+    });
     expect(res.statusCode).toBe(200);
     expect(res.json().success).toBe(true);
   });
