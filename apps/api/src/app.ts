@@ -19,7 +19,6 @@ export async function buildApp() {
 
   const app = Fastify({ logger: true });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Fastify plugin type mismatch with @fastify/cors
   await app.register(cors as any, {
     origin: true, // Allow all origins — API is public, protected by auth tokens + rate limiting
     methods: ["GET", "POST", "DELETE", "OPTIONS"],

@@ -276,7 +276,7 @@ async function extractKnowledge(query: string, pageContents: string) {
   try {
     return JSON.parse(toolCall.function.arguments);
   } catch (e) {
-    throw new Error(`Failed to parse LLM tool call arguments: ${(e as Error).message}. Raw: ${toolCall.function.arguments}`);
+    throw new Error(`Failed to parse LLM tool call arguments: ${(e as Error).message}. Raw: ${toolCall.function.arguments}`, { cause: e });
   }
 }
 
