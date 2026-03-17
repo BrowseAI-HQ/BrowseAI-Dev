@@ -68,6 +68,10 @@ apps/mcp/.smithery/
 .mcpregistry*
 apps/mcp/.mcpregistry*
 
+# Benchmark data and results (large, regenerated)
+benchmarks/data/
+benchmarks/results/
+
 # Security
 *.pem
 *.key
