@@ -63,3 +63,11 @@ skills-lock.json
 # Swag designs (local only)
 swag-designs/
 apps/mcp/.smithery/
+
+# MCP Registry tokens
+.mcpregistry*
+apps/mcp/.mcpregistry*
+
+# Security
+*.pem
+*.key
