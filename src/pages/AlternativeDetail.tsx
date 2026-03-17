@@ -35,10 +35,10 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
       "Tavily is a popular search API designed for LLM applications. It returns cleaned, relevant search results with AI-synthesized answers and has strong framework integrations including LangChain, CrewAI, and MCP.",
     pricing: "Free tier (1K searches/mo), paid plans from $50/mo",
     strengths: [
-      "Fast response times (~1-2s)",
+      "Fast response times (sub-second for fast/ultra-fast modes)",
       "AI-synthesized answers via include_answer parameter",
-      "Full MCP server (tavily-mcp on npm)",
-      "First-class LangChain and CrewAI integrations",
+      "Full MCP server (tavily-mcp on npm, including remote MCP with OAuth)",
+      "First-class LangChain integration; CrewAI compatible via LangChain tools",
       "Relevance scoring on each search result",
       "Open-source SDKs and MCP server (MIT license)",
       "Good developer documentation and affordable pricing",
