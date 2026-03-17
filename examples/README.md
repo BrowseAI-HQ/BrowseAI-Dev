@@ -23,6 +23,7 @@ Quick single-file examples to get started fast.
 | [hallucination-detector.py](hallucination-detector.py) | Compare raw LLM answers vs evidence-backed answers |
 | [langchain-agent.py](langchain-agent.py) | Drop BrowseAI Dev into a LangChain agent pipeline |
 | [crewai-research-team.py](crewai-research-team.py) | Multi-agent research team with CrewAI + BrowseAI Dev |
+| [llamaindex-agent.py](llamaindex-agent.py) | ReAct agent with LlamaIndex + BrowseAI Dev verified research |
 | [research-session.py](research-session.py) | Multi-turn research with persistent knowledge across queries |
 
 ## Tutorials

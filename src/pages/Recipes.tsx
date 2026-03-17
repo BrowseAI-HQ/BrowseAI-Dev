@@ -58,6 +58,15 @@ const RECIPES = [
     github: `${GITHUB_EXAMPLES}/crewai-research-team.py`,
   },
   {
+    title: "LlamaIndex Agent",
+    desc: "ReAct agent using LlamaIndex + BrowseAI Dev. Search, verify, extract, and compare — all as LlamaIndex FunctionTools.",
+    file: "llamaindex-agent.py",
+    cmd: "pip install llamaindex-browseaidev && python examples/llamaindex-agent.py",
+    tags: ["LlamaIndex", "ReAct Agent", "Tools"],
+    icon: Layers,
+    github: `${GITHUB_EXAMPLES}/llamaindex-agent.py`,
+  },
+  {
     title: "Research Session Agent",
     desc: "Build knowledge over multiple queries. Each question recalls prior findings and stores new claims — persistent memory for deep research.",
     file: "research-session.py",
