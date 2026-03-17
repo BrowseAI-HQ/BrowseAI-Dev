@@ -2,6 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/browseai-dev)](https://www.npmjs.com/package/browseai-dev)
 [![PyPI](https://img.shields.io/pypi/v/browseaidev)](https://pypi.org/project/browseaidev/)
+[![LangChain](https://img.shields.io/pypi/v/langchain-browseaidev?label=langchain-browseaidev)](https://pypi.org/project/langchain-browseaidev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/ubAuT4YQsT)
 
@@ -13,7 +14,7 @@ Agent → BrowseAI Dev → Internet → Verified answers + sources
 
 [Website](https://browseai.dev) · [Playground](https://browseai.dev/playground) · [API Docs](https://browseai.dev/developers) · [Discord](https://discord.gg/ubAuT4YQsT)
 
-> **Package names:** npm: [`browseai-dev`](https://www.npmjs.com/package/browseai-dev) · PyPI: [`browseaidev`](https://pypi.org/project/browseaidev/) — Previously `browse-ai` and `browseai`. Old names still work and redirect automatically.
+> **Package names:** npm: [`browseai-dev`](https://www.npmjs.com/package/browseai-dev) · PyPI: [`browseaidev`](https://pypi.org/project/browseaidev/) · LangChain: [`langchain-browseaidev`](https://pypi.org/project/langchain-browseaidev/) — Previously `browse-ai` and `browseai`. Old names still work and redirect automatically.
 
 ---
 
@@ -190,22 +191,27 @@ for step in deep.reasoning_steps or []:
     print(f"  Step {step.step}: {step.query} ({step.confidence:.0%})")
 ```
 
-**Framework integrations:**
+**LangChain integration:** ([PyPI](https://pypi.org/project/langchain-browseaidev/))
 
 ```bash
-pip install browseaidev[langchain]   # LangChain tools
-pip install browseaidev[crewai]      # CrewAI integration
+pip install langchain-browseaidev
 ```
 
 ```python
-# LangChain
-from browseaidev.integrations.langchain import BrowseAIDevAskTool
-tools = [BrowseAIDevAskTool(api_key="bai_xxx")]
+from langchain_browseaidev import BrowseAIDevAnswerTool, BrowseAIDevSearchTool
 
-# CrewAI
-from browseaidev.integrations.crewai import BrowseAIDevTool
-researcher = Agent(tools=[BrowseAIDevTool(api_key="bai_xxx")])
+# Use with any LangChain agent
+tools = [
+    BrowseAIDevAnswerTool(api_key="bai_xxx"),   # Verified search with citations
+    BrowseAIDevSearchTool(api_key="bai_xxx"),    # Basic web search
+]
+
+# Standalone usage
+tool = BrowseAIDevAnswerTool(api_key="bai_xxx")
+result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"})
 ```
+
+4 tools available: `BrowseAIDevSearchTool`, `BrowseAIDevAnswerTool` (verified), `BrowseAIDevExtractTool`, `BrowseAIDevCompareTool`.
 
 ### MCP Server (Claude Desktop, Cursor, Windsurf)
 

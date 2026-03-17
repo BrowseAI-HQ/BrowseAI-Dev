@@ -8,6 +8,9 @@ BrowseAI Dev gives AI agents structured, verifiable web research. Unlike chat-ba
 - MCP Server: `npx browseai-dev` (12 tools)
 - REST API: `https://browseai.dev/api/browse/*`
 - Python SDK: `pip install browseaidev`
+- LangChain: `pip install langchain-browseaidev`
+- CrewAI: `pip install crewai-browseaidev`
+- LlamaIndex: `pip install llamaindex-browseaidev`
 
 Previously known as `browse-ai` (npm) and `browseai` (PyPI) — renamed to `browseai-dev` and `browseaidev`. The old names still work and redirect to the new packages.
 
@@ -38,6 +41,9 @@ Not LLM self-assessed. Computed from: source count, domain diversity, claim grou
 - GitHub: https://github.com/BrowseAI-HQ/BrowseAI-Dev
 - npm: https://www.npmjs.com/package/browseai-dev (renamed from browse-ai, old name still works)
 - PyPI: https://pypi.org/project/browseaidev/ (renamed from browseai, old name still works)
+- LangChain: https://pypi.org/project/langchain-browseaidev/
+- CrewAI: https://pypi.org/project/crewai-browseaidev/
+- LlamaIndex: https://pypi.org/project/llamaindex-browseaidev/
 - Agent Skills: https://github.com/BrowseAI-HQ/browseAIDev_Skills
 - Discord: https://discord.gg/ubAuT4YQsT
 

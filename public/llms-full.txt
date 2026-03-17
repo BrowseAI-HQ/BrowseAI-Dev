@@ -35,6 +35,13 @@ Available as MCP server (npm: browseai-dev, renamed from browse-ai — old name 
 pip install browseaidev
 ```
 
+### Framework Integrations
+```bash
+pip install langchain-browseaidev   # LangChain tools
+pip install crewai-browseaidev      # CrewAI tools
+pip install llamaindex-browseaidev  # LlamaIndex tools
+```
+
 ### REST API
 ```bash
 curl -X POST https://browseai.dev/api/browse/answer \

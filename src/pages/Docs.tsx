@@ -625,6 +625,19 @@ session = client.session("my-research")
 r = session.ask("What is quantum computing?")
 knowledge = session.knowledge()`}</CodeBlock>
 
+            <h4 className="text-sm font-semibold text-foreground pt-4">Framework Integrations</h4>
+            <CodeBlock label="pip install langchain-browseaidev">{`from langchain_browseaidev import BrowseAIDevAnswerTool
+
+tool = BrowseAIDevAnswerTool(api_key="bai_xxx")
+result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"})
+
+# 4 tools: BrowseAIDevSearchTool, BrowseAIDevAnswerTool,
+#           BrowseAIDevExtractTool, BrowseAIDevCompareTool`}</CodeBlock>
+            <p>
+              Also available: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">pip install crewai-browseaidev</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">pip install llamaindex-browseaidev</code>
+            </p>
+
             <h4 className="text-sm font-semibold text-foreground pt-4">MCP Server</h4>
             <CodeBlock label="Setup">{`npx browseai-dev setup`}</CodeBlock>
             <p>

@@ -403,7 +403,7 @@ const Index = () => {
             {(() => {
               const roadmapItems = [
                 { phase: "Shipped", text: "Reliable research infrastructure — web search, evidence extraction, structured citations, Python SDK & MCP" },
-                { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseaidev, works with LangChain and CrewAI out of the box" },
+                { phase: "Shipped", text: "Python SDK & framework integrations — pip install browseaidev + langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev" },
                 { phase: "Shipped", text: "Multi-source verification — hybrid BM25 + NLI semantic entailment, cross-source consensus, contradiction detection, 10,000+ domain authority tiers" },
                 { phase: "Shipped", text: "NLI evidence reranking — top-3 BM25 candidates reranked by DeBERTa semantic entailment for best evidence selection" },
                 { phase: "Shipped", text: "Atomic claim decomposition — compound claims auto-split into individual verifiable facts for finer-grained verification" },
@@ -724,7 +724,7 @@ client = BrowseAIDev(api_key="bai_xxx")
 result = client.ask("What causes aurora borealis?")
 print(result.answer, result.confidence)`}</pre>
               <p className="text-xs text-muted-foreground mt-3">
-                Works with LangChain and CrewAI — <code className="bg-secondary px-1 rounded">pip install browseaidev[langchain]</code>
+                LangChain: <code className="bg-secondary px-1 rounded">pip install langchain-browseaidev</code> · CrewAI: <code className="bg-secondary px-1 rounded">pip install crewai-browseaidev</code>
               </p>
             </div>
 

@@ -60,7 +60,7 @@ const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
     title: "Python SDK & framework integrations",
-    desc: "pip install browseaidev — works with LangChain and CrewAI out of the box.",
+    desc: "pip install browseaidev + dedicated packages: langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev.",
     done: true,
   },
   {
@@ -483,7 +483,7 @@ const Developers = () => {
                   <span className="font-semibold">Python SDK — For agents & scripts</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Install the Python SDK for LangChain, CrewAI, or any Python agent.
+                  Core SDK + dedicated framework packages for LangChain, CrewAI, and LlamaIndex.
                   Sync and async support built in.
                 </p>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary mb-3">

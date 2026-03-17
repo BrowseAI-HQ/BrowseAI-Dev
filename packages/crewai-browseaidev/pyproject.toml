@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "crewai-browseaidev"
+version = "0.1.0"
+description = "CrewAI integration for BrowseAI Dev — verified web search with citations and confidence scores for AI agents"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "BrowseAI Dev" }]
+keywords = [
+    "crewai", "crewai-tools", "browseaidev", "browseai-dev",
+    "ai-agent", "web-search", "fact-checking", "citations",
+    "confidence-scoring", "mcp", "rag", "hallucination-prevention",
+    "verified-search", "evidence-based", "langchain", "autogen",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "crewai>=0.41.0",
+    "browseaidev>=0.1.7",
+]
+
+[project.urls]
+Homepage = "https://browseai.dev"
+Documentation = "https://browseai.dev/docs"
+Repository = "https://github.com/BrowseAI-HQ/BrowseAI-Dev"
+Discord = "https://discord.gg/ubAuT4YQsT"
