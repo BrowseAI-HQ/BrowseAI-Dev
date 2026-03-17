@@ -7,9 +7,13 @@ on:
       - 'apps/mcp/**'
       - '!apps/mcp/**/*.md'
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   publish:
-    name: Build & Publish to npm
+    name: Build & Publish to npm + MCP Registry
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,3 +45,13 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Wait for npm indexing
+        if: steps.version.outputs.skip != 'true'
+        run: sleep 30
+      - name: Publish to MCP Registry
+        if: steps.version.outputs.skip != 'true'
+        working-directory: apps/mcp
+        run: |
+          npm install -g mcp-publisher
+          mcp-publisher login github-oidc
+          mcp-publisher publish
