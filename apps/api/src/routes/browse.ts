@@ -5,6 +5,8 @@ import {
   ExtractRequestSchema,
   AnswerRequestSchema,
   FeedbackRequestSchema,
+  CompareRequestSchema,
+  DISCLAIMER,
 } from "@browse/shared";
 import { search } from "../services/search.js";
 import { openPage } from "../services/scrape.js";
@@ -12,7 +14,7 @@ import { extractFromPage } from "../services/extract.js";
 import { answerQuery } from "../services/answer.js";
 import type { AnswerOptions } from "../services/answer.js";
 import { answerQueryStreaming } from "../services/stream.js";
-import { compareAnswers } from "../services/compare.js";
+import { compareAnswers, getAvailableProviders } from "../services/compare.js";
 import { getUserIdFromRequest } from "../lib/auth.js";
 import { updateDomainScore, getDynamicStats } from "../lib/verify.js";
 import { recordFeedback, applyFeedbackToType } from "../lib/learning.js";
@@ -206,7 +208,7 @@ async function checkDemoLimit(
   const key = `demo:${ip}`;
   const count = await cache.incr(key, DEMO_WINDOW_SECONDS);
   if (count > DEMO_LIMIT) {
-    return `Demo limit reached (${DEMO_LIMIT}/hour). Sign in and create a free BAI key at browseai.dev/dashboard for unlimited access with premium features.`;
+    return `Demo limit reached (${DEMO_LIMIT}/hour). Sign in and generate a free API key at browseai.dev/dashboard for unlimited access with premium features.`;
   }
   return null;
 }
@@ -447,6 +449,7 @@ export function registerBrowseRoutes(
         success: true,
         result: { ...result, shareId, effectiveDepth },
         ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }),
+        disclaimer: DISCLAIMER,
       };
     } catch (e: unknown) {
       request.log.error(e);
@@ -501,7 +504,7 @@ export function registerBrowseRoutes(
         incrementPremiumUsage(userId, cache, quotaCost).catch((err) => console.warn("Failed to increment premium quota:", err));
       }
 
-      reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId, effectiveDepth: streamDepth, ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }) })}\n\n`);
+      reply.raw.write(`event: done\ndata: ${JSON.stringify({ shareId, effectiveDepth: streamDepth, ...(premiumQuota && { quota: { ...premiumQuota, premiumActive } }), disclaimer: DISCLAIMER })}\n\n`);
       reply.raw.end();
     } catch (e: unknown) {
       request.log.error(e);
@@ -516,9 +519,9 @@ export function registerBrowseRoutes(
     }
   });
 
-  // Compare: raw LLM vs evidence-backed
+  // Compare: competitor vs evidence-backed
   app.post("/browse/compare", async (request, reply) => {
-    const parsed = AnswerRequestSchema.safeParse(request.body);
+    const parsed = CompareRequestSchema.safeParse(request.body);
     if (!parsed.success)
       return reply
         .status(400)
@@ -528,13 +531,19 @@ export function registerBrowseRoutes(
       const { env: reqEnv, isOwnKeys } = await getRequestEnv(request, env, apiKeyService, cache);
       const limitError = await checkDemoLimit(request, cache, isOwnKeys);
       if (limitError) return reply.status(429).send({ success: false, error: limitError });
-      const result = await compareAnswers(parsed.data.query, reqEnv, cache);
-      return { success: true, result };
+      const result = await compareAnswers(parsed.data.query, parsed.data.provider, reqEnv, cache);
+      return { success: true, result, disclaimer: DISCLAIMER };
     } catch (e: unknown) {
       request.log.error(e);
       const { status, error } = errorResponse(e, "Comparison failed");
       return reply.status(status).send({ success: false, error });
     }
+  });
+
+  // Available compare providers (based on configured API keys)
+  app.get("/browse/compare/providers", async (_request, reply) => {
+    const providers = getAvailableProviders(env);
+    return { success: true, result: providers };
   });
 
   // Share: get a stored result

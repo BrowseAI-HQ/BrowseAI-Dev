@@ -32,6 +32,14 @@ from .models import (
 DEFAULT_BASE_URL = "https://browseai.dev/api"
 DEFAULT_TIMEOUT = 60.0
 
+DISCLAIMER = (
+    "AI-generated research for informational purposes only. "
+    "Not financial, medical, legal, or professional advice. "
+    "Confidence scores are algorithmic estimates, not guarantees of accuracy. "
+    "Verify critical information from authoritative primary sources before acting. "
+    "See https://browseai.dev/terms"
+)
+
 
 def _build_headers(
     api_key: str | None,
@@ -125,6 +133,11 @@ class BrowseAIDev:
     def last_quota(self) -> PremiumQuota | None:
         """Premium quota info from the last API call (if available)."""
         return self._last_quota
+
+    @property
+    def disclaimer(self) -> str:
+        """Legal disclaimer for all AI-generated results."""
+        return DISCLAIMER
 
     def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         response = self._client.post(path, json=body)
@@ -356,6 +369,11 @@ class AsyncBrowseAIDev:
     def last_quota(self) -> PremiumQuota | None:
         """Premium quota info from the last API call (if available)."""
         return self._last_quota
+
+    @property
+    def disclaimer(self) -> str:
+        """Legal disclaimer for all AI-generated results."""
+        return DISCLAIMER
 
     async def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         response = await self._client.post(path, json=body)

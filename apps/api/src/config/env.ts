@@ -20,6 +20,9 @@ const EnvSchema = z.object({
   SUPABASE_JWT_SECRET: z.string().optional(),
   BRAVE_API_KEY: z.string().optional(),
   HF_API_KEY: z.string().optional(),
+  PERPLEXITY_API_KEY: z.string().optional(),
+  EXA_API_KEY: z.string().optional(),
+  YDC_API_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

@@ -1,6 +1,6 @@
 """BrowseAI Dev — Reliable research infrastructure for AI agents."""
 
-from .client import AsyncBrowseAIDev, BrowseAIDev
+from .client import DISCLAIMER, AsyncBrowseAIDev, BrowseAIDev
 from .exceptions import (
     AuthenticationError,
     BrowseAIDevError,
@@ -53,6 +53,7 @@ __all__ = [
     "PremiumQuota",
     "SearchProviderConfig",
     "NLIScore",
+    "DISCLAIMER",
 ]
 
 __version__ = "0.1.7"

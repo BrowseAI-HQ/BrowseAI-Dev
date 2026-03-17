@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { SEO } from "@/components/SEO";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, XCircle, Minus,
-  Shield, Brain, Code2,
-  GitCompare, Terminal, BookOpen,
+  Shield, Brain, Code2, Layers,
+  Terminal, BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,7 @@ interface Competitor {
   description: string;
   pricing: string;
   strengths: string[];
-  weaknesses: string[];
+  limitations: string[];
   useCases: string[];
 }
 
@@ -35,13 +35,12 @@ const COMPETITORS: Competitor[] = [
       "Fast response times with AI answer synthesis",
       "Strong LangChain, CrewAI, and MCP integrations",
       "Relevance scoring on search results",
-      "Open-source SDKs (MIT)",
+      "Open-source SDKs and MCP server (MIT)",
     ],
-    weaknesses: [
-      "No claim verification or fact-checking pipeline",
+    limitations: [
       "Relevance scores measure query match, not factual accuracy",
-      "No contradiction detection across sources",
-      "Core search engine is closed-source",
+      "No native claim-level verification pipeline found in public product docs",
+      "No native contradiction detection found in public product docs",
     ],
     useCases: ["Search augmentation for agents", "RAG pipelines", "LangChain tool use"],
   },
@@ -58,11 +57,10 @@ const COMPETITORS: Competitor[] = [
       "Large consumer user base and brand recognition",
       "Multiple model options (Sonar, Deep Research)",
     ],
-    weaknesses: [
-      "No structured claim verification pipeline",
-      "No evidence-based confidence scores",
-      "Core engine is closed-source",
-      "No BYOK support",
+    limitations: [
+      "No native claim-level verification pipeline found in public product docs",
+      "No evidence-based factual confidence scoring found in public API docs",
+      "Core engine is closed-source (some SDKs are open-source)",
     ],
     useCases: ["Consumer search replacement", "Quick Q&A with citations", "Research summaries"],
   },
@@ -71,19 +69,18 @@ const COMPETITORS: Competitor[] = [
     name: "Exa",
     tagline: "Neural search API",
     description:
-      "Exa (formerly Metaphor) offers a neural search engine with semantic understanding. Has MCP server, Python SDK, LangChain integration, and an /answer endpoint.",
+      "Exa (formerly Metaphor) offers a neural search engine with semantic understanding. Has MCP server, Python SDK, LangChain integration, and an /answer endpoint. Publishes hallucination detection guides using Exa + external tooling.",
     pricing: "Free tier (1K searches/mo), paid plans from $100/mo",
     strengths: [
       "Semantic neural search (not keyword-based)",
       "AI answer endpoint with citations",
       "Official MCP server and LangChain package",
-      "Open-source SDKs and MCP server",
+      "Open-source hallucination detection tool (uses Exa search + external LLM)",
     ],
-    weaknesses: [
-      "No claim verification or fact-checking pipeline",
-      "No confidence scoring for factual accuracy",
-      "No contradiction detection or source consensus",
-      "No CrewAI integration",
+    limitations: [
+      "Hallucination detection is an open-source tool built on Exa + external LLM, not a native API feature",
+      "No native confidence scoring for factual accuracy",
+      "No native contradiction detection or source consensus",
     ],
     useCases: ["Semantic document retrieval", "Similar content discovery", "Research exploration"],
   },
@@ -100,11 +97,10 @@ const COMPETITORS: Competitor[] = [
       "AI-generated answers with citations",
       "Privacy-focused option",
     ],
-    weaknesses: [
-      "No evidence verification pipeline",
-      "No confidence scores backed by evidence",
-      "No contradiction detection",
-      "Core engine is closed-source",
+    limitations: [
+      "No native claim verification pipeline found in public product docs",
+      "No evidence-based factual confidence scoring found in public API docs",
+      "Core engine is closed-source (some open-source tools)",
     ],
     useCases: ["General web search", "Research with AI synthesis", "RAG applications"],
   },
@@ -113,18 +109,17 @@ const COMPETITORS: Competitor[] = [
     name: "Brave Search API",
     tagline: "Independent search index",
     description:
-      "Brave Search offers an independent search index (not sourced from Google/Bing). Their API provides web, news, and image search with privacy-first design. Has an official MCP server.",
-    pricing: "Free tier (2K queries/mo), paid from $3/1K queries",
+      "Brave Search offers an independent search index (not sourced from Google/Bing). Their API provides web, news, and image search with privacy-first design. Has an official MCP server and AI Answers grounded in verifiable sources.",
+    pricing: "Free tier (2K queries/mo), paid from $5/1K queries",
     strengths: [
       "Independent search index (not Google/Bing)",
-      "AI Summarizer API for generated answers",
+      "AI Answers grounded in verifiable sources",
+      "LLM Context with relevance-scored content",
       "Official MCP server and LangChain integration",
-      "Privacy-focused — competitive pricing",
     ],
-    weaknesses: [
-      "No claim verification or evidence analysis",
-      "No confidence scoring of any kind",
-      "No CrewAI or LlamaIndex integrations",
+    limitations: [
+      "No native claim-level verification or evidence analysis documented",
+      "No structured confidence scoring exposed in API",
       "Core search index is closed-source",
     ],
     useCases: ["Privacy-conscious search", "Independent web index access", "Cost-effective bulk search"],
@@ -135,6 +130,7 @@ type FeatureSupport = "full" | "partial" | "none";
 
 interface FeatureRow {
   feature: string;
+  tooltip?: string;
   browseai: FeatureSupport;
   tavily: FeatureSupport;
   perplexity: FeatureSupport;
@@ -143,19 +139,26 @@ interface FeatureRow {
   brave: FeatureSupport;
 }
 
+// Feature matrix — honest assessment.
+// "full" = native built-in feature documented in product.
+// "partial" = available via workarounds, guides, or limited form.
+// "none" = not documented as a native built-in feature.
 const FEATURE_MATRIX: FeatureRow[] = [
+  // Shared capabilities — most providers offer these
   { feature: "Web search", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "full" },
   { feature: "AI-synthesized answers", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "full" },
-  { feature: "Evidence-backed citations", browseai: "full", tavily: "partial", perplexity: "partial", exa: "partial", you: "partial", brave: "partial" },
-  { feature: "Claim verification", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
-  { feature: "Relevance/confidence scoring", browseai: "full", tavily: "partial", perplexity: "none", exa: "partial", you: "none", brave: "none" },
-  { feature: "Contradiction detection", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
-  { feature: "Cross-source consensus", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
-  { feature: "Domain authority scoring", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Citations / sources", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "full" },
   { feature: "MCP server", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "full" },
-  { feature: "Python SDK", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "partial", brave: "partial" },
+  { feature: "Python SDK", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "partial" },
   { feature: "LangChain integration", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "full" },
-  { feature: "CrewAI integration", browseai: "full", tavily: "full", perplexity: "partial", exa: "none", you: "none", brave: "none" },
+  { feature: "CrewAI integration", browseai: "full", tavily: "full", perplexity: "partial", exa: "partial", you: "none", brave: "none" },
+  // BrowseAI Dev differentiation — native built-in verification features
+  { feature: "Native claim verification", tooltip: "Built-in claim-level BM25+NLI verification pipeline", browseai: "full", tavily: "none", perplexity: "none", exa: "partial", you: "none", brave: "none" },
+  { feature: "Evidence-based confidence scores", tooltip: "7-factor algorithm, not LLM self-assessment", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Contradiction detection", tooltip: "NLI-powered cross-source contradiction scanning", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Cross-source consensus", tooltip: "Claims verified across multiple independent sources", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Domain authority scoring", tooltip: "Bayesian domain authority with 10K+ domains", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  // Infrastructure
   { feature: "Open source (full pipeline)", browseai: "full", tavily: "partial", perplexity: "partial", exa: "partial", you: "partial", brave: "partial" },
   { feature: "Self-hostable", browseai: "partial", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   { feature: "BYOK (bring your own keys)", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
@@ -218,16 +221,7 @@ const Alternatives = () => {
               <span className="font-semibold text-sm">BrowseAI Dev</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/compare")}
-            >
-              <GitCompare className="w-3.5 h-3.5 mr-1.5" />
-              Live Compare
-            </Button>
-          </div>
+          <div className="flex items-center gap-2" />
         </motion.nav>
 
         <div className="max-w-6xl mx-auto px-6 py-12 space-y-16">
@@ -244,14 +238,34 @@ const Alternatives = () => {
               BrowseAI Dev vs. the alternatives
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Most search APIs return results for humans. BrowseAI Dev is
-              infrastructure purpose-built for AI agents — giving them verified,
-              evidence-backed knowledge to prevent hallucinations and make
-              informed decisions.
+              Tavily, Exa, Brave, Perplexity, and You.com all help agents search
+              or synthesize web information. BrowseAI Dev's distinction is native
+              claim verification and evidence-based confidence, rather than search
+              or citations alone.
             </p>
             <p className="text-sm text-muted-foreground max-w-xl mx-auto font-mono">
-              Agent → BrowseAI Dev → Internet → Verified answers + confidence scores
+              Agent → BrowseAI Dev → Internet → Evidence-backed answers + confidence scores
             </p>
+          </motion.section>
+
+          {/* Transparency note */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+          >
+            <div className="p-4 rounded-xl bg-accent/5 border border-accent/15">
+              <div className="flex items-start gap-3">
+                <Layers className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                <div className="text-sm text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground">Full transparency:</strong> BrowseAI Dev is a verification and intelligence layer,
+                  not a search engine replacement. We use providers like Tavily and Brave for web search,
+                  then add claim extraction, cross-source verification, contradiction detection, domain authority scoring,
+                  and confidence calibration on top. These providers are excellent at search. BrowseAI Dev adds the
+                  verification layer that turns raw search results into agent-ready, evidence-backed outputs.
+                </div>
+              </div>
+            </div>
           </motion.section>
 
           {/* Feature Matrix */}
@@ -261,12 +275,19 @@ const Alternatives = () => {
             transition={{ delay: 0.1 }}
             className="space-y-6"
           >
-            <h2 className="text-xl font-semibold">Feature comparison</h2>
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Feature comparison</h2>
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                Based on publicly documented product features. "Not documented as native" means we did not find
+                the capability described as a built-in product feature in official public documentation.
+                Competitors may support similar outcomes through external tooling, prompt workflows, or custom integrations.
+              </p>
+            </div>
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground min-w-[180px]">
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground min-w-[200px]">
                       Feature
                     </th>
                     {Object.entries(COLUMN_NAMES).map(([key, name]) => (
@@ -292,7 +313,10 @@ const Alternatives = () => {
                       }`}
                     >
                       <td className="px-4 py-2.5 text-foreground">
-                        {row.feature}
+                        <span>{row.feature}</span>
+                        {row.tooltip && (
+                          <span className="block text-[10px] text-muted-foreground mt-0.5">{row.tooltip}</span>
+                        )}
                       </td>
                       {(
                         Object.keys(COLUMN_NAMES) as Array<
@@ -319,14 +343,13 @@ const Alternatives = () => {
             </div>
             <div className="flex items-center gap-6 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Full
-                support
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Native built-in
               </span>
               <span className="flex items-center gap-1.5">
-                <Minus className="w-3.5 h-3.5 text-yellow-400" /> Partial
+                <Minus className="w-3.5 h-3.5 text-yellow-400" /> Partial / workflow-dependent
               </span>
               <span className="flex items-center gap-1.5">
-                <XCircle className="w-3.5 h-3.5 text-zinc-600" /> Not available
+                <XCircle className="w-3.5 h-3.5 text-zinc-600" /> Not documented as native
               </span>
             </div>
           </motion.section>
@@ -339,30 +362,30 @@ const Alternatives = () => {
             className="space-y-6"
           >
             <h2 className="text-xl font-semibold">
-              Built for agents, not humans
+              What BrowseAI Dev adds on top
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl">
-              Other search APIs were built for human consumers and later added
-              developer APIs. BrowseAI Dev is purpose-built infrastructure for
-              AI agents that need to research, verify, and make decisions
-              autonomously.
+              BrowseAI Dev is differentiated in offering native claim-level verification,
+              contradiction detection, and cross-source consensus in a single agent-focused
+              workflow. We did not find these documented together as built-in features
+              in competing products.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 {
                   icon: Shield,
-                  title: "Prevent hallucinations",
-                  desc: "Every answer comes with a 7-factor evidence-based confidence score. Your agent knows exactly how much to trust each piece of information before acting on it.",
+                  title: "Evidence-based confidence",
+                  desc: "7-factor confidence score derived from verification data (source count, domain authority, consensus, claim grounding) — not LLM self-assessment. Your agent knows how much to trust each answer.",
                 },
                 {
                   icon: Brain,
-                  title: "Verification pipeline",
-                  desc: "Claims are decomposed, verified via hybrid BM25 + NLI entailment, cross-checked for consensus, and scanned for contradictions. Agents get grounded facts, not guesses.",
+                  title: "Native verification pipeline",
+                  desc: "Claims decomposed, verified via hybrid BM25 + NLI entailment, cross-checked for consensus, and scanned for contradictions. All built into the API — no external tooling needed.",
                 },
                 {
                   icon: Code2,
                   title: "Open infrastructure",
-                  desc: "MIT licensed. Self-host it, bring your own keys, plug in your own search backends. MCP server, REST API, Python SDK, and framework integrations all included.",
+                  desc: "Full pipeline is MIT licensed and open source. Self-host it, bring your own keys, plug in your own search backends. MCP server, REST API, Python SDK, and framework integrations included.",
                 },
               ].map((item) => (
                 <div
@@ -405,13 +428,13 @@ const Alternatives = () => {
                     {c.pricing}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {c.weaknesses.slice(0, 2).map((w) => (
+                    {c.limitations.slice(0, 2).map((w) => (
                       <Badge
                         key={w}
                         variant="outline"
                         className="text-xs text-zinc-400"
                       >
-                        No {w.replace(/^No /, "").split(" ").slice(0, 3).join(" ")}
+                        {w.length > 50 ? w.slice(0, 47) + "..." : w}
                       </Badge>
                     ))}
                   </div>
@@ -420,23 +443,31 @@ const Alternatives = () => {
             </div>
           </motion.section>
 
+          {/* Disclaimer */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
+            className="text-[11px] text-muted-foreground/50 text-center max-w-2xl mx-auto leading-relaxed"
+          >
+            Information on this page is based on publicly available documentation as of March 2026. Features and pricing
+            may have changed. All trademarks belong to their respective owners. If you represent a listed product and
+            believe any information is inaccurate, please contact us at{" "}
+            <a href="mailto:shreyassaw@gmail.com" className="underline hover:text-muted-foreground/70">shreyassaw@gmail.com</a>{" "}
+            and we will update promptly.
+          </motion.div>
+
           {/* CTA */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.3 }}
             className="text-center py-12 space-y-4"
           >
             <h2 className="text-2xl font-bold">Try it yourself</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              See how BrowseAI Dev compares on your own queries. Our{" "}
-              <span
-                className="text-emerald-400 cursor-pointer hover:underline"
-                onClick={() => navigate("/compare")}
-              >
-                live comparison tool
-              </span>{" "}
-              shows raw LLM vs. evidence-backed answers side by side.
+              Run your own queries through BrowseAI Dev and see evidence-backed answers
+              with claim verification, confidence scores, and verified sources.
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button onClick={() => navigate("/playground")}>

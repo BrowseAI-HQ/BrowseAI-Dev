@@ -93,6 +93,11 @@ export const AnswerRequestSchema = z.object({
   searchProvider: SearchProviderConfigSchema.optional(),
 });
 
+export const CompareRequestSchema = z.object({
+  query: z.string().min(1).max(500),
+  provider: z.enum(["perplexity", "tavily", "exa", "you", "brave", "raw_llm"]).optional().default("perplexity"),
+});
+
 // ── Research Memory schemas ──
 
 export const CreateSessionSchema = z.object({

@@ -465,7 +465,7 @@ function registerTools(server: McpServer) {
 
   server.tool(
     "browse_answer",
-    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score. Use depth='thorough' for auto-retry with rephrased queries when confidence is low. Use depth='deep' for multi-step agentic research that identifies knowledge gaps and runs follow-up searches. Enterprise: use searchProvider to search internal data instead of the public web.",
+    "Full deep research pipeline: search the web, fetch pages, extract claims, build evidence graph, and generate a structured answer with citations and confidence score. Use depth='thorough' for auto-retry with rephrased queries when confidence is low. Use depth='deep' for multi-step agentic research that identifies knowledge gaps and runs follow-up searches. Enterprise: use searchProvider to search internal data instead of the public web. DISCLAIMER: Results are AI-generated for informational purposes only — not financial, medical, or legal advice. Confidence scores are algorithmic estimates, not accuracy guarantees. Always verify critical information from primary sources.",
     {
       query: z.string(),
       depth: z.enum(["fast", "thorough", "deep"]).optional().describe("Research depth: 'fast' (default), 'thorough' (auto-retry if confidence < 60%), or 'deep' (multi-step agentic research with gap analysis)"),
@@ -494,6 +494,7 @@ function registerTools(server: McpServer) {
             : `Premium quota exceeded (${q.used}/${q.limit}). Results use standard verification. Upgrade or wait 24h for reset.`;
           content.push({ type: "text", text: `\n---\nQuota: ${status}` });
         }
+        content.push({ type: "text", text: `\n---\nDisclaimer: AI-generated research for informational purposes only. Not financial, medical, or legal advice. Verify critical information from primary sources.` });
         return { content };
       }
       const result = await answerPipeline(query);
@@ -501,6 +502,7 @@ function registerTools(server: McpServer) {
       if (depth && depth !== "fast") {
         text += `\n\n> Note: depth="${depth}" requested but BYOK mode uses standard search depth. Use a BrowseAI API key for thorough/deep modes.`;
       }
+      text += `\n\n> Disclaimer: AI-generated research for informational purposes only. Not financial, medical, or legal advice. Verify critical information from primary sources.`;
       return {
         content: [{ type: "text", text }],
       };

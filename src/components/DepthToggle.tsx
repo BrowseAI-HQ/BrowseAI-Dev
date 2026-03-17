@@ -51,7 +51,6 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
 
     setDepth(next);
 
-    // Show hint when landing on deep and it's unavailable
     if (next === "deep" && !deepAvailable) {
       if (!isLoggedIn) {
         setHint("Deep mode requires a BAI key — sign in to unlock");
@@ -99,9 +98,13 @@ export function DepthToggle({ depth, setDepth, quota, size = "md" }: DepthToggle
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full mt-1.5 right-0 z-50 whitespace-nowrap px-3 py-1.5 rounded-lg bg-card border border-border shadow-lg text-[11px] text-muted-foreground"
+            className={
+              size === "pill"
+                ? "absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-400"
+                : "absolute top-full mt-1.5 right-0 z-50 whitespace-nowrap px-3 py-1.5 rounded-lg bg-card border border-border shadow-lg text-[11px] text-muted-foreground"
+            }
           >
-            <Lock className="w-3 h-3 inline mr-1" />
+            <Lock className="w-2.5 h-2.5 inline mr-1" />
             {hint}
           </motion.div>
         )}

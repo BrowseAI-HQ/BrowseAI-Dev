@@ -46,14 +46,21 @@ export type BrowseResult = {
   effectiveDepth?: "fast" | "thorough" | "deep";
 };
 
+export type CompareProvider = "perplexity" | "tavily" | "exa" | "you" | "brave" | "raw_llm";
+
+export type CompareCompetitorResult = {
+  provider: CompareProvider;
+  label: string;
+  answer: string;
+  sources: number;
+  citations: { url: string; title: string }[];
+  latency_ms: number;
+};
+
 export type CompareResult = {
   query: string;
-  raw_llm: {
-    answer: string;
-    sources: number;
-    claims: number;
-    confidence: null;
-  };
+  provider: CompareProvider;
+  competitor: CompareCompetitorResult;
   evidence_backed: {
     answer: string;
     sources: number;
@@ -62,6 +69,7 @@ export type CompareResult = {
     citations: BrowseSource[];
     claimDetails: BrowseClaim[];
     trace: { step: string; duration_ms: number; detail?: string }[];
+    latency_ms: number;
   };
 };
 
@@ -140,8 +148,16 @@ export async function browseExtract(url: string, query?: string) {
   return apiCall<any>("/browse/extract", { url, query });
 }
 
-export async function browseCompare(query: string): Promise<CompareResult> {
-  return apiCall<CompareResult>("/browse/compare", { query });
+export async function browseCompare(query: string, provider: CompareProvider = "raw_llm"): Promise<CompareResult> {
+  return apiCall<CompareResult>("/browse/compare", { query, provider });
+}
+
+export async function browseCompareProviders(): Promise<CompareProvider[]> {
+  const authHeaders = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}/browse/compare/providers`, { headers: authHeaders });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error);
+  return data.result;
 }
 
 export async function browseFeedback(resultId: string, rating: "good" | "bad" | "wrong", claimIndex?: number) {
