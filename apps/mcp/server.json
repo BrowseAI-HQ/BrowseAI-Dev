@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.browseai-hq/browseai-dev",
+  "name": "io.github.BrowseAI-HQ/browseai-dev",
   "description": "Evidence-backed web research for AI agents with citations and confidence scores.",
   "title": "BrowseAI Dev",
   "websiteUrl": "https://browseai.dev",
@@ -10,13 +10,13 @@
     "id": "1172211006",
     "subfolder": "apps/mcp"
   },
-  "version": "0.2.0",
+  "version": "0.2.1",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "browseai-dev",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
