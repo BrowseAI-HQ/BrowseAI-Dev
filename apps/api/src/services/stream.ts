@@ -20,6 +20,7 @@ import { openPage } from "./scrape.js";
 import { streamAnswer, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
 import type { QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
+import { exaSearch } from "../lib/exa.js";
 import { rerankSources } from "../lib/verify.js";
 import { getAdaptivePageCount } from "../lib/learning.js";
 import { MAX_PAGE_CONTENT_LENGTH } from "@browse/shared";
@@ -34,6 +35,42 @@ import {
   mergeSearchResults,
   ADAPTIVE_PAGE_COUNT,
 } from "./searchUtils.js";
+
+// ─── Cached Secondary Search Wrappers ──────────────────────────────
+
+async function cachedBraveSearch(
+  query: string,
+  apiKey: string,
+  cache: CacheService,
+): Promise<SearchResult[]> {
+  const cacheKey = `brave:${hashKey(query)}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const results = await braveSearch(query, apiKey);
+  const mapped: SearchResult[] = results.map((r) => ({
+    url: r.url, title: r.title, snippet: r.description, score: r.score,
+  }));
+  await cache.set(cacheKey, JSON.stringify(mapped), 600);
+  return mapped;
+}
+
+async function cachedExaSearch(
+  query: string,
+  apiKey: string,
+  cache: CacheService,
+): Promise<SearchResult[]> {
+  const cacheKey = `exa:${hashKey(query)}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const results = await exaSearch(query, apiKey);
+  const mapped: SearchResult[] = results.map((r) => ({
+    url: r.url, title: r.title, snippet: r.snippet, score: r.score,
+  }));
+  await cache.set(cacheKey, JSON.stringify(mapped), 600);
+  return mapped;
+}
 
 const THOROUGH_CONFIDENCE_THRESHOLD = 0.6;
 
@@ -65,14 +102,15 @@ async function streamingSinglePass(
   const searchStart = Date.now();
   emit("trace", { step: "Searching", duration_ms: 0, detail: `Querying search providers${suffix}...` });
 
-  const [mainResults, variantQuery, analysis, braveResults] = await Promise.all([
+  const [mainResults, variantQuery, analysis, braveResults, exaResults] = await Promise.all([
     search(query, env.SERP_API_KEY, cache),
     generateQueryVariant(query, env.OPENROUTER_API_KEY),
     analyzeQuery(query, env.OPENROUTER_API_KEY),
     env.BRAVE_API_KEY
-      ? braveSearch(query, env.BRAVE_API_KEY).then((results) =>
-          results.map((r) => ({ url: r.url, title: r.title, snippet: r.description, score: r.score }))
-        )
+      ? cachedBraveSearch(query, env.BRAVE_API_KEY, cache).catch(() => [])
+      : Promise.resolve([]),
+    env.EXA_API_KEY
+      ? cachedExaSearch(query, env.EXA_API_KEY, cache).catch(() => [])
       : Promise.resolve([]),
   ] as const);
 
@@ -93,6 +131,13 @@ async function streamingSinglePass(
     allResults = mergeSearchResults(allResults, braveResults as SearchResult[]);
     const added = allResults.length - before;
     if (added > 0) searchDetail += ` +${added} Brave`;
+  }
+
+  if (exaResults.length > 0) {
+    const before = allResults.length;
+    allResults = mergeSearchResults(allResults, exaResults as SearchResult[]);
+    const added = allResults.length - before;
+    if (added > 0) searchDetail += ` +${added} Exa`;
   }
 
   if (variantQuery && variantQuery !== query) {

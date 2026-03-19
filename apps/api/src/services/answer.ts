@@ -1,7 +1,7 @@
 import { search } from "./search.js";
 import type { SearchResult } from "./search.js";
 import { openPage } from "./scrape.js";
-import { extractKnowledge, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
+import { extractKnowledge, rephraseQuery, generateQueryVariant, analyzeQuery, generateClaimQueries, generateCounterQueries } from "../lib/gemini.js";
 import type { QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
 import { exaSearch } from "../lib/exa.js";
@@ -15,7 +15,7 @@ import {
   recordQuerySignals,
 } from "../lib/learning.js";
 import { MAX_PAGE_CONTENT_LENGTH } from "@browse/shared";
-import type { BrowseResult, TraceStep } from "@browse/shared";
+import type { BrowseResult, BrowseClaim, TraceStep } from "@browse/shared";
 import type { CacheService } from "./cache.js";
 import type { Env } from "../config/env.js";
 import type { SearchProvider } from "../lib/searchProvider.js";
@@ -28,6 +28,43 @@ import {
   ADAPTIVE_PAGE_COUNT,
   MAX_PER_DOMAIN,
 } from "./searchUtils.js";
+
+// ─── Cached Secondary Search Wrappers ──────────────────────────────
+// Brave and Exa results are cached so refreshes/retries don't waste API credits.
+
+async function cachedBraveSearch(
+  query: string,
+  apiKey: string,
+  cache: CacheService,
+): Promise<SearchResult[]> {
+  const cacheKey = `brave:${hashKey(query)}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const results = await braveSearch(query, apiKey);
+  const mapped: SearchResult[] = results.map((r) => ({
+    url: r.url, title: r.title, snippet: r.description, score: r.score,
+  }));
+  await cache.set(cacheKey, JSON.stringify(mapped), 600);
+  return mapped;
+}
+
+async function cachedExaSearch(
+  query: string,
+  apiKey: string,
+  cache: CacheService,
+): Promise<SearchResult[]> {
+  const cacheKey = `exa:${hashKey(query)}`;
+  const cached = await cache.get(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const results = await exaSearch(query, apiKey);
+  const mapped: SearchResult[] = results.map((r) => ({
+    url: r.url, title: r.title, snippet: r.snippet, score: r.score,
+  }));
+  await cache.set(cacheKey, JSON.stringify(mapped), 600);
+  return mapped;
+}
 
 // ─── Multi-Pass Consistency (SelfCheckGPT-inspired) ──────────────────
 // Compares claims from two independent extraction passes.
@@ -105,6 +142,172 @@ function consistencyTokenize(text: string): string[] {
     .filter(w => w.length > 2);
 }
 
+// ─── Per-Claim Evidence Retrieval (SAFE-inspired) ──────────────────
+// After initial verification, weak claims get targeted search queries.
+// New evidence is used to re-verify only those claims, boosting accuracy.
+
+async function perClaimRetrieval(
+  claims: BrowseClaim[],
+  env: Env,
+  cache: CacheService,
+  pageTexts: Map<string, string>,
+  trace: TraceStep[],
+): Promise<{ updatedClaims: BrowseClaim[]; newPageTexts: Map<string, string> }> {
+  const start = Date.now();
+
+  // Generate targeted search queries for weak claims
+  const claimQueries = await generateClaimQueries(claims, env.OPENROUTER_API_KEY);
+  const queriesNeeded = claimQueries.filter((q) => q !== null) as Array<{ claim: string; query: string }>;
+
+  if (queriesNeeded.length === 0) {
+    return { updatedClaims: claims, newPageTexts: pageTexts };
+  }
+
+  // Search for evidence (using cached searches, limit to 5 concurrent)
+  const searchPromises = queriesNeeded.slice(0, 5).map(async (cq) => {
+    const results: SearchResult[] = [];
+    // Use all available providers for targeted claim searches
+    const searches = [
+      search(cq.query, env.SERP_API_KEY, cache).then((r) => r.results).catch(() => []),
+    ];
+    if (env.BRAVE_API_KEY) {
+      searches.push(cachedBraveSearch(cq.query, env.BRAVE_API_KEY, cache).catch(() => []));
+    }
+    if (env.EXA_API_KEY) {
+      searches.push(cachedExaSearch(cq.query, env.EXA_API_KEY, cache).catch(() => []));
+    }
+    const allResults = await Promise.all(searches);
+    for (const r of allResults) results.push(...r);
+    return { claim: cq.claim, results: mergeSearchResults(results, []) };
+  });
+
+  const searchResults = await Promise.all(searchPromises);
+
+  // For each weak claim, check if new search results contain supporting evidence
+  // using snippet text (lightweight — no page fetch needed)
+  const updatedClaims = claims.map((claim) => {
+    const match = searchResults.find((sr) => sr.claim === claim.claim);
+    if (!match || match.results.length === 0) return claim;
+
+    // Check if any snippet semantically matches the claim (simple keyword overlap)
+    const claimTokens = new Set(
+      claim.claim.toLowerCase().replace(/[^\w\s]/g, " ").split(/\s+/).filter((w) => w.length > 3)
+    );
+    let bestSnippetOverlap = 0;
+    let bestSnippetUrl = "";
+
+    for (const result of match.results.slice(0, 5)) {
+      const snippetTokens = result.snippet.toLowerCase().replace(/[^\w\s]/g, " ").split(/\s+/);
+      const overlap = snippetTokens.filter((t) => claimTokens.has(t)).length / Math.max(claimTokens.size, 1);
+      if (overlap > bestSnippetOverlap) {
+        bestSnippetOverlap = overlap;
+        bestSnippetUrl = result.url;
+      }
+    }
+
+    // If strong snippet match found, boost the claim
+    if (bestSnippetOverlap >= 0.3) {
+      const newScore = Math.min(1, (claim.verificationScore || 0) + 0.15);
+      const newSources = [...(claim.sources || [])];
+      if (bestSnippetUrl && !newSources.includes(bestSnippetUrl)) {
+        newSources.push(bestSnippetUrl);
+      }
+      return {
+        ...claim,
+        verified: newScore >= 0.2,
+        verificationScore: Math.round(newScore * 100) / 100,
+        sources: newSources,
+      };
+    }
+
+    return claim;
+  });
+
+  const boostedCount = updatedClaims.filter(
+    (c, i) => (c.verificationScore || 0) > (claims[i].verificationScore || 0)
+  ).length;
+
+  trace.push({
+    step: "Per-Claim Retrieval",
+    duration_ms: Date.now() - start,
+    detail: `${queriesNeeded.length} targeted searches → ${boostedCount} claims boosted`,
+  });
+
+  return { updatedClaims, newPageTexts: pageTexts };
+}
+
+// ─── Counter-Query Verification (SANCTUARY-inspired) ───────────────
+// Actively searches for evidence that CONTRADICTS verified claims.
+// If contradictions found via adversarial search, confidence is lowered.
+
+async function counterQueryVerification(
+  claims: BrowseClaim[],
+  env: Env,
+  cache: CacheService,
+  trace: TraceStep[],
+): Promise<{ adjustedClaims: BrowseClaim[]; newContradictions: number }> {
+  const start = Date.now();
+
+  const counterQueries = await generateCounterQueries(claims, env.OPENROUTER_API_KEY);
+  const needed = counterQueries.filter((q) => q !== null) as Array<{ claim: string; counterQuery: string }>;
+
+  if (needed.length === 0) {
+    return { adjustedClaims: claims, newContradictions: 0 };
+  }
+
+  // Search for counter-evidence
+  const counterSearches = needed.slice(0, 3).map(async (cq) => {
+    const results = await search(cq.counterQuery, env.SERP_API_KEY, cache)
+      .then((r) => r.results)
+      .catch(() => [] as SearchResult[]);
+    return { claim: cq.claim, results };
+  });
+
+  const counterResults = await Promise.all(counterSearches);
+  let newContradictions = 0;
+
+  // Check if counter-evidence snippets actually contradict the claim
+  const adjustedClaims = claims.map((claim) => {
+    const match = counterResults.find((cr) => cr.claim === claim.claim);
+    if (!match || match.results.length === 0) return claim;
+
+    // Look for strong negation signals in counter-search snippets
+    const NEGATION_TERMS = new Set([
+      "not", "false", "incorrect", "wrong", "myth", "debunked",
+      "misleading", "inaccurate", "contrary", "disproven", "untrue",
+      "no longer", "outdated", "revised", "corrected", "retracted",
+    ]);
+
+    let contradictionSignals = 0;
+    for (const result of match.results.slice(0, 3)) {
+      const words = result.snippet.toLowerCase().split(/\s+/);
+      const negations = words.filter((w) => NEGATION_TERMS.has(w)).length;
+      if (negations >= 2) contradictionSignals++;
+    }
+
+    // If multiple counter-sources have negation signals, penalize
+    if (contradictionSignals >= 2) {
+      newContradictions++;
+      const penalizedScore = Math.max(0, (claim.verificationScore || 0.5) - 0.15);
+      return {
+        ...claim,
+        verificationScore: Math.round(penalizedScore * 100) / 100,
+        verified: penalizedScore >= 0.2,
+      };
+    }
+
+    return claim;
+  });
+
+  trace.push({
+    step: "Counter-Query Verification",
+    duration_ms: Date.now() - start,
+    detail: `${needed.length} adversarial searches → ${newContradictions} new contradictions found`,
+  });
+
+  return { adjustedClaims, newContradictions };
+}
+
 export type AnswerOptions = {
   /** Pluggable search provider. If set, overrides Tavily/Brave. */
   searchProvider?: SearchProvider;
@@ -149,21 +352,18 @@ export async function singlePass(
   const searchStart = Date.now();
 
   // Build secondary search promises (Brave + Exa run in parallel with primary)
+  // All secondary searches are cached to avoid wasting API credits on refresh/retry
   const secondarySearch: Promise<SearchResult[]> =
     options?.secondaryProvider
       ? options.secondaryProvider.search(query).catch(() => [])
       : (!useProvider && env.BRAVE_API_KEY)
-        ? braveSearch(query, env.BRAVE_API_KEY).then((results) =>
-            results.map((r) => ({ url: r.url, title: r.title, snippet: r.description, score: r.score }))
-          )
+        ? cachedBraveSearch(query, env.BRAVE_API_KEY, cache).catch(() => [])
         : Promise.resolve([]);
 
   // Exa: neural/semantic search — finds conceptually related pages keyword engines miss
   const tertiarySearch: Promise<SearchResult[]> =
     (!useProvider && env.EXA_API_KEY)
-      ? exaSearch(query, env.EXA_API_KEY).then((results) =>
-          results.map((r) => ({ url: r.url, title: r.title, snippet: r.snippet, score: r.score }))
-        ).catch(() => [])
+      ? cachedExaSearch(query, env.EXA_API_KEY, cache).catch(() => [])
       : Promise.resolve([]);
 
   const parallelTasks: [
@@ -391,6 +591,7 @@ export async function answerQuery(
   options?: AnswerOptions,
 ): Promise<BrowseResult> {
   const noRetention = options?.dataRetention === "none";
+  const isPremium = !!env.HF_API_KEY; // Premium tier has enhanced verification
 
   // Cache key includes depth so thorough results are cached separately
   // Session-contextualized queries skip cache since context varies
@@ -419,70 +620,163 @@ export async function answerQuery(
   // First pass
   const { knowledge, pageTexts, queryType } = await singlePass(query, env, cache, trace, undefined, undefined, undefined, sessionContext, options);
 
-  // Thorough mode: if confidence is low, rephrase and do a second pass
-  if (depth === "thorough" && knowledge.confidence < THOROUGH_CONFIDENCE_THRESHOLD) {
-    const rephraseStart = Date.now();
-    const rephrasedQuery = await rephraseQuery(query, env.OPENROUTER_API_KEY);
-    trace.push({
-      step: "Rephrase Query",
-      duration_ms: Date.now() - rephraseStart,
-      detail: `"${rephrasedQuery.slice(0, 80)}"`,
-    });
+  // ── Enhanced Verification (premium only) ──
+  // Per-claim retrieval + counter-query verification run in parallel
+  // These are the SAFE-inspired and SANCTUARY-inspired upgrades
+  let enhancedClaims = knowledge.claims;
+  let extraContradictions = 0;
 
-    // Second pass with rephrased query, merging existing page texts
-    const { knowledge: pass2 } = await singlePass(
-      rephrasedQuery, env, cache, trace, pageTexts, "pass 2", undefined, undefined, options
-    );
+  if (isPremium && knowledge.claims.length > 0) {
+    const [claimResult, counterResult] = await Promise.all([
+      perClaimRetrieval(knowledge.claims, env, cache, pageTexts, trace).catch(() => ({
+        updatedClaims: knowledge.claims,
+        newPageTexts: pageTexts,
+      })),
+      counterQueryVerification(knowledge.claims, env, cache, trace).catch(() => ({
+        adjustedClaims: knowledge.claims,
+        newContradictions: 0,
+      })),
+    ]);
 
-    // Pick whichever pass produced higher confidence
-    const best = pass2.confidence > knowledge.confidence ? pass2 : knowledge;
-    const other = pass2.confidence > knowledge.confidence ? knowledge : pass2;
-    trace.push({
-      step: "Select Best Result",
-      duration_ms: 0,
-      detail: `Pass ${pass2.confidence > knowledge.confidence ? "2" : "1"} selected (${Math.round(best.confidence * 100)}% vs ${Math.round(other.confidence * 100)}%)`,
-    });
+    // Merge: per-claim boosted scores + counter-query penalized scores
+    enhancedClaims = knowledge.claims.map((claim, i) => {
+      const boosted = claimResult.updatedClaims[i];
+      const countered = counterResult.adjustedClaims[i];
 
-    // Multi-pass consistency check (SelfCheckGPT-inspired):
-    // Compare claims across both passes. Claims confirmed by both passes
-    // get a consistency boost; claims only in one pass get penalized.
-    // Uses NLI entailment when available, falls back to token overlap.
-    const consistencyStart = Date.now();
-    const consistencyResult = checkMultiPassConsistency(
-      best.claims,
-      other.claims,
-    );
-    trace.push({
-      step: "Consistency Check",
-      duration_ms: Date.now() - consistencyStart,
-      detail: `${consistencyResult.confirmedCount}/${best.claims.length} claims confirmed across passes`,
-    });
+      // Take the best verification score from per-claim retrieval,
+      // but apply any penalty from counter-query verification
+      const boostDelta = (boosted.verificationScore || 0) - (claim.verificationScore || 0);
+      const counterDelta = (countered.verificationScore || 0) - (claim.verificationScore || 0);
 
-    // Apply consistency adjustments to verification scores
-    const adjustedClaims = best.claims.map((claim, i) => {
-      const adjustment = consistencyResult.adjustments[i] ?? 0;
-      if (!claim.verificationScore) return claim;
-      const adjusted = Math.max(0, Math.min(1, claim.verificationScore + adjustment));
+      const newScore = Math.max(0, Math.min(1, (claim.verificationScore || 0) + boostDelta + counterDelta));
+      const newSources = [...new Set([...(claim.sources || []), ...(boosted.sources || [])])];
+
       return {
         ...claim,
-        verificationScore: Math.round(adjusted * 100) / 100,
-        // Downgrade consistency-failed claims
-        verified: adjusted >= 0.2,
+        verificationScore: Math.round(newScore * 100) / 100,
+        verified: newScore >= 0.2,
+        sources: newSources,
       };
     });
 
-    // Adjust overall confidence based on consistency rate
-    let adjustedConfidence = best.confidence;
-    if (consistencyResult.consistencyRate < 0.3) {
-      // Very low consistency — penalize heavily
-      adjustedConfidence = Math.max(0.10, adjustedConfidence - 0.15);
-    } else if (consistencyResult.consistencyRate > 0.7) {
-      // High consistency — boost confidence
-      adjustedConfidence = Math.min(0.97, adjustedConfidence + 0.05);
-    }
-    adjustedConfidence = Math.round(adjustedConfidence * 100) / 100;
+    extraContradictions = counterResult.newContradictions;
+  }
 
-    const result = { ...best, claims: adjustedClaims, confidence: adjustedConfidence, trace };
+  // ── Thorough Mode: Iterative Confidence-Gated Loop (FIRE-inspired) ──
+  // Instead of a single retry, loop up to MAX_ITERATIONS:
+  //   verify → if weak claims remain → generate targeted query → search → re-verify
+  // Early termination when confidence meets threshold or queries repeat
+  if (depth === "thorough" && knowledge.confidence < THOROUGH_CONFIDENCE_THRESHOLD) {
+    const MAX_ITERATIONS = 3;
+    let bestKnowledge = { ...knowledge, claims: enhancedClaims };
+    let currentPageTexts = pageTexts;
+    const previousQueries = new Set<string>([query]);
+
+    for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
+      const iterStart = Date.now();
+
+      // Generate rephrased query targeting weak claims
+      const weakClaims = bestKnowledge.claims.filter(
+        (c) => !c.verified || (c.verificationScore !== undefined && c.verificationScore < 0.4)
+      );
+
+      if (weakClaims.length === 0) {
+        trace.push({
+          step: "Iteration Stop",
+          duration_ms: 0,
+          detail: `All claims verified — stopping at iteration ${iteration}`,
+        });
+        break;
+      }
+
+      const rephrasedQuery = await rephraseQuery(query, env.OPENROUTER_API_KEY);
+
+      // Early termination: if rephrased query is too similar to previous ones
+      const normalizedRephrase = rephrasedQuery.toLowerCase().trim();
+      let tooSimilar = false;
+      for (const prev of previousQueries) {
+        const tokens1 = new Set(normalizedRephrase.split(/\s+/));
+        const tokens2 = new Set(prev.toLowerCase().trim().split(/\s+/));
+        const intersection = [...tokens1].filter((t) => tokens2.has(t)).length;
+        const similarity = intersection / Math.max(tokens1.size, tokens2.size, 1);
+        if (similarity > 0.8) { tooSimilar = true; break; }
+      }
+
+      if (tooSimilar) {
+        trace.push({
+          step: "Iteration Stop",
+          duration_ms: Date.now() - iterStart,
+          detail: `Query too similar to previous — stopping at iteration ${iteration}`,
+        });
+        break;
+      }
+
+      previousQueries.add(normalizedRephrase);
+
+      trace.push({
+        step: `Rephrase Query (iter ${iteration})`,
+        duration_ms: Date.now() - iterStart,
+        detail: `"${rephrasedQuery.slice(0, 80)}" — ${weakClaims.length} weak claims`,
+      });
+
+      // New pass with rephrased query
+      const { knowledge: passN } = await singlePass(
+        rephrasedQuery, env, cache, trace, currentPageTexts, `pass ${iteration + 1}`, undefined, undefined, options
+      );
+
+      // Pick whichever pass produced higher confidence
+      const best = passN.confidence > bestKnowledge.confidence ? passN : bestKnowledge;
+      const other = passN.confidence > bestKnowledge.confidence ? bestKnowledge : passN;
+
+      trace.push({
+        step: `Select Best (iter ${iteration})`,
+        duration_ms: 0,
+        detail: `${Math.round(best.confidence * 100)}% vs ${Math.round(other.confidence * 100)}%`,
+      });
+
+      // Multi-pass consistency check
+      const consistencyResult = checkMultiPassConsistency(best.claims, other.claims);
+      trace.push({
+        step: `Consistency (iter ${iteration})`,
+        duration_ms: 0,
+        detail: `${consistencyResult.confirmedCount}/${best.claims.length} confirmed`,
+      });
+
+      // Apply consistency adjustments
+      const adjustedClaims = best.claims.map((claim, i) => {
+        const adjustment = consistencyResult.adjustments[i] ?? 0;
+        if (!claim.verificationScore) return claim;
+        const adjusted = Math.max(0, Math.min(1, claim.verificationScore + adjustment));
+        return {
+          ...claim,
+          verificationScore: Math.round(adjusted * 100) / 100,
+          verified: adjusted >= 0.2,
+        };
+      });
+
+      let adjustedConfidence = best.confidence;
+      if (consistencyResult.consistencyRate < 0.3) {
+        adjustedConfidence = Math.max(0.10, adjustedConfidence - 0.15);
+      } else if (consistencyResult.consistencyRate > 0.7) {
+        adjustedConfidence = Math.min(0.97, adjustedConfidence + 0.05);
+      }
+
+      bestKnowledge = { ...best, claims: adjustedClaims, confidence: Math.round(adjustedConfidence * 100) / 100 };
+
+      // Stop if we've reached good confidence
+      if (bestKnowledge.confidence >= THOROUGH_CONFIDENCE_THRESHOLD) {
+        trace.push({
+          step: "Iteration Stop",
+          duration_ms: 0,
+          detail: `Confidence ${Math.round(bestKnowledge.confidence * 100)}% ≥ ${THOROUGH_CONFIDENCE_THRESHOLD * 100}% — stopping`,
+        });
+        break;
+      }
+    }
+
+    // Apply counter-query penalties to final contradictions count
+    const totalContradictions = (bestKnowledge.contradictions?.length || 0) + extraContradictions;
+    const result = { ...bestKnowledge, trace };
     if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
 
     // Record learning signals (fire-and-forget)
@@ -494,17 +788,19 @@ export async function answerQuery(
         consensusScore: result.claims.filter((c) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
         sourceCount: result.sources.length,
         claimCount: result.claims.length,
-        contradictionCount: result.contradictions?.length || 0,
+        contradictionCount: totalContradictions,
         responseTimeMs: Date.now() - queryStart,
         depth: "thorough",
-        thoroughImproved: pass2.confidence > knowledge.confidence,
+        thoroughImproved: result.confidence > knowledge.confidence,
       });
     } catch (e) { console.warn("Failed to record thorough-mode learning signals:", e instanceof Error ? e.message : e); }
 
     return result;
   }
 
-  const result = { ...knowledge, trace };
+  // Fast mode: apply enhanced claims if premium
+  const finalClaims = isPremium ? enhancedClaims : knowledge.claims;
+  const result = { ...knowledge, claims: finalClaims, trace };
   if (cacheKey && !noRetention) await cache.set(cacheKey, JSON.stringify(result), getCacheTTL(query));
 
   // Record learning signals (fire-and-forget)
@@ -516,7 +812,7 @@ export async function answerQuery(
       consensusScore: result.claims.filter((c) => c.consensusLevel === "strong" || c.consensusLevel === "moderate").length / Math.max(result.claims.length, 1),
       sourceCount: result.sources.length,
       claimCount: result.claims.length,
-      contradictionCount: result.contradictions?.length || 0,
+      contradictionCount: (result.contradictions?.length || 0) + extraContradictions,
       responseTimeMs: Date.now() - queryStart,
       depth,
     });

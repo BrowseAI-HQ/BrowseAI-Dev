@@ -1076,3 +1076,143 @@ export async function streamAnswer(
     confidence: computeConfidence(claims, sources),
   };
 }
+
+// ─── Per-Claim Evidence Retrieval (SAFE-inspired) ───────────────────
+// Generates targeted search queries for low-confidence claims.
+// Instead of verifying all claims against the same corpus, each claim
+// gets its own focused search query for better evidence matching.
+
+/**
+ * Generate targeted search queries for claims that need more evidence.
+ * Returns a query per claim (or null if claim is already well-supported).
+ */
+export async function generateClaimQueries(
+  claims: Array<{ claim: string; verified?: boolean; verificationScore?: number }>,
+  apiKey: string,
+): Promise<Array<{ claim: string; query: string } | null>> {
+  // Only generate queries for weak claims (not verified or low score)
+  const weakClaims = claims.filter(
+    (c) => !c.verified || (c.verificationScore !== undefined && c.verificationScore < 0.5)
+  );
+
+  if (weakClaims.length === 0) return claims.map(() => null);
+
+  try {
+    const claimList = weakClaims
+      .map((c, i) => `${i + 1}. "${c.claim}"`)
+      .join("\n");
+
+    const res = await fetchWithRetry(LLM_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: `You generate targeted web search queries to find evidence for specific claims. For each claim, produce a precise search query that would find authoritative sources to verify or refute it. Return a JSON array of objects with "index" (1-based) and "query" fields. Return ONLY the JSON array.`,
+          },
+          {
+            role: "user",
+            content: `Generate search queries to find evidence for these claims:\n${claimList}`,
+          },
+        ],
+        max_tokens: 500,
+        temperature: 0.3,
+      }),
+    });
+
+    if (!res.ok) return claims.map(() => null);
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content?.trim() || "";
+
+    // Parse JSON array from response
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return claims.map(() => null);
+
+    const queries = JSON.parse(jsonMatch[0]) as Array<{ index: number; query: string }>;
+
+    // Map back to full claims array
+    const weakClaimSet = new Set(weakClaims.map((c) => c.claim));
+    return claims.map((c) => {
+      if (!weakClaimSet.has(c.claim)) return null;
+      const weakIdx = weakClaims.findIndex((wc) => wc.claim === c.claim);
+      const match = queries.find((q) => q.index === weakIdx + 1);
+      return match ? { claim: c.claim, query: match.query } : null;
+    });
+  } catch {
+    return claims.map(() => null);
+  }
+}
+
+// ─── Counter-Query Verification (SANCTUARY-inspired) ────────────────
+// Generates adversarial "what would disprove this?" queries to stress-test claims.
+// If contradicting evidence is found via counter-search, confidence is lowered.
+
+/**
+ * Generate counter-queries that would find evidence AGAINST claims.
+ * Used to strengthen contradiction detection beyond same-corpus checking.
+ */
+export async function generateCounterQueries(
+  claims: Array<{ claim: string; verified?: boolean }>,
+  apiKey: string,
+): Promise<Array<{ claim: string; counterQuery: string } | null>> {
+  // Only counter-check verified claims (challenge the positives)
+  const verifiedClaims = claims.filter((c) => c.verified);
+
+  if (verifiedClaims.length === 0) return claims.map(() => null);
+
+  // Limit to top 5 to control cost
+  const toCheck = verifiedClaims.slice(0, 5);
+
+  try {
+    const claimList = toCheck
+      .map((c, i) => `${i + 1}. "${c.claim}"`)
+      .join("\n");
+
+    const res = await fetchWithRetry(LLM_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: `You generate adversarial search queries designed to find evidence that CONTRADICTS or DISPROVES a given claim. The goal is to stress-test claims by actively seeking counter-evidence. For each claim, produce a search query that would find opposing data, corrections, or debunking. Return a JSON array of objects with "index" (1-based) and "counterQuery" fields. Return ONLY the JSON array.`,
+          },
+          {
+            role: "user",
+            content: `Generate counter-evidence search queries for these claims:\n${claimList}`,
+          },
+        ],
+        max_tokens: 400,
+        temperature: 0.4,
+      }),
+    });
+
+    if (!res.ok) return claims.map(() => null);
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content?.trim() || "";
+
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return claims.map(() => null);
+
+    const queries = JSON.parse(jsonMatch[0]) as Array<{ index: number; counterQuery: string }>;
+
+    const checkedSet = new Set(toCheck.map((c) => c.claim));
+    return claims.map((c) => {
+      if (!checkedSet.has(c.claim)) return null;
+      const idx = toCheck.findIndex((tc) => tc.claim === c.claim);
+      const match = queries.find((q) => q.index === idx + 1);
+      return match ? { claim: c.claim, counterQuery: match.counterQuery } : null;
+    });
+  } catch {
+    return claims.map(() => null);
+  }
+}

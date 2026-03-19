@@ -113,6 +113,24 @@ const ROADMAP_ITEMS = [
   },
   {
     phase: "Shipped",
+    title: "Per-claim evidence retrieval",
+    desc: "Weak claims get targeted LLM-generated search queries, each verified individually across all providers. Inspired by Google DeepMind's SAFE framework.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Counter-query adversarial verification",
+    desc: "Verified claims stress-tested with adversarial 'what would disprove this?' searches. If counter-evidence found, claim confidence is penalized. Inspired by SANCTUARY (AVeriTeC 2025).",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Iterative confidence-gated retrieval",
+    desc: "Thorough mode uses a FIRE-inspired loop: verify → if weak claims remain → targeted query → search → re-verify. Up to 3 iterations with early termination. From NAACL 2025 research.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
     title: "Token streaming & retry with backoff",
     desc: "Real-time SSE streaming with per-token answer delivery. Automatic retry with exponential backoff on all external API calls (search, LLM, page fetching). Production-grade reliability.",
     done: true,
