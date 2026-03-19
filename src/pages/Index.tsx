@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
   Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Rocket, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, ExternalLink, Brain, Key,
-  Clock,
+  Clock, Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -147,7 +147,9 @@ const Index = () => {
     const searchQuery = q || query;
     if (!searchQuery.trim()) return;
     saveRecentQuery(searchQuery.trim());
-    const depthParam = depth !== "fast" ? `&depth=${depth}` : "";
+    // Auto-downgrade deep → thorough when user can't access deep mode
+    const effectiveDepth = isDepthBlocked(depth, !!user, null) ? "thorough" : depth;
+    const depthParam = effectiveDepth !== "fast" ? `&depth=${effectiveDepth}` : "";
     navigate(`/results?q=${encodeURIComponent(searchQuery.trim())}${depthParam}`);
   };
 
@@ -326,47 +328,68 @@ const Index = () => {
           {/* Search with autocomplete */}
           <div className="relative max-w-2xl mx-auto">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors z-10" />
-              {!query && !searchFocused && (
-                <div className="absolute left-12 right-16 sm:right-36 top-1/2 -translate-y-1/2 text-left text-muted-foreground text-sm sm:text-base pointer-events-none select-none truncate">
-                  {typedText}<span className="animate-pulse">|</span>
-                </div>
+              {isDepthBlocked(depth, !!user, null) ? (
+                <>
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400 z-10" />
+                  <div
+                    className="w-full h-14 pl-12 pr-16 sm:pr-36 bg-purple-500/5 border border-purple-500/30 rounded-xl flex items-center cursor-pointer"
+                    onClick={() => setLoginOpen(true)}
+                  >
+                    <span className="text-purple-400 text-sm">Sign in to unlock Deep mode</span>
+                  </div>
+                  <Button
+                    onClick={() => setLoginOpen(true)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2 z-10 border border-purple-500/30"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="hidden sm:inline">Sign In</span>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors z-10" />
+                  {!query && !searchFocused && (
+                    <div className="absolute left-12 right-16 sm:right-36 top-1/2 -translate-y-1/2 text-left text-muted-foreground text-sm sm:text-base pointer-events-none select-none truncate">
+                      {typedText}<span className="animate-pulse">|</span>
+                    </div>
+                  )}
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                    onKeyDown={(e) => {
+                      if (showSuggestions) {
+                        if (e.key === "ArrowDown") { e.preventDefault(); setSelectedSuggestion((prev) => Math.min(prev + 1, searchSuggestions.length - 1)); }
+                        else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedSuggestion((prev) => Math.max(prev - 1, -1)); }
+                        else if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (selectedSuggestion >= 0) { const s = searchSuggestions[selectedSuggestion].text; setQuery(s); handleSearch(s); }
+                          else { handleSearch(); }
+                          setSearchFocused(false);
+                        }
+                        else if (e.key === "Escape") { setSearchFocused(false); }
+                      } else if (e.key === "Enter") {
+                        handleSearch();
+                      }
+                    }}
+                    placeholder={searchFocused ? "Ask a research question…" : ""}
+                    aria-label="Search query"
+                    aria-autocomplete="list"
+                    aria-expanded={showSuggestions}
+                    className={`w-full h-14 pl-12 pr-16 sm:pr-36 bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base ${showSuggestions ? "rounded-t-xl rounded-b-none border-b-transparent" : "rounded-xl"}`}
+                  />
+                  <Button
+                    onClick={() => handleSearch()}
+                    disabled={!query.trim()}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2 z-10"
+                  >
+                    <span className="hidden sm:inline">Search</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </>
               )}
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-                onKeyDown={(e) => {
-                  if (showSuggestions) {
-                    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedSuggestion((prev) => Math.min(prev + 1, searchSuggestions.length - 1)); }
-                    else if (e.key === "ArrowUp") { e.preventDefault(); setSelectedSuggestion((prev) => Math.max(prev - 1, -1)); }
-                    else if (e.key === "Enter") {
-                      e.preventDefault();
-                      if (selectedSuggestion >= 0) { const s = searchSuggestions[selectedSuggestion].text; setQuery(s); handleSearch(s); }
-                      else if (!isDepthBlocked(depth, !!user, null)) { handleSearch(); }
-                      setSearchFocused(false);
-                    }
-                    else if (e.key === "Escape") { setSearchFocused(false); }
-                  } else if (e.key === "Enter" && !isDepthBlocked(depth, !!user, null)) {
-                    handleSearch();
-                  }
-                }}
-                placeholder={searchFocused ? "Ask a research question…" : ""}
-                aria-label="Search query"
-                aria-autocomplete="list"
-                aria-expanded={showSuggestions}
-                className={`w-full h-14 pl-12 pr-16 sm:pr-36 bg-secondary border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all text-base ${showSuggestions ? "rounded-t-xl rounded-b-none border-b-transparent" : "rounded-xl"}`}
-              />
-              <Button
-                onClick={() => handleSearch()}
-                disabled={!query.trim() || isDepthBlocked(depth, !!user, null)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg px-3 sm:px-4 h-10 text-sm font-semibold gap-2 z-10"
-              >
-                <span className="hidden sm:inline">Search</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
             </div>
             {/* Autocomplete dropdown */}
             <AnimatePresence>

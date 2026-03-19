@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
   Globe, Copy, Check, Code2, ChevronDown, ChevronUp, ExternalLink,
-  ThumbsUp, ThumbsDown, Brain, FileText, Beaker, LogIn,
+  ThumbsUp, ThumbsDown, Brain, FileText, Beaker, LogIn, Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -223,7 +223,9 @@ const Playground = () => {
 
   const run = async (overrideInput?: string, overrideDepth?: "fast" | "thorough" | "deep", overrideTab?: string) => {
     const q = overrideInput || input;
-    const currentDepth = overrideDepth || depth;
+    const rawDepth = overrideDepth || depth;
+    // Auto-downgrade deep → thorough when user can't access deep mode
+    const currentDepth = isDepthBlocked(rawDepth, !!user, quota) ? "thorough" : rawDepth;
     const currentTab = overrideTab || activeTab;
     if (!q.trim()) return;
     setLoading(true);
@@ -390,30 +392,48 @@ const Playground = () => {
           {TABS.map((tab) => (
             <TabsContent key={tab} value={tab}>
               <div className="flex gap-2 mt-4">
-                {tab === "answer" ? (
-                  <SearchInput
-                    value={input}
-                    onChange={setInput}
-                    onSubmit={(q) => run(q)}
-                    placeholder={PLACEHOLDERS[tab]}
-                    className="flex-1"
-                  />
+                {tab === "answer" && isDepthBlocked(depth, !!user, quota) ? (
+                  <>
+                    <div
+                      className="flex-1 h-12 px-4 rounded-lg bg-purple-500/5 border border-purple-500/30 flex items-center gap-2 cursor-pointer"
+                      onClick={() => setLoginOpen(true)}
+                    >
+                      <Lock className="w-4 h-4 text-purple-400 shrink-0" />
+                      <span className="text-purple-400 text-sm">Sign in to unlock Deep mode</span>
+                    </div>
+                    <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
+                    <Button onClick={() => setLoginOpen(true)} className="bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 border border-purple-500/30 h-12 px-5" aria-label="Sign in">
+                      <LogIn className="w-4 h-4" />
+                    </Button>
+                  </>
                 ) : (
-                  <input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && run()}
-                    placeholder={PLACEHOLDERS[tab]}
-                    aria-label="Research query"
-                    className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
-                  />
+                  <>
+                    {tab === "answer" ? (
+                      <SearchInput
+                        value={input}
+                        onChange={setInput}
+                        onSubmit={(q) => run(q)}
+                        placeholder={PLACEHOLDERS[tab]}
+                        className="flex-1"
+                      />
+                    ) : (
+                      <input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && run()}
+                        placeholder={PLACEHOLDERS[tab]}
+                        aria-label="Research query"
+                        className="flex-1 h-12 px-4 rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 text-sm font-mono"
+                      />
+                    )}
+                    {tab === "answer" && (
+                      <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
+                    )}
+                    <Button onClick={() => run()} disabled={loading || !input.trim()} className="bg-accent text-accent-foreground h-12 px-5" aria-label="Run query">
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                    </Button>
+                  </>
                 )}
-                {tab === "answer" && (
-                  <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
-                )}
-                <Button onClick={() => run()} disabled={loading || !input.trim() || (activeTab === "answer" && isDepthBlocked(depth, !!user, quota))} className="bg-accent text-accent-foreground h-12 px-5" aria-label="Run query">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                </Button>
               </div>
 
               {/* Example pills for non-answer tabs (answer tab has autocomplete) */}

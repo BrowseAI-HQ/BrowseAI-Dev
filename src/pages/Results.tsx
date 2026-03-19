@@ -18,18 +18,21 @@ import { BrowseBadge } from "@/components/BrowseBadge";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
-import { DepthToggle, formatResetTime } from "@/components/DepthToggle";
+import { DepthToggle, isDepthBlocked, formatResetTime } from "@/components/DepthToggle";
 
 const Results = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get("q") || "";
-  const depth = (searchParams.get("depth") as "fast" | "thorough" | "deep") || "fast";
+  const rawDepth = (searchParams.get("depth") as "fast" | "thorough" | "deep") || "fast";
   const [result, setResult] = useState<BrowseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const { user, loading: authLoading } = useAuth();
+
+  // Auto-downgrade deep → thorough when user can't access deep mode
+  const depth = isDepthBlocked(rawDepth, !!user, null) ? "thorough" : rawDepth;
 
   // Streaming state
   const [traceSteps, setTraceSteps] = useState<TraceEvent[]>([]);
@@ -102,7 +105,8 @@ const Results = () => {
   };
 
   const handleFollowUp = (q: string) => {
-    const depthParam = followUpDepth !== "fast" ? followUpDepth : undefined;
+    const effectiveFollowUpDepth = isDepthBlocked(followUpDepth, !!user, quota) ? "thorough" : followUpDepth;
+    const depthParam = effectiveFollowUpDepth !== "fast" ? effectiveFollowUpDepth : undefined;
     setSearchParams({ q, ...(depthParam && { depth: depthParam }) });
     setFollowUpInput("");
     window.scrollTo({ top: 0, behavior: "smooth" });
