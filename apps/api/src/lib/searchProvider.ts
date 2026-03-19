@@ -11,6 +11,7 @@
 import type { SearchResult } from "../services/search.js";
 import { tavilySearch } from "./tavily.js";
 import { braveSearch } from "./brave.js";
+import { exaSearch } from "./exa.js";
 import { sanitizeText } from "./sanitize.js";
 import { fetchWithRetry } from "./retry.js";
 
@@ -87,7 +88,7 @@ export interface SearchProvider {
 
 export interface SearchProviderConfig {
   /** Provider type */
-  type: "tavily" | "brave" | "elasticsearch" | "confluence" | "custom";
+  type: "tavily" | "brave" | "exa" | "elasticsearch" | "confluence" | "custom";
 
   /** API key or auth token for the provider */
   apiKey?: string;
@@ -135,6 +136,21 @@ export class BraveProvider implements SearchProvider {
       url: r.url,
       title: sanitizeText(r.title),
       snippet: sanitizeText(r.description),
+      score: r.score,
+    }));
+  }
+}
+
+export class ExaProvider implements SearchProvider {
+  name = "exa";
+  constructor(private apiKey: string) {}
+
+  async search(query: string, limit = 10): Promise<SearchResult[]> {
+    const results = await exaSearch(query, this.apiKey, limit);
+    return results.map((r) => ({
+      url: r.url,
+      title: sanitizeText(r.title),
+      snippet: sanitizeText(r.snippet),
       score: r.score,
     }));
   }
@@ -305,6 +321,10 @@ export function createSearchProvider(config: SearchProviderConfig): SearchProvid
       if (!config.apiKey) throw new Error("Brave provider requires apiKey");
       return new BraveProvider(config.apiKey);
 
+    case "exa":
+      if (!config.apiKey) throw new Error("Exa provider requires apiKey");
+      return new ExaProvider(config.apiKey);
+
     case "elasticsearch":
       if (!config.endpoint) throw new Error("Elasticsearch provider requires endpoint");
       validateEndpointUrl(config.endpoint);
@@ -339,12 +359,14 @@ export function createSearchProvider(config: SearchProviderConfig): SearchProvid
  * Create the default search providers from environment config.
  * Returns primary (Tavily) and optional secondary (Brave).
  */
-export function createDefaultProviders(serpApiKey: string, braveApiKey?: string): {
+export function createDefaultProviders(serpApiKey: string, braveApiKey?: string, exaApiKey?: string): {
   primary: SearchProvider;
   secondary: SearchProvider | null;
+  tertiary: SearchProvider | null;
 } {
   return {
     primary: new TavilyProvider(serpApiKey),
     secondary: braveApiKey ? new BraveProvider(braveApiKey) : null,
+    tertiary: exaApiKey ? new ExaProvider(exaApiKey) : null,
   };
 }

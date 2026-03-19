@@ -4,6 +4,7 @@ import { openPage } from "./scrape.js";
 import { extractKnowledge, rephraseQuery, generateQueryVariant, analyzeQuery } from "../lib/gemini.js";
 import type { QueryAnalysis } from "../lib/gemini.js";
 import { braveSearch } from "../lib/brave.js";
+import { exaSearch } from "../lib/exa.js";
 import { rerankSources, trackSourceUsefulness } from "../lib/verify.js";
 import { crossEncoderRerank } from "../lib/reranker.js";
 import {
@@ -147,7 +148,7 @@ export async function singlePass(
   // Phase 1: Parallel — search + variant + analysis + secondary search (if available)
   const searchStart = Date.now();
 
-  // Build secondary search promise
+  // Build secondary search promises (Brave + Exa run in parallel with primary)
   const secondarySearch: Promise<SearchResult[]> =
     options?.secondaryProvider
       ? options.secondaryProvider.search(query).catch(() => [])
@@ -157,19 +158,29 @@ export async function singlePass(
           )
         : Promise.resolve([]);
 
+  // Exa: neural/semantic search — finds conceptually related pages keyword engines miss
+  const tertiarySearch: Promise<SearchResult[]> =
+    (!useProvider && env.EXA_API_KEY)
+      ? exaSearch(query, env.EXA_API_KEY).then((results) =>
+          results.map((r) => ({ url: r.url, title: r.title, snippet: r.snippet, score: r.score }))
+        ).catch(() => [])
+      : Promise.resolve([]);
+
   const parallelTasks: [
     Promise<{ results: SearchResult[]; cached: boolean }>,
     Promise<string>,
     Promise<QueryAnalysis>,
+    Promise<SearchResult[]>,
     Promise<SearchResult[]>,
   ] = [
     doSearch(query, useProvider, env.SERP_API_KEY, cache),
     generateQueryVariant(query, env.OPENROUTER_API_KEY),
     preAnalysis ? Promise.resolve(preAnalysis) : analyzeQuery(query, env.OPENROUTER_API_KEY),
     secondarySearch,
+    tertiarySearch,
   ];
 
-  const [mainResults, variantQuery, analysis, braveResults] = await Promise.all(parallelTasks);
+  const [mainResults, variantQuery, analysis, braveResults, exaResults] = await Promise.all(parallelTasks);
 
   // Add query plan trace step if plan exists
   if (analysis.plan && analysis.plan.length > 0) {
@@ -190,6 +201,14 @@ export async function singlePass(
     allResults = mergeSearchResults(allResults, braveResults);
     const added = allResults.length - before;
     if (added > 0) searchDetail += ` +${added} Brave`;
+  }
+
+  // Merge Exa results (neural/semantic search)
+  if (exaResults.length > 0) {
+    const before = allResults.length;
+    allResults = mergeSearchResults(allResults, exaResults);
+    const added = allResults.length - before;
+    if (added > 0) searchDetail += ` +${added} Exa`;
   }
 
   // Merge variant results (non-fatal — don't crash if variant search fails)

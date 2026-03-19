@@ -113,7 +113,7 @@ async function getRequestEnv(
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
             // Strip premium keys if quota exceeded — falls back to BM25
-            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined }),
+            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined, EXA_API_KEY: undefined }),
           },
           isOwnKeys: true,
           userId,
@@ -145,7 +145,7 @@ async function getRequestEnv(
             ...env,
             SERP_API_KEY: resolved.tavilyKey,
             OPENROUTER_API_KEY: resolved.openrouterKey,
-            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined }),
+            ...(premiumActive ? {} : { HF_API_KEY: undefined, BRAVE_API_KEY: undefined, EXA_API_KEY: undefined }),
           },
           isOwnKeys: true,
           userId,
@@ -176,6 +176,7 @@ async function getRequestEnv(
         // BYOK users don't get premium features — those are bai_ key perks
         HF_API_KEY: undefined,
         BRAVE_API_KEY: undefined,
+        EXA_API_KEY: undefined,
       },
       isOwnKeys: hasTavilyKey,
       userId,
@@ -190,6 +191,7 @@ async function getRequestEnv(
       ...env,
       HF_API_KEY: undefined,
       BRAVE_API_KEY: undefined,
+      EXA_API_KEY: undefined,
     },
     isOwnKeys: false,
     userId,
