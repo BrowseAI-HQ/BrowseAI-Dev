@@ -530,6 +530,29 @@ print(result.answer, result.confidence)`}</pre>
 
 # depth: "fast" (default) | "thorough" | "deep"`}</pre>
               </div>
+
+              <div className="p-5 rounded-xl bg-card border border-accent/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="text-[10px] border-accent/50 text-accent">NEW</Badge>
+                  <span className="font-semibold">Anti-Hallucination Hardening</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Send any prompt through <code className="text-xs bg-secondary px-1 py-0.5 rounded">browse_harden</code> — it auto-detects intent, identifies hallucination risks, and rewrites your prompt with grounding techniques (CoVe, citation-verify, quote extraction). Works with any LLM.
+                </p>
+                <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`# MCP tool
+browse_harden({ prompt: "What are the side effects of metformin?", verify: true })
+
+# Python
+result = client.harden("Write a blog post about quantum computing")
+# result.system_prompt → hardened system prompt with anti-hallucination rules
+# result.user_prompt   → rewritten prompt with natural grounding cues
+# result.techniques    → ["citation_then_verify", "source_attribution", ...]
+
+# REST API
+curl -X POST https://browseai.dev/api/browse/harden \\
+  -H "X-API-Key: bai_xxx" -H "Content-Type: application/json" \\
+  -d '{"prompt": "Is coffee good for you?", "verify": true}'`}</pre>
+              </div>
             </div>
           </motion.div>
         </div>
