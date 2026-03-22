@@ -787,6 +787,7 @@ print(result.answer, result.confidence)`}</pre>
                 { name: "browse-compare-claims", desc: "Settle factual disputes — evidence vs raw LLM side-by-side" },
                 { name: "browse-monitor", desc: "Track evolving topics over time, diff against prior knowledge" },
                 { name: "browse-cite", desc: "Generate formatted citations (APA/MLA) with authority scores" },
+                { name: "browse-anti-hallucination", desc: "Reduce LLM hallucinations through evidence-backed prompt engineering" },
               ].map((skill) => (
                 <a
                   key={skill.name}

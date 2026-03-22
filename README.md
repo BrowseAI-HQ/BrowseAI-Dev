@@ -573,6 +573,7 @@ npx skills add BrowseAI-HQ/browseAIDev_Skills
 | [browse-compare-claims](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-compare-claims) | Settle factual disputes — evidence-backed vs raw LLM side-by-side |
 | [browse-monitor](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-monitor) | Track evolving topics over time, diff against prior knowledge |
 | [browse-cite](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-cite) | Generate formatted citations (APA/MLA) with authority scores |
+| [browse-anti-hallucination](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-anti-hallucination) | Reduce LLM hallucinations through evidence-backed prompt engineering |
 
 [View all skills →](https://github.com/BrowseAI-HQ/browseAIDev_Skills)
 
