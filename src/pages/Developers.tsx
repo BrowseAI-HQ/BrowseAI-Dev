@@ -783,6 +783,10 @@ print(result.answer, result.confidence)`}</pre>
                 { name: "browse-fact-check", desc: "Compare raw LLM vs evidence-backed, verify claims" },
                 { name: "browse-extract", desc: "Structured claim extraction from any URL" },
                 { name: "browse-sessions", desc: "Multi-query research with persistent knowledge" },
+                { name: "browse-deep-dive", desc: "Multi-step agentic research with reasoning chains and gap analysis" },
+                { name: "browse-compare-claims", desc: "Settle factual disputes — evidence vs raw LLM side-by-side" },
+                { name: "browse-monitor", desc: "Track evolving topics over time, diff against prior knowledge" },
+                { name: "browse-cite", desc: "Generate formatted citations (APA/MLA) with authority scores" },
               ].map((skill) => (
                 <a
                   key={skill.name}

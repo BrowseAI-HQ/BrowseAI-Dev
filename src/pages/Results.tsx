@@ -94,7 +94,6 @@ const Results = () => {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, depth]);
 
   const handleShare = () => {

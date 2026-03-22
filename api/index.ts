@@ -20,12 +20,24 @@ function readBody(req: IncomingMessage): Promise<string> {
   });
 }
 
+const ALLOWED_ORIGINS = new Set([
+  "https://browseai.dev",
+  "https://www.browseai.dev",
+  ...(process.env.NODE_ENV !== "production" ? ["http://localhost:8080", "http://localhost:5173", "http://localhost:3000"] : []),
+]);
+
 function setCorsHeaders(req: IncomingMessage, res: ServerResponse) {
   const origin = req.headers.origin || "";
-  const corsOrigin = origin || process.env.CORS_ORIGIN || "*";
+  const corsOrigin = origin && ALLOWED_ORIGINS.has(origin) ? origin : (ALLOWED_ORIGINS.values().next().value ?? "*");
   res.setHeader("Access-Control-Allow-Origin", corsOrigin);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Tavily-Key, X-OpenRouter-Key, X-API-Key, Authorization");
+  // Security headers
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
 }
 
 // Endpoints that use SSE and need real streaming (not buffered inject)
@@ -83,7 +95,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.end(response.body);
   } catch (err: any) {
     res.setHeader("Content-Type", "application/json");
-    res.setHeader("Access-Control-Allow-Origin", req.headers?.origin || "*");
+    const errOrigin = req.headers?.origin || "";
+    res.setHeader("Access-Control-Allow-Origin", errOrigin && ALLOWED_ORIGINS.has(errOrigin) ? errOrigin : (ALLOWED_ORIGINS.values().next().value ?? "*"));
     res.statusCode = 500;
     console.error("Handler error:", err);
     res.end(JSON.stringify({ success: false, error: "Internal server error" }));

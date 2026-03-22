@@ -29,6 +29,37 @@ export async function buildApp() {
     allowedHeaders: ["Content-Type", "X-Tavily-Key", "X-OpenRouter-Key", "X-API-Key", "Authorization"],
   });
 
+  // CSRF protection: validate Origin on state-changing requests from browsers
+  const ALLOWED_ORIGINS = new Set([
+    "https://browseai.dev",
+    "https://www.browseai.dev",
+    ...(process.env.NODE_ENV !== "production" ? ["http://localhost:8080", "http://localhost:5173", "http://localhost:3000"] : []),
+  ]);
+
+  app.addHook("onRequest", async (request, reply) => {
+    if (request.method === "GET" || request.method === "OPTIONS" || request.method === "HEAD") return;
+    // API clients (SDK, MCP, curl) send X-API-Key — exempt from Origin check
+    if (request.headers["x-api-key"]) return;
+    const origin = request.headers.origin;
+    // No Origin header = non-browser request (SDK, server-to-server) — allow
+    if (!origin) return;
+    if (!ALLOWED_ORIGINS.has(origin)) {
+      return reply.status(403).send({ success: false, error: "Forbidden: invalid origin" });
+    }
+  });
+
+  // Security headers on every response
+  app.addHook("onSend", async (_request, reply) => {
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("X-Frame-Options", "DENY");
+    reply.header("X-XSS-Protection", "1; mode=block");
+    reply.header("Referrer-Policy", "strict-origin-when-cross-origin");
+    if (process.env.NODE_ENV === "production") {
+      reply.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+      reply.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+    }
+  });
+
   // Vercel KV sets KV_REST_API_URL + KV_REST_API_TOKEN
   // Upstash sets UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
   const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -84,7 +115,7 @@ export async function buildApp() {
 
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
     registerWaitlistRoutes(app, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-    registerAdminRoutes(app, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, store);
+    registerAdminRoutes(app, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, store, cache);
   }
 
   app.get("/health", async () => ({ status: "ok" }));

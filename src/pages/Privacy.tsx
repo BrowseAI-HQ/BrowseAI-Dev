@@ -20,7 +20,7 @@ const Privacy = () => {
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         <div>
           <h1 className="text-2xl font-bold mb-2">Privacy Policy</h1>
-          <p className="text-sm text-muted-foreground">Last updated: March 8, 2026</p>
+          <p className="text-sm text-muted-foreground">Last updated: March 19, 2026</p>
         </div>
 
         <div className="prose prose-invert prose-sm max-w-none space-y-6">
@@ -46,9 +46,15 @@ const Privacy = () => {
               </p>
             </div>
             <div className="space-y-2">
+              <h3 className="text-sm font-medium">Queries & Results</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Your queries and results are stored on our servers.</strong> When you submit a query through the hosted service (browseai.dev, REST API, MCP server, or Python SDK with a BAI key), we store the query text, the full result (answer, claims, sources, confidence scores), and metadata (timestamps, depth mode, client type). For authenticated users, results are linked to your account and visible in your query history.
+              </p>
+            </div>
+            <div className="space-y-2">
               <h3 className="text-sm font-medium">Usage Data</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                We collect anonymized usage metrics including: search queries (for result caching and analytics), response times, confidence scores, and source domains. For authenticated users, query history is stored and accessible from your dashboard.
+                We collect usage metrics including: response times, confidence scores, source domains, verification rates, and feedback ratings. For authenticated users, query history is stored and accessible from your dashboard.
               </p>
             </div>
             <div className="space-y-2">
@@ -74,15 +80,21 @@ const Privacy = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Data Used to Improve Accuracy</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              BrowseAI Dev uses aggregated, anonymized verification data from queries processed through the hosted service to improve the accuracy of future results. Specifically:
+              <strong className="text-foreground">BrowseAI Dev is not a fully private service.</strong> Queries and results processed through the hosted service are stored and used to improve accuracy for all users. We believe in being transparent about this. Here is exactly what we use and how:
             </p>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-              <li><strong className="text-foreground">Domain authority scores</strong> — We track how often claims from specific domains are successfully verified. Over time, this data is used to adjust domain trustworthiness scores via Bayesian smoothing. Only domain-level aggregates are stored (e.g., "wikipedia.org has an 82% verification rate across 500 queries") — individual queries are not linked to these scores.</li>
-              <li><strong className="text-foreground">Cache improvements</strong> — Cached results from previous queries improve response times for all users. Cached data expires based on time-sensitivity (5 min for news, 30 min for general knowledge).</li>
-              <li><strong className="text-foreground">No personal data in aggregates</strong> — Verification aggregates are computed at the domain level, not the query or user level. Your specific search queries are never used to train models or shared with other users.</li>
+            <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+              <li><strong className="text-foreground">Query & result storage</strong> — Your queries, answers, claims, sources, and confidence scores are stored in our database. This data powers your query history, cached results, and the self-learning systems described below. Results are stored as long as your account is active (or until you delete them).</li>
+              <li><strong className="text-foreground">Domain authority scores</strong> — We track how often claims from specific domains are successfully verified. Over time, this data adjusts domain trustworthiness scores via Bayesian smoothing. Only domain-level aggregates are computed (e.g., "wikipedia.org has an 82% verification rate across 500 queries").</li>
+              <li><strong className="text-foreground">Self-learning pipeline</strong> — Verification thresholds, consensus scoring, and confidence weights automatically adapt based on aggregate query outcomes. For example, if a query type consistently shows low verification rates, the system adjusts its thresholds. This operates on aggregated patterns, not individual queries.</li>
+              <li><strong className="text-foreground">Feedback-driven calibration</strong> — When you rate a result as "good", "bad", or "wrong", that feedback is used to calibrate confidence scores via isotonic regression — ensuring that a reported 75% confidence means approximately 75% actual accuracy. Feedback is stored with the result.</li>
+              <li><strong className="text-foreground">Co-citation & source usefulness</strong> — We analyze which domains frequently appear together and which sources contribute the most verified claims, to improve source ranking for future queries.</li>
+              <li><strong className="text-foreground">Cache</strong> — Results are cached (5 min for news, 30 min for general) to improve response times. All users benefit from the cache.</li>
             </ul>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              This data flywheel is a core part of how BrowseAI Dev improves over time. By using the hosted service, you benefit from the collective verification data of all users — making every result more accurate. Self-hosted instances do not participate in this shared data pool and start with static domain scores only.
+              <strong className="text-foreground">What we do NOT do:</strong> We do not sell your data. We do not share individual queries or results with third parties (beyond the search/LLM providers needed to process your request). We do not use your queries to train LLM models. Aggregate statistical improvements are computed from patterns across all queries — your individual queries are not exposed to other users.
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              This data flywheel is a core part of how BrowseAI Dev improves over time. By using the hosted service, you benefit from the collective verification data of all users — making every result more accurate. <strong className="text-foreground">If you need full privacy, self-host</strong> — self-hosted instances do not participate in this shared data pool and start with static domain scores only.
             </p>
           </section>
 
@@ -96,7 +108,7 @@ const Privacy = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Data Storage & Security</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Data is stored in Supabase (PostgreSQL) with row-level security. API keys are encrypted at rest using AES-256-GCM. All connections use TLS. We retain query data for as long as your account is active. You can delete your account and all associated data by contacting us.
+              Data is stored in Supabase (PostgreSQL) with row-level security. API keys are encrypted at rest using AES-256-GCM. All connections use TLS. We retain query data for as long as your account is active. You can delete all your data at any time (see Your Rights below).
             </p>
           </section>
 
@@ -108,13 +120,17 @@ const Privacy = () => {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">Your Rights</h2>
+            <h2 className="text-lg font-semibold">Your Rights (Including GDPR)</h2>
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-              <li>Access your stored data via the dashboard</li>
-              <li>Delete your API keys at any time</li>
-              <li>Request full account deletion</li>
-              <li>Export your query history</li>
+              <li>Access your stored data via the dashboard (query history, usage stats)</li>
+              <li>Delete your API keys at any time from the dashboard</li>
+              <li><strong className="text-foreground">Delete all your data</strong> — Use <code className="text-xs bg-secondary px-1 py-0.5 rounded">DELETE /user/data</code> to permanently remove all your query results and API keys. This is irreversible.</li>
+              <li>Export your query history via the API</li>
+              <li>Request full account deletion by contacting us</li>
             </ul>
+            <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+              Note: Deleting your data removes your individual query results and API keys. Aggregate statistics (domain authority scores, verification rates) that were computed from your queries cannot be individually reversed, as they are statistical aggregates across all users.
+            </p>
           </section>
 
           <section className="space-y-3">

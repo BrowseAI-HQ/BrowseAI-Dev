@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requireAdmin } from "../lib/admin.js";
 import type { ResultStore } from "../services/store.js";
+import type { CacheService } from "../services/cache.js";
 import {
   setDynamicAuthority,
   computeCoCitationGraph,
@@ -16,16 +17,47 @@ const AddAdminSchema = z.object({
   email: z.string().email(),
 });
 
+/** 30 admin requests per minute per admin email */
+const ADMIN_RATE_LIMIT = 30;
+const ADMIN_RATE_WINDOW = 60;
+
+async function checkAdminRateLimit(
+  cache: CacheService,
+  adminEmail: string,
+): Promise<boolean> {
+  const key = `admin_rl:${adminEmail}`;
+  const count = await cache.incr(key, ADMIN_RATE_WINDOW);
+  return count <= ADMIN_RATE_LIMIT;
+}
+
 export function registerAdminRoutes(
   app: FastifyInstance,
   supabaseUrl: string,
   serviceRoleKey: string,
-  store: ResultStore
+  store: ResultStore,
+  cache?: CacheService,
 ) {
+  // Helper: authenticate admin + check rate limit in one call (avoids double auth lookups)
+  async function authenticateAdmin(
+    request: import("fastify").FastifyRequest,
+    reply: import("fastify").FastifyReply,
+  ): Promise<{ email: string } | null> {
+    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
+    if (!admin) {
+      reply.status(403).send({ success: false, error: "Forbidden" });
+      return null;
+    }
+    if (cache && !(await checkAdminRateLimit(cache, admin.email))) {
+      reply.status(429).send({ success: false, error: "Admin rate limit exceeded (30/min)" });
+      return null;
+    }
+    return admin;
+  }
+
   // Admin dashboard metrics
   app.get("/admin/metrics", async (request, reply) => {
-    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
-    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+    const admin = await authenticateAdmin(request, reply);
+    if (!admin) return;
 
     // Fetch in parallel: analytics, waitlist count, admin list, client breakdown, package stats, users, user queries
     const [analytics, waitlistData, adminList, clientBreakdown, packageStats, usersData, userQueries] = await Promise.all([
@@ -56,8 +88,8 @@ export function registerAdminRoutes(
 
   // List admins
   app.get("/admin/admins", async (request, reply) => {
-    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
-    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+    const admin = await authenticateAdmin(request, reply);
+    if (!admin) return;
 
     const list = await fetchAdminList(supabaseUrl, serviceRoleKey);
     return reply.send({ success: true, result: list });
@@ -65,8 +97,8 @@ export function registerAdminRoutes(
 
   // Add admin
   app.post("/admin/admins", async (request, reply) => {
-    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
-    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+    const admin = await authenticateAdmin(request, reply);
+    if (!admin) return;
 
     const parsed = AddAdminSchema.safeParse(request.body);
     if (!parsed.success) {
@@ -96,8 +128,8 @@ export function registerAdminRoutes(
   // Recalculate all domain intelligence from stored query results
   // This computes: dynamic authority, co-citation graph, and source usefulness
   app.post("/admin/recalculate-authority", async (request, reply) => {
-    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
-    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+    const admin = await authenticateAdmin(request, reply);
+    if (!admin) return;
 
     // Fetch raw results for co-citation and usefulness computation
     const rawResults = await store.getRecentResults(5000);
@@ -169,8 +201,8 @@ export function registerAdminRoutes(
 
   // Import domain authority from Majestic Million (free CSV, CC license)
   app.post("/admin/import-domain-data", async (request, reply) => {
-    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
-    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+    const admin = await authenticateAdmin(request, reply);
+    if (!admin) return;
 
     const { limit: importLimit } = (request.body as { limit?: number }) || {};
     const maxDomains = Math.min(importLimit || 10000, 50000);
@@ -242,8 +274,8 @@ export function registerAdminRoutes(
 
   // Learning engine state
   app.get("/admin/learning", async (request, reply) => {
-    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
-    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+    const admin = await authenticateAdmin(request, reply);
+    if (!admin) return;
 
     return reply.send({
       success: true,
@@ -256,8 +288,8 @@ export function registerAdminRoutes(
 
   // Remove admin (cannot remove yourself)
   app.delete("/admin/admins/:email", async (request, reply) => {
-    const admin = await requireAdmin(request, supabaseUrl, serviceRoleKey);
-    if (!admin) return reply.status(403).send({ success: false, error: "Forbidden" });
+    const admin = await authenticateAdmin(request, reply);
+    if (!admin) return;
 
     const { email } = request.params as { email: string };
     if (email === admin.email) {

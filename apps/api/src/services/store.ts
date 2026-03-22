@@ -60,6 +60,8 @@ export interface ResultStore {
   saveFeedback(resultId: string, rating: "good" | "bad" | "wrong", claimIndex?: number): Promise<void>;
   /** Get confidence calibration data: predicted confidence vs actual accuracy from feedback */
   getCalibrationData(): Promise<CalibrationBucket[]>;
+  /** Delete all stored data for a user (GDPR right to erasure) */
+  deleteUserData(userId: string): Promise<{ deletedResults: number }>;
 }
 
 /** Sanitize a value for PostgREST query parameters to prevent filter injection */
@@ -307,6 +309,29 @@ export function createSupabaseStore(supabaseUrl: string, serviceRoleKey: string)
         .filter(b => b.count > 0);
     },
 
+    async deleteUserData(userId: string): Promise<{ deletedResults: number }> {
+      const safeId = sanitizePostgrestParam(userId);
+      // Count first
+      const countRes = await supabaseFetch(
+        `/browse_results?user_id=eq.${safeId}&select=id`,
+        { method: "GET", headers: { Prefer: "count=exact" } }
+      );
+      const countHeader = countRes.headers.get("content-range");
+      const total = countHeader ? parseInt(countHeader.split("/")[1] || "0", 10) : 0;
+
+      // Delete all user results
+      await supabaseFetch(`/browse_results?user_id=eq.${safeId}`, {
+        method: "DELETE",
+      });
+
+      // Delete user API keys
+      await supabaseFetch(`/user_api_keys?user_id=eq.${safeId}`, {
+        method: "DELETE",
+      });
+
+      return { deletedResults: total };
+    },
+
     async getDomainStats(limit = 5000): Promise<DomainStats[]> {
       // Fetch recent results with claims and sources for domain-level verification stats
       const res = await supabaseFetch(
@@ -414,5 +439,6 @@ export function createNoopStore(): ResultStore {
     async updateDomainScores() {},
     async saveFeedback() {},
     async getCalibrationData() { return []; },
+    async deleteUserData() { return { deletedResults: 0 }; },
   };
 }

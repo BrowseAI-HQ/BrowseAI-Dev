@@ -20,7 +20,7 @@ const Terms = () => {
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         <div>
           <h1 className="text-2xl font-bold mb-2">Terms of Service</h1>
-          <p className="text-sm text-muted-foreground">Last updated: March 17, 2026</p>
+          <p className="text-sm text-muted-foreground">Last updated: March 19, 2026</p>
         </div>
 
         <div className="prose prose-invert prose-sm max-w-none space-y-6">
@@ -75,14 +75,42 @@ const Terms = () => {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">7. Third-Party Services</h2>
+            <h2 className="text-lg font-semibold">7. Data Usage & Service Improvement</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">By using the hosted service, you acknowledge that your queries and results are stored and used to improve the Service.</strong> This includes:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+              <li>Storing your queries, answers, claims, sources, and confidence scores</li>
+              <li>Using verification outcomes to improve domain authority scoring</li>
+              <li>Adapting verification thresholds and confidence calibration based on aggregate query patterns</li>
+              <li>Using your feedback ratings (good/bad/wrong) to calibrate confidence accuracy</li>
+              <li>Caching results to improve performance for all users</li>
+              <li>Computing co-citation and source usefulness metrics from query results</li>
+            </ul>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We do not sell your data or share individual queries with third parties. All improvements are based on aggregate, statistical patterns — not individual query content. Your queries are sent to third-party search and LLM providers solely to process your request. See our <button onClick={() => navigate("/privacy")} className="text-accent hover:underline">Privacy Policy</button> for full details.
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">If you require full data privacy, self-host BrowseAI Dev.</strong> The source code is MIT-licensed and self-hosted instances do not send any data to our servers.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">8. Data Deletion</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              You may delete all your stored data at any time using the <code className="text-xs bg-secondary px-1 py-0.5 rounded">DELETE /user/data</code> API endpoint. This permanently removes your query results and API keys. Aggregate statistical data (domain scores, verification rates) computed from your queries cannot be individually reversed. See our <button onClick={() => navigate("/privacy")} className="text-accent hover:underline">Privacy Policy</button> for details on your rights.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">9. Third-Party Services</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               The Service relies on third-party APIs including Tavily (web search) and OpenRouter (LLM processing). Your use of these services through BrowseAI Dev is also subject to their respective terms. We are not responsible for the availability or performance of third-party services.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">8. Not Professional Advice</h2>
+            <h2 className="text-lg font-semibold">10. Not Professional Advice</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               <strong className="text-foreground">BrowseAI Dev does not provide financial, investment, medical, legal, tax, or any other form of professional advice.</strong> All
               information returned by the Service — including answers, citations, confidence scores, claim verifications, and source analyses — is
@@ -102,7 +130,7 @@ const Terms = () => {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">9. Disclaimer of Warranties</h2>
+            <h2 className="text-lg font-semibold">11. Disclaimer of Warranties</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               The Service is provided "as is" and "as available" without warranties of any kind, either express or implied, including but not limited to
               implied warranties of merchantability, fitness for a particular purpose, accuracy, or non-infringement. Research results are AI-generated
@@ -112,7 +140,7 @@ const Terms = () => {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">10. Limitation of Liability</h2>
+            <h2 className="text-lg font-semibold">12. Limitation of Liability</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               To the maximum extent permitted by applicable law, BrowseAI Dev, its creators, contributors, and affiliates shall not be liable for any
               direct, indirect, incidental, special, consequential, or punitive damages — including but not limited to loss of profits, data, business
@@ -126,7 +154,7 @@ const Terms = () => {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">11. Indemnification</h2>
+            <h2 className="text-lg font-semibold">13. Indemnification</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               You agree to indemnify, defend, and hold harmless BrowseAI Dev, its creators, contributors, and affiliates from any claims, damages,
               losses, liabilities, costs, or expenses (including reasonable legal fees) arising from: (a) your use of the Service, (b) any action
@@ -136,14 +164,14 @@ const Terms = () => {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">12. Changes to Terms</h2>
+            <h2 className="text-lg font-semibold">14. Changes to Terms</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               We may update these terms. Continued use of the Service after changes constitutes acceptance. Material changes will be communicated via the website or email.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">13. Contact</h2>
+            <h2 className="text-lg font-semibold">15. Contact</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Questions about these terms? Email{" "}
               <a href="mailto:shreyassaw@gmail.com" className="text-accent hover:underline">shreyassaw@gmail.com</a>.

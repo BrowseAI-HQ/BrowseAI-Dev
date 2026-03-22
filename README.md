@@ -346,6 +346,7 @@ API responses include quota info when using a BAI key:
 | `GET /browse/learning/stats` | Self-learning engine stats |
 | `GET /user/stats` | Your query stats (authenticated) |
 | `GET /user/history` | Your query history (authenticated) |
+| `DELETE /user/data` | Delete all your data (GDPR right to erasure) |
 
 ## MCP Tools
 
@@ -568,6 +569,10 @@ npx skills add BrowseAI-HQ/browseAIDev_Skills
 | [browse-fact-check](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-fact-check) | Compare raw LLM vs evidence-backed, verify claims |
 | [browse-extract](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-extract) | Structured claim extraction from URLs |
 | [browse-sessions](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-sessions) | Multi-query research with persistent knowledge |
+| [browse-deep-dive](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-deep-dive) | Multi-step agentic research with reasoning chains and gap analysis |
+| [browse-compare-claims](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-compare-claims) | Settle factual disputes — evidence-backed vs raw LLM side-by-side |
+| [browse-monitor](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-monitor) | Track evolving topics over time, diff against prior knowledge |
+| [browse-cite](https://github.com/BrowseAI-HQ/browseAIDev_Skills/tree/main/browse-cite) | Generate formatted citations (APA/MLA) with authority scores |
 
 [View all skills →](https://github.com/BrowseAI-HQ/browseAIDev_Skills)
 

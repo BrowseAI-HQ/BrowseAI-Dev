@@ -608,6 +608,22 @@ export function registerBrowseRoutes(
     }
   });
 
+  // Data retention: delete all user data (GDPR right to erasure)
+  app.delete("/user/data", async (request, reply) => {
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) {
+      return reply.status(401).send({ success: false, error: "Authentication required" });
+    }
+
+    try {
+      const result = await store.deleteUserData(userId);
+      return { success: true, result: { deleted: result.deletedResults, message: "All your data has been deleted" } };
+    } catch (e: unknown) {
+      request.log.error(e);
+      return reply.status(500).send({ success: false, error: "Failed to delete user data" });
+    }
+  });
+
   // Stats: total queries answered
   app.get("/browse/stats", async (_request, reply) => {
     try {

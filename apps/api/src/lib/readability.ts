@@ -123,19 +123,40 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
     throw new Error("URL not allowed: only public http/https URLs are supported");
   }
 
-  // Note: fetch follows redirects by default. For enterprise endpoints in
-  // searchProvider.ts this is mitigated by the HTTPS-only requirement, which
-  // prevents redirect-to-internal-IP attacks. For readability fetches, the
-  // isAllowedUrl pre-check reduces risk but cannot guard against DNS rebinding
-  // or redirect chains to internal IPs post-resolution.
-  const res = await fetchWithRetry(url, {
+  // Use manual redirect to validate each hop against SSRF allowlist.
+  // This prevents DNS rebinding and redirect-to-internal-IP attacks.
+  let res = await fetchWithRetry(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (compatible; BrowseAI-Dev/1.0)",
       Accept: "text/html,application/xhtml+xml",
     },
+    redirect: "manual",
     signal: AbortSignal.timeout(10000),
   }, { maxRetries: 1 });
 
+  // Follow up to 5 redirects, validating each target
+  let redirects = 0;
+  while (res.status >= 300 && res.status < 400 && redirects < 5) {
+    const location = res.headers.get("location");
+    if (!location) break;
+    const redirectUrl = new URL(location, url).toString();
+    if (!isAllowedUrl(redirectUrl)) {
+      throw new Error(`Redirect to blocked URL: ${redirectUrl}`);
+    }
+    res = await fetch(redirectUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; BrowseAI-Dev/1.0)",
+        Accept: "text/html,application/xhtml+xml",
+      },
+      redirect: "manual",
+      signal: AbortSignal.timeout(10000),
+    });
+    redirects++;
+  }
+
+  if (res.status >= 300 && res.status < 400) {
+    throw new Error(`Too many redirects for ${url} (followed ${redirects})`);
+  }
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.status}`);
   }
