@@ -168,6 +168,25 @@ export async function browseFeedback(resultId: string, rating: "good" | "bad" | 
   });
 }
 
+export type ClarityResult = {
+  original: string;
+  intent: string;
+  systemPrompt: string;
+  userPrompt: string;
+  techniques: string[];
+  verification?: BrowseResult;
+};
+
+export async function browseClarity(
+  prompt: string,
+  options?: { context?: string; intent?: string; verify?: boolean },
+): Promise<ClarityResult> {
+  return apiCall<ClarityResult>("/browse/clarity", {
+    prompt,
+    ...options,
+  });
+}
+
 export async function browseStats(): Promise<{ totalQueries: number }> {
   const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE}/browse/stats`, {

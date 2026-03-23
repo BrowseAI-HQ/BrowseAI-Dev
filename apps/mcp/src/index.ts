@@ -10,7 +10,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.2.1";
+const VERSION = "0.2.2";
 const LLM_MODEL = "google/gemini-2.5-flash";
 const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
@@ -48,6 +48,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_extract         Extract structured knowledge from a page
     browse_answer          Full pipeline: search + extract + answer
     browse_compare         Compare raw LLM vs evidence-backed answer
+    browse_clarity         Clarity: anti-hallucination prompt engineering for factual grounding
     browse_session_create  Create a research session (persistent memory)
     browse_session_ask     Research within a session (recalls prior knowledge)
     browse_session_recall  Query session knowledge without new searches
@@ -545,6 +546,105 @@ function registerTools(server: McpServer) {
       };
     }
   );
+  // --- Clarity — Anti-Hallucination Prompt Engineering ---
+
+  server.tool(
+    "browse_clarity",
+    "Clarity — anti-hallucination prompt engineering: analyzes intent, detects hallucination risks, and returns a rewritten system prompt + user prompt with grounding techniques applied. Reduces LLM hallucinations by giving them clearer instructions to cite sources, flag uncertainty, and verify claims. Agents empowered with Clarity automatically get anti-hallucination prompts for every LLM call. Optionally verifies with real sources.",
+    {
+      prompt: z.string().describe("The raw prompt to apply Clarity anti-hallucination techniques to"),
+      context: z.string().optional().describe("Optional context documents to ground against"),
+      intent: z.enum(["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]).optional().describe("Override auto-detected intent"),
+      verify: z.boolean().optional().describe("Also run evidence verification via browse_answer (slower but validates claims)"),
+    },
+    async ({ prompt, context, intent, verify }) => {
+      if (API_MODE) {
+        const body: Record<string, unknown> = { prompt };
+        if (context) body.context = context;
+        if (intent) body.intent = intent;
+        if (verify) body.verify = verify;
+        const result = await apiCall("/browse/clarity", body);
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      }
+
+      // BYOK mode: Use LLM to analyze and apply clarity
+      const { OPENROUTER_API_KEY } = getEnvKeys();
+      const res = await fetch(LLM_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: LLM_MODEL,
+          temperature: 0.1,
+          messages: [
+            {
+              role: "system",
+              content: `You are a Clarity prompt engineer specializing in anti-hallucination techniques. Analyze the user's prompt, detect intent and hallucination risks, then return a Clarity system prompt and rewritten user prompt that reduces hallucinations.
+
+Intent types: factual_question, document_qa, content_generation, agent_pipeline, code_generation, general
+
+Available anti-hallucination techniques:
+- uncertainty_permission: Allow saying "I don't know"
+- direct_quote_grounding: Extract quotes before reasoning
+- citation_then_verify: Cite sources, then verify each claim
+- chain_of_verification: Draft → verify → correct loop
+- step_back_abstraction: Reason about principles first
+- source_attribution: Attribute every claim to a source
+- external_knowledge_restriction: Use only provided context
+
+Select 2-4 techniques. Return a Clarity system prompt with anti-hallucination technique instructions and a rewritten user prompt with natural grounding cues.`,
+            },
+            {
+              role: "user",
+              content: `Apply anti-hallucination techniques to this prompt:\n\n"${prompt}"${context ? `\n\nContext provided (${context.length} chars)` : ""}`,
+            },
+          ],
+          tools: [{
+            type: "function" as const,
+            function: {
+              name: "return_clarity",
+              description: "Return the Clarity anti-hallucination prompt",
+              parameters: {
+                type: "object",
+                properties: {
+                  intent: { type: "string", enum: ["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"] },
+                  techniques: { type: "array", items: { type: "string" } },
+                  risks: { type: "array", items: { type: "string" } },
+                  systemPrompt: { type: "string", description: "Clarity system prompt with anti-hallucination technique instructions" },
+                  userPrompt: { type: "string", description: "Rewritten user prompt with anti-hallucination grounding cues" },
+                },
+                required: ["intent", "techniques", "risks", "systemPrompt", "userPrompt"],
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "return_clarity" } },
+        }),
+      });
+
+      if (!res.ok) throw new Error(`LLM failed: ${res.status}`);
+      const data = await res.json() as any;
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+
+      if (!toolCall) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: "Failed to analyze prompt" }) }] };
+      }
+
+      const parsed = JSON.parse(toolCall.function.arguments);
+      const result = {
+        original: prompt,
+        intent: intent || parsed.intent,
+        systemPrompt: parsed.systemPrompt,
+        userPrompt: parsed.userPrompt,
+        techniques: parsed.techniques,
+        risks: parsed.risks,
+      };
+
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
   // --- Research Memory tools (API mode only — sessions require Supabase) ---
 
   server.tool(

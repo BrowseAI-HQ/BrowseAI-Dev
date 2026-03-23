@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Share2, GitCompare, Check, Zap, Brain } from "lucide-react";
+import { ArrowLeft, Share2, GitCompare, Check, Zap, Brain, Shield, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { BrowseResult } from "@/lib/api/browse";
+import type { BrowseResult, ClarityResult } from "@/lib/api/browse";
+import { browseClarity } from "@/lib/api/browse";
 import { streamAnswer, type TraceEvent, type SourcePreview, type StreamEvent, type PremiumQuota } from "@/lib/api/stream";
 import { StreamingAnswer } from "@/components/results/StreamingAnswer";
 import { FinalAnswer } from "@/components/results/FinalAnswer";
@@ -19,13 +20,17 @@ import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { DepthToggle, isDepthBlocked, formatResetTime } from "@/components/DepthToggle";
+import { ClarityToggle, isClarityBlocked } from "@/components/ClarityToggle";
 
 const Results = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get("q") || "";
   const rawDepth = (searchParams.get("depth") as "fast" | "thorough" | "deep") || "fast";
+  const clarityFromUrl = searchParams.get("clarity") === "true";
   const [result, setResult] = useState<BrowseResult | null>(null);
+  const [clarityResult, setClarityResult] = useState<ClarityResult | null>(null);
+  const [clarityLoading, setClarityLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -80,12 +85,19 @@ const Results = () => {
     setLoading(true);
     setError(null);
     setResult(null);
+    setClarityResult(null);
     setStreamingText("");
     setTraceSteps([]);
     setPreviewSources([]);
     setReasoningSteps([]);
     setStreamDone(false);
     saveRecentQuery(query);
+
+    // Run clarity in parallel if enabled
+    if (clarityFromUrl && !isClarityBlocked(!!user, null)) {
+      setClarityLoading(true);
+      browseClarity(query, { verify: false }).then(setClarityResult).catch(() => {}).finally(() => setClarityLoading(false));
+    }
 
     streamAnswer(query, depth, handleStreamEvent)
       .then((res) => {
@@ -159,6 +171,12 @@ const Results = () => {
               {depth}
             </Badge>
           )}
+          {clarityFromUrl && (
+            <Badge variant="outline" className="text-[10px] px-1.5 shrink-0 text-amber-400 border-amber-500/30">
+              <Shield className="w-2.5 h-2.5 mr-0.5 inline" />
+              clarity
+            </Badge>
+          )}
         </div>
 
         {/* Layout: answer on left, pipeline on right (desktop) */}
@@ -226,6 +244,43 @@ const Results = () => {
                 </motion.section>
               ) : null;
             })()}
+
+            {/* Clarity — Anti-Hallucination Prompts */}
+            {(clarityResult || clarityLoading) && !loading && (
+              <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Clarity</h3>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-amber-400/60 border-amber-500/20">beta</Badge>
+                  {clarityLoading && <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Anti-hallucination prompt engineering — analyzes your query, detects hallucination risks, and rewrites it with grounding techniques (chain-of-verification, quote extraction, source attribution). When agents are empowered with Clarity, they automatically get rewritten prompts that instruct LLMs to cite sources, flag uncertainty, and verify claims before responding — reducing hallucinations without changing your workflow. Copy these into your own LLM calls or let your agent use them directly. Experimental — results may vary.
+                </p>
+                {clarityResult && (
+                  <>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/30">
+                        {clarityResult.intent}
+                      </Badge>
+                      {clarityResult.techniques.map((t) => (
+                        <Badge key={t} variant="outline" className="text-[10px] px-2 py-0.5 text-muted-foreground">
+                          {t.replace(/_/g, " ")}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">System Prompt</p>
+                      <pre className="text-xs text-muted-foreground whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">{clarityResult.systemPrompt}</pre>
+                    </div>
+                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">Clarity User Prompt</p>
+                      <pre className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">{clarityResult.userPrompt}</pre>
+                    </div>
+                  </>
+                )}
+              </motion.section>
+            )}
 
             {/* Evidence + trace (after result) */}
             {result && !loading && (

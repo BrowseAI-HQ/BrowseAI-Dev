@@ -5,15 +5,16 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Play, Loader2, CheckCircle2, XCircle, AlertTriangle,
   Globe, Copy, Check, Code2, ChevronDown, ChevronUp, ExternalLink,
-  ThumbsUp, ThumbsDown, Brain, FileText, Beaker, LogIn, Lock,
+  ThumbsUp, ThumbsDown, Brain, FileText, Beaker, LogIn, Lock, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DepthToggle, isDepthBlocked, formatResetTime } from "@/components/DepthToggle";
+import { ClarityToggle, isClarityBlocked } from "@/components/ClarityToggle";
 import {
-  browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback,
-  type BrowseSource, type BrowseClaim, type QuotaInfo,
+  browseSearch, browseExtract, browseCompare, browseOpen, browseFeedback, browseClarity,
+  type BrowseSource, type BrowseClaim, type QuotaInfo, type ClarityResult,
 } from "@/lib/api/browse";
 import { streamAnswer as streamAnswerApi, type TraceEvent, type SourcePreview, type StreamEvent, type PremiumQuota } from "@/lib/api/stream";
 import { StreamingAnswer } from "@/components/results/StreamingAnswer";
@@ -171,6 +172,9 @@ const Playground = () => {
   const [showScenarios, setShowScenarios] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [quota, setQuota] = useState<QuotaInfo | null>(null);
+  const [clarityEnabled, setClarityEnabled] = useState(false);
+  const [clarityResult, setClarityResult] = useState<ClarityResult | null>(null);
+  const [clarityLoading, setClarityLoading] = useState(false);
 
   // Streaming state (answer tab only)
   const [streamingText, setStreamingText] = useState("");
@@ -233,8 +237,16 @@ const Playground = () => {
     setShowRawJson(false);
     setFeedbackSent(null);
     resetStreamState();
+    setClarityResult(null);
     setLastQuery(q);
     saveRecentQuery(q);
+
+    // Run clarity in parallel if enabled + not blocked
+    const shouldRunClarity = clarityEnabled && currentTab === "answer" && !isClarityBlocked(!!user, quota);
+    if (shouldRunClarity) {
+      setClarityLoading(true);
+      browseClarity(q, { verify: false }).then(setClarityResult).catch(() => {}).finally(() => setClarityLoading(false));
+    }
 
     try {
       let result;
@@ -401,8 +413,24 @@ const Playground = () => {
                       <Lock className="w-4 h-4 text-purple-400 shrink-0" />
                       <span className="text-purple-400 text-sm">Sign in to unlock Deep mode</span>
                     </div>
+                    <ClarityToggle enabled={clarityEnabled} setEnabled={setClarityEnabled} quota={quota} />
                     <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
                     <Button onClick={() => setLoginOpen(true)} className="bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 border border-purple-500/30 h-12 px-5" aria-label="Sign in">
+                      <LogIn className="w-4 h-4" />
+                    </Button>
+                  </>
+                ) : tab === "answer" && clarityEnabled && isClarityBlocked(!!user, quota) ? (
+                  <>
+                    <div
+                      className="flex-1 h-12 px-4 rounded-lg bg-amber-500/5 border border-amber-500/30 flex items-center gap-2 cursor-pointer"
+                      onClick={() => setLoginOpen(true)}
+                    >
+                      <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span className="text-amber-400 text-sm">Clarity rewrites prompts to reduce hallucinations — requires BAI key, sign in to unlock</span>
+                    </div>
+                    <ClarityToggle enabled={clarityEnabled} setEnabled={setClarityEnabled} quota={quota} />
+                    <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
+                    <Button onClick={() => setLoginOpen(true)} className="bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/30 h-12 px-5" aria-label="Sign in">
                       <LogIn className="w-4 h-4" />
                     </Button>
                   </>
@@ -427,7 +455,10 @@ const Playground = () => {
                       />
                     )}
                     {tab === "answer" && (
-                      <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
+                      <>
+                        <ClarityToggle enabled={clarityEnabled} setEnabled={setClarityEnabled} quota={quota} />
+                        <DepthToggle depth={depth} setDepth={setDepth} quota={quota} />
+                      </>
                     )}
                     <Button onClick={() => run()} disabled={loading || !input.trim()} className="bg-accent text-accent-foreground h-12 px-5" aria-label="Run query">
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
@@ -562,6 +593,43 @@ const Playground = () => {
             <div className="p-4 rounded-xl bg-card border border-border text-sm leading-relaxed">
               {response.answer}
             </div>
+
+            {/* Clarity — Anti-Hallucination Prompts */}
+            {(clarityResult || clarityLoading) && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Clarity</h3>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-amber-400/60 border-amber-500/20">beta</Badge>
+                  {clarityLoading && <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Anti-hallucination prompt engineering — analyzes your query, detects hallucination risks, and rewrites it with grounding techniques (chain-of-verification, quote extraction, source attribution). When agents are empowered with Clarity, they automatically get rewritten prompts that instruct LLMs to cite sources, flag uncertainty, and verify claims before responding — reducing hallucinations without changing your workflow. Copy these into your own LLM calls or let your agent use them directly. Experimental — results may vary.
+                </p>
+                {clarityResult && (
+                  <>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/30">
+                        {clarityResult.intent}
+                      </Badge>
+                      {clarityResult.techniques.map((t) => (
+                        <Badge key={t} variant="outline" className="text-[10px] px-2 py-0.5 text-muted-foreground">
+                          {t.replace(/_/g, " ")}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">System Prompt</p>
+                      <pre className="text-xs text-muted-foreground whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">{clarityResult.systemPrompt}</pre>
+                    </div>
+                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">Clarity User Prompt</p>
+                      <pre className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">{clarityResult.userPrompt}</pre>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Claims */}
             {response.claims?.length > 0 && (

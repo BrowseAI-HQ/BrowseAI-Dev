@@ -79,6 +79,18 @@ class BrowseResult(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class ClarityResult(BaseModel):
+    """Clarity — anti-hallucination prompt engineering result."""
+    original: str
+    intent: Literal["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]
+    system_prompt: str = Field(alias="systemPrompt")
+    user_prompt: str = Field(alias="userPrompt")
+    techniques: list[str]
+    verification: BrowseResult | None = None
+
+    model_config = {"populate_by_name": True}
+
+
 class SearchProviderConfig(BaseModel):
     """Enterprise search provider configuration."""
     type: Literal["tavily", "brave", "elasticsearch", "confluence", "custom"]

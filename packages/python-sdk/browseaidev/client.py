@@ -19,6 +19,7 @@ from .exceptions import (
 from .models import (
     BrowseResult,
     CompareResult,
+    ClarityResult,
     KnowledgeEntry,
     PageResult,
     PremiumQuota,
@@ -205,6 +206,37 @@ class BrowseAIDev:
         """Compare raw LLM answer vs evidence-backed answer."""
         data = self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
+
+    def clarity(
+        self,
+        prompt: str,
+        *,
+        context: str | None = None,
+        intent: str | None = None,
+        verify: bool = False,
+    ) -> ClarityResult:
+        """Clarity — anti-hallucination prompt engineering to reduce LLM hallucinations.
+
+        Analyzes intent, detects hallucination risks, and returns a rewritten
+        system prompt + user prompt with grounding techniques applied.
+        Gives LLMs clearer instructions to stay factual and cite sources.
+
+        Args:
+            prompt: The raw prompt to apply Clarity anti-hallucination techniques to.
+            context: Optional context documents to ground against.
+            intent: Override auto-detected intent (factual_question, document_qa,
+                    content_generation, agent_pipeline, code_generation, general).
+            verify: Also run evidence verification via browse_answer.
+        """
+        body: dict[str, Any] = {"prompt": prompt}
+        if context is not None:
+            body["context"] = context
+        if intent is not None:
+            body["intent"] = intent
+        if verify:
+            body["verify"] = True
+        data = self._post("/browse/clarity", body)
+        return ClarityResult(**data)
 
     def get_shared(self, share_id: str) -> dict[str, Any]:
         """Retrieve a shared result by ID."""
@@ -434,6 +466,25 @@ class AsyncBrowseAIDev:
     async def compare(self, query: str) -> CompareResult:
         data = await self._post("/browse/compare", {"query": query})
         return CompareResult(**data)
+
+    async def clarity(
+        self,
+        prompt: str,
+        *,
+        context: str | None = None,
+        intent: str | None = None,
+        verify: bool = False,
+    ) -> ClarityResult:
+        """Clarity — anti-hallucination prompt engineering. See sync client for full docs."""
+        body: dict[str, Any] = {"prompt": prompt}
+        if context is not None:
+            body["context"] = context
+        if intent is not None:
+            body["intent"] = intent
+        if verify:
+            body["verify"] = True
+        data = await self._post("/browse/clarity", body)
+        return ClarityResult(**data)
 
     async def get_shared(self, share_id: str) -> dict[str, Any]:
         return await self._get(f"/browse/share/{share_id}")
