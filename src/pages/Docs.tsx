@@ -584,6 +584,7 @@ Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer</td><td className="py-2">Full pipeline with citations. Accepts <code className="bg-secondary px-1 rounded">depth: "fast" | "thorough" | "deep"</code></td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/compare</td><td className="py-2">Compare raw LLM vs evidence-backed answer</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/answer/stream</td><td className="py-2">Streaming answer via SSE — real-time progress events</td></tr>
+                  <tr><td className="py-2 pr-4 font-mono text-accent">POST /browse/clarity</td><td className="py-2">Clarity — anti-hallucination prompt engineering. Rewrites prompts with grounding techniques</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /session</td><td className="py-2">Create a research session</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /session/:id/ask</td><td className="py-2">Research with session memory (recalls + stores claims)</td></tr>
                   <tr><td className="py-2 pr-4 font-mono text-accent">POST /session/:id/recall</td><td className="py-2">Query session knowledge without new search</td></tr>

@@ -110,3 +110,39 @@ def BrowseAIDevCompareTool(api_key: str, base_url: str = "https://browseai.dev/a
         return "\n".join(parts)
 
     return FunctionTool.from_defaults(fn=compare, name="browseaidev_compare")
+
+
+def BrowseAIDevClarityTool(api_key: str, base_url: str = "https://browseai.dev/api") -> FunctionTool:
+    """Create a LlamaIndex tool for anti-hallucination prompt engineering.
+
+    Clarity rewrites any prompt with grounding techniques to reduce LLM
+    hallucinations. It analyzes intent, detects hallucination risks, and
+    returns a rewritten system prompt + user prompt.
+    """
+    client = _get_client(api_key, base_url)
+
+    def clarity(prompt: str, context: str | None = None, verify: bool = False) -> str:
+        """Clarity — anti-hallucination prompt engineering. Rewrites any prompt with grounding techniques to reduce LLM hallucinations. Set verify=True to also run evidence verification on the rewritten prompt."""
+        result = client.clarity(prompt, context=context, verify=verify)
+
+        parts = [
+            f"**Intent:** {result.intent}",
+            "",
+            "**System Prompt:**",
+            result.system_prompt,
+            "",
+            "**User Prompt:**",
+            result.user_prompt,
+        ]
+
+        if result.techniques:
+            parts.append(f"\n**Techniques Applied ({len(result.techniques)}):**")
+            for t in result.techniques:
+                parts.append(f"  - {t}")
+
+        if result.verification:
+            parts.append(f"\n**Verification Confidence:** {result.verification.confidence:.0%}")
+
+        return "\n".join(parts)
+
+    return FunctionTool.from_defaults(fn=clarity, name="browseaidev_clarity")

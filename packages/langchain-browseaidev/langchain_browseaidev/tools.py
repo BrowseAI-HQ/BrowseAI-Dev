@@ -222,3 +222,55 @@ class BrowseAIDevCompareTool(_BrowseAIDevBase):
                 parts.append(f"  - [{s.title}]({s.url})")
 
         return "\n".join(parts)
+
+
+# ── Clarity Tool (Anti-Hallucination) ───────────────────────────────────────
+
+
+class ClarityInput(BaseModel):
+    prompt: str = Field(description="The prompt to apply anti-hallucination techniques to")
+    context: Optional[str] = Field(default=None, description="Optional context to ground the prompt against")
+    verify: bool = Field(default=False, description="Whether to also verify with real sources")
+
+
+class BrowseAIDevClarityTool(_BrowseAIDevBase):
+    """Clarity — anti-hallucination prompt engineering for any LLM prompt.
+
+    Analyzes a prompt, detects hallucination risks, and rewrites it with
+    grounding techniques (chain-of-verification, citation-verify, quote
+    extraction). Returns a Clarity system prompt + rewritten user prompt
+    that reduces hallucinations. Agents empowered with Clarity automatically
+    get anti-hallucination prompts for every LLM call.
+    """
+
+    name: str = "browseaidev_clarity"
+    description: str = (
+        "Clarity — anti-hallucination prompt engineering. Rewrites any prompt with "
+        "grounding techniques to reduce LLM hallucinations. Returns a system prompt "
+        "and rewritten user prompt with anti-hallucination rules baked in. "
+        "Use this before generating content to make LLM outputs more factual."
+    )
+    args_schema: Type[BaseModel] = ClarityInput
+
+    def _run(
+        self,
+        prompt: str,
+        context: Optional[str] = None,
+        verify: bool = False,
+        run_manager: Optional[CallbackManagerForToolRun] = None,
+    ) -> str:
+        client = self._get_client()
+        result = client.clarity(prompt, context=context, verify=verify)
+
+        parts = [
+            f"**Intent:** {result.intent}",
+            f"**Techniques:** {', '.join(result.techniques)}",
+            "",
+            "**Clarity System Prompt:**",
+            result.system_prompt,
+            "",
+            "**Clarity User Prompt:**",
+            result.user_prompt,
+        ]
+
+        return "\n".join(parts)

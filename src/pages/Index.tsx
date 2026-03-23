@@ -969,6 +969,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
               { method: "POST", path: "/browse/answer", desc: "Full pipeline with citations" },
               { method: "POST", path: "/browse/compare", desc: "Raw LLM vs evidence-backed" },
               { method: "POST", path: "/browse/answer/stream", desc: "Streaming SSE (real-time progress)" },
+              { method: "POST", path: "/browse/clarity", desc: "Clarity — anti-hallucination prompt engineering" },
               { method: "POST", path: "/browse/feedback", desc: "Submit accuracy feedback" },
               { method: "GET", path: "/browse/share/:id", desc: "Get a shared result" },
               { method: "GET", path: "/browse/stats", desc: "Total queries answered" },

@@ -157,3 +157,38 @@ class BrowseAIDevCompareTool(_ClientMixin, BaseTool):
         ]
 
         return "\n".join(parts)
+
+
+# ── Clarity Tool ────────────────────────────────────────────────────────────
+
+
+class ClarityInput(BaseModel):
+    prompt: str = Field(description="The raw prompt to rewrite with anti-hallucination techniques")
+    context: str | None = Field(default=None, description="Optional context for the prompt")
+    verify: bool = Field(default=False, description="Whether to verify the rewritten prompt with evidence")
+
+
+class BrowseAIDevClarityTool(_ClientMixin, BaseTool):
+    """Clarity — anti-hallucination prompt engineering. Rewrites any prompt with grounding techniques to reduce LLM hallucinations."""
+
+    name: str = "browseaidev_clarity"
+    description: str = (
+        "Clarity — anti-hallucination prompt engineering. Rewrites any prompt with "
+        "grounding techniques to reduce LLM hallucinations."
+    )
+    args_schema: Type[BaseModel] = ClarityInput
+
+    def _run(self, prompt: str, context: str | None = None, verify: bool = False) -> str:
+        client = self._get_client()
+        result = client.clarity(prompt, context=context, verify=verify)
+
+        parts = [
+            f"**Intent:** {result.intent}",
+            f"\n**System Prompt:**\n{result.system_prompt}",
+            f"\n**User Prompt:**\n{result.user_prompt}",
+            f"\n**Techniques ({len(result.techniques)}):**",
+        ]
+        for t in result.techniques:
+            parts.append(f"  - {t}")
+
+        return "\n".join(parts)

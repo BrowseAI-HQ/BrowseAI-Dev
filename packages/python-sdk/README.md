@@ -43,6 +43,11 @@ extract = client.extract("https://example.com", query="pricing info")
 # Compare raw LLM vs evidence-backed
 compare = client.compare("Is Python faster than Rust?")
 
+# Clarity — anti-hallucination prompt engineering
+clarity = client.clarity("Write a blog post about quantum computing")
+print(clarity.system_prompt)  # Clarity system prompt with anti-hallucination rules
+print(clarity.user_prompt)    # Rewritten prompt with grounding cues
+
 # Submit feedback to improve accuracy
 client.feedback(result_id=result.share_id, rating="good")
 ```

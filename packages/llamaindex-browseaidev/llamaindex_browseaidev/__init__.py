@@ -2,6 +2,7 @@
 
 from .tools import (
     BrowseAIDevAnswerTool,
+    BrowseAIDevClarityTool,
     BrowseAIDevCompareTool,
     BrowseAIDevExtractTool,
     BrowseAIDevSearchTool,
@@ -12,6 +13,7 @@ __all__ = [
     "BrowseAIDevAnswerTool",
     "BrowseAIDevExtractTool",
     "BrowseAIDevCompareTool",
+    "BrowseAIDevClarityTool",
 ]
 
 __version__ = "0.1.0"
