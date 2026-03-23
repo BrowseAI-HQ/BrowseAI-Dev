@@ -48,10 +48,19 @@ jobs:
       - name: Wait for npm indexing
         if: steps.version.outputs.skip != 'true'
         run: sleep 30
+      - name: Install mcp-publisher
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Update server.json version
+        if: steps.version.outputs.skip != 'true'
+        working-directory: apps/mcp
+        run: |
+          CURRENT=$(node -p "require('./package.json').version")
+          jq --arg v "$CURRENT" '.version = $v | .packages[0].version = $v' server.json > server.tmp && mv server.tmp server.json
       - name: Publish to MCP Registry
         if: steps.version.outputs.skip != 'true'
         working-directory: apps/mcp
         run: |
-          npm install -g mcp-publisher
-          mcp-publisher login github-oidc
-          mcp-publisher publish
+          ../../mcp-publisher login github-oidc
+          ../../mcp-publisher publish

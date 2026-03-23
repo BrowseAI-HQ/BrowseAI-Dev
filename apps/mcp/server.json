@@ -10,13 +10,13 @@
     "id": "1172211006",
     "subfolder": "apps/mcp"
   },
-  "version": "0.2.1",
+  "version": "0.2.4",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "browseai-dev",
-      "version": "0.2.1",
+      "version": "0.2.4",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
