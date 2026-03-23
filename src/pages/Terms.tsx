@@ -70,7 +70,7 @@ const Terms = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">6. Open Source License</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              The BrowseAI Dev source code is licensed under the MIT License. You are free to self-host, modify, and redistribute the code under the terms of that license. These Terms of Service apply specifically to the hosted service at browseai.dev.
+              Client packages (MCP server, Python SDK, LangChain, CrewAI, LlamaIndex integrations) are licensed under the MIT License. The API server (apps/api/) is licensed under MIT + Commons Clause — you may self-host and modify it, but you may not offer it as a competing hosted commercial service. These Terms of Service apply specifically to the hosted service at browseai.dev.
             </p>
           </section>
 

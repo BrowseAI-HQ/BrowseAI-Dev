@@ -386,7 +386,7 @@ const Alternatives = () => {
                 {
                   icon: Code2,
                   title: "Open infrastructure",
-                  desc: "Full pipeline is MIT licensed and open source. Self-host it, bring your own keys, plug in your own search backends. MCP server, REST API, Python SDK, and framework integrations included.",
+                  desc: "Source-available pipeline you can self-host. Client packages (MCP, SDK, framework integrations) are MIT. API server is MIT + Commons Clause. Bring your own keys, plug in your own search backends.",
                 },
               ].map((item) => (
                 <div

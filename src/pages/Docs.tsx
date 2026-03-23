@@ -854,7 +854,7 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
               },
               {
                 q: "Can I self-host BrowseAI Dev?",
-                a: "Yes — the code is MIT licensed. However, self-hosted instances miss the key advantages of the hosted service: the self-improving data flywheel (domain authority scores that get smarter from aggregated verification data across all users), shared cache (popular queries are instant), automatic updates, and upcoming Pro features (multi-model verification, priority queue). Self-hosted instances start with static domain scores and never improve beyond your own query volume.",
+                a: "Yes — client packages (MCP, SDK, framework integrations) are MIT. The API server is MIT + Commons Clause (you can self-host but cannot offer it as a competing hosted service). Self-hosted instances miss the key advantages of the hosted service: the self-improving data flywheel (domain authority scores that get smarter from aggregated verification data across all users), shared cache (popular queries are instant), automatic updates, and upcoming Pro features (multi-model verification, priority queue).",
               },
               {
                 q: "What do I miss by self-hosting?",
