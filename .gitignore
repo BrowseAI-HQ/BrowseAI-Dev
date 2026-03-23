@@ -72,6 +72,10 @@ apps/mcp/.mcpregistry*
 benchmarks/data/
 benchmarks/results/
 
+# Internal planning & strategy (not for public repo)
+.planning/
+docs/launch-video-script.md
+
 # Security
 *.pem
 *.key
