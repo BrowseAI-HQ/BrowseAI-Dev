@@ -31,10 +31,10 @@ Previously known as `browse-ai` (npm) and `browseai` (PyPI) — renamed to `brow
 5. Cross-source consensus detection
 6. Contradiction detection
 7. Domain authority scoring (10,000+ domains, Bayesian dynamic blending)
-8. 7-factor evidence-based confidence score
+8. 8-factor evidence-based confidence score
 
 ## Confidence Score
-Not LLM self-assessed. Computed from: source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score. Contradiction penalty applied.
+Not LLM self-assessed. Computed from: verification rate, domain authority, source count, consensus score, domain diversity, claim grounding, source recency, citation depth. Contradiction penalty applied.
 
 ## Links
 - Website: https://browseai.dev

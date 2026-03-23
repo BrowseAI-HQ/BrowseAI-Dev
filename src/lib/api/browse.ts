@@ -5,6 +5,14 @@ export type BrowseSource = {
   quote: string;
   verified?: boolean;
   authority?: number;
+  publishedDate?: string;
+};
+
+export type NLIScore = {
+  entailment: number;
+  contradiction: number;
+  neutral: number;
+  label: "entailment" | "neutral" | "contradiction";
 };
 
 export type BrowseClaim = {
@@ -14,7 +22,7 @@ export type BrowseClaim = {
   verificationScore?: number;
   consensusCount?: number;
   consensusLevel?: "strong" | "moderate" | "weak" | "none";
-  nliScore?: number;
+  nliScore?: NLIScore;
 };
 
 export type Contradiction = {

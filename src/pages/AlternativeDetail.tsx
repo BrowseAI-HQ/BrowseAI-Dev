@@ -57,7 +57,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
     ],
     browseaiDifferentiators: [
       "BrowseAI Dev decomposes claims and verifies each individually — adding a verification layer on top of search",
-      "Evidence-based confidence scores (7-factor model) derived from verification data, not query-match relevance",
+      "Evidence-based confidence scores (8-factor model) derived from verification data, not query-match relevance",
       "Contradiction detection surfaces conflicting information across sources",
       "Cross-source consensus ensures answers are corroborated by multiple independent sources",
       "Full verification pipeline is open-source and self-hostable — not just the SDKs",
@@ -96,7 +96,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
       "Research summaries for human readers",
     ],
     browseaiDifferentiators: [
-      "Evidence-based confidence scores (7-factor algorithm) vs. no confidence scoring in Perplexity API",
+      "Evidence-based confidence scores (8-factor algorithm) vs. no confidence scoring in Perplexity API",
       "Claim decomposition and individual verification vs. monolithic grounded answers",
       "Contradiction detection surfaces conflicting information across sources",
       "Both have MCP servers and LangChain integration — comparable distribution",
@@ -136,7 +136,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
     ],
     browseaiDifferentiators: [
       "Native claim verification pipeline (BM25 + NLI) built into the API — no external tooling needed",
-      "7-factor evidence-based confidence scores vs. no factual confidence scoring in API",
+      "8-factor evidence-based confidence scores vs. no factual confidence scoring in API",
       "Contradiction detection and cross-source consensus as native features",
       "Both have MCP servers, Python SDKs, and LangChain — comparable distribution",
       "Full pipeline is source-available and self-hostable, not just SDKs",
@@ -174,7 +174,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
     ],
     browseaiDifferentiators: [
       "Native verification pipeline built into the API vs. unverified AI summaries",
-      "Evidence-based confidence scores (7-factor model) vs. no scoring",
+      "Evidence-based confidence scores (8-factor model) vs. no scoring",
       "Contradiction detection catches conflicting sources automatically",
       "Both have MCP servers and LangChain — comparable distribution",
       "Source-available pipeline, self-hostable, BYOK — You.com core is proprietary",
@@ -214,7 +214,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
     browseaiDifferentiators: [
       "BrowseAI Dev uses Brave as one of its underlying search providers for source diversity",
       "Native claim verification, contradiction detection, and consensus scoring built on top of search",
-      "7-factor evidence-backed confidence scores derived from verification data",
+      "8-factor evidence-backed confidence scores derived from verification data",
       "Brave provides excellent grounded search — BrowseAI Dev adds the verification intelligence layer",
       "Full pipeline is source-available and self-hostable with BYOK support",
       "Both have MCP servers and LangChain integration — comparable distribution",

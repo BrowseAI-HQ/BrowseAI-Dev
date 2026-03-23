@@ -154,7 +154,7 @@ const FEATURE_MATRIX: FeatureRow[] = [
   { feature: "CrewAI integration", browseai: "full", tavily: "full", perplexity: "partial", exa: "partial", you: "none", brave: "none" },
   // BrowseAI Dev differentiation — native built-in verification features
   { feature: "Native claim verification", tooltip: "Built-in claim-level BM25+NLI verification pipeline", browseai: "full", tavily: "none", perplexity: "none", exa: "partial", you: "none", brave: "none" },
-  { feature: "Evidence-based confidence scores", tooltip: "7-factor algorithm, not LLM self-assessment", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Evidence-based confidence scores", tooltip: "8-factor algorithm, not LLM self-assessment", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   { feature: "Contradiction detection", tooltip: "NLI-powered cross-source contradiction scanning", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   { feature: "Cross-source consensus", tooltip: "Claims verified across multiple independent sources", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   { feature: "Domain authority scoring", tooltip: "Bayesian domain authority with 10K+ domains", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
@@ -376,7 +376,7 @@ const Alternatives = () => {
                 {
                   icon: Shield,
                   title: "Evidence-based confidence",
-                  desc: "7-factor confidence score derived from verification data (source count, domain authority, consensus, claim grounding) — not LLM self-assessment. Your agent knows how much to trust each answer.",
+                  desc: "8-factor confidence score derived from verification data (source count, domain authority, consensus, claim grounding, source recency) — not LLM self-assessment. Your agent knows how much to trust each answer.",
                 },
                 {
                   icon: Brain,

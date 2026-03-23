@@ -32,7 +32,7 @@ Open [http://localhost:8000](http://localhost:8000).
    - BM25 sentence matching to ground claims
    - Cross-source consensus detection
    - Contradiction detection between sources
-   - 7-factor evidence-based confidence scoring
+   - 8-factor evidence-based confidence scoring
 4. You see the result: confidence meter, verified answer, claims breakdown, sources, and any contradictions
 
 ## Features

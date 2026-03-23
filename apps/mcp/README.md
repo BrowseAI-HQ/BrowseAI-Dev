@@ -14,7 +14,7 @@ Your question → Web search → Neural rerank → Fetch pages → Extract claim
 
 Every answer includes:
 - **Claims** with source URLs, verification status, and consensus level
-- **7-factor confidence score** (0-1) — evidence-based, not LLM self-assessed, auto-calibrated from feedback
+- **8-factor confidence score** (0-1) — evidence-based, not LLM self-assessed, auto-calibrated from feedback
 - **Source quotes** verified against actual page text via hybrid BM25 + NLI matching
 - **Atomic claim decomposition** — compound facts split and verified independently
 - **Execution trace** with timing
@@ -189,7 +189,7 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browseai-dev
 |---------|---------|-----------|
 | Sources | None | Real URLs with quotes |
 | Citations | Hallucinated | Verified from pages |
-| Confidence | Unknown | 7-factor evidence-based score |
+| Confidence | Unknown | 8-factor evidence-based score |
 | Depth | Single pass | 3 modes: fast, thorough, deep reasoning |
 | Freshness | Training data | Real-time web |
 | Claims | Mixed in text | Structured + linked |

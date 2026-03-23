@@ -14,7 +14,7 @@ The agent uses `session.ask()` with `depth="thorough"` to search the web for the
 
 The output includes:
 - Recommended libraries with their features
-- Confidence score (7-factor evidence-based algorithm)
+- Confidence score (8-factor evidence-based algorithm)
 - Number of verified claims and sources consulted
 - Any contradictions found in the research
 

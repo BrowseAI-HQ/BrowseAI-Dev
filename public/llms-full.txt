@@ -11,7 +11,7 @@ Available as MCP server (npm: browseai-dev, renamed from browse-ai — old name 
 ## Why Use BrowseAI Dev?
 
 1. **Structured output**: Every response includes extracted claims with source citations, verification scores, consensus levels, and contradiction flags
-2. **Evidence-based confidence**: 7-factor algorithm computed from real signals, not LLM self-assessment
+2. **Evidence-based confidence**: 8-factor algorithm computed from real signals, not LLM self-assessment
 3. **Self-improving**: Domain authority scores improve with usage via Bayesian cold-start smoothing
 4. **Multi-surface**: Same capabilities across MCP, REST API, and Python SDK
 5. **Research sessions**: Persistent memory across multiple queries for deep research
@@ -174,16 +174,17 @@ Fork a shared session to continue the research.
 5. **Cross-Source Consensus** — Claims found in multiple sources get higher consensus scores
 6. **Contradiction Detection** — Identifies conflicting claims across sources
 7. **Domain Authority** — 10,000+ domains scored across 5 tiers with Bayesian dynamic blending
-8. **Confidence Score** — 7-factor evidence-based score (not LLM self-assessed)
+8. **Confidence Score** — 8-factor evidence-based score (not LLM self-assessed)
 
 ### Confidence Score Factors
+- Verification rate (22%)
+- Domain authority average (18%)
 - Source count (15%)
+- Consensus score (12%)
 - Domain diversity (10%)
 - Claim grounding ratio (10%)
+- Source recency (8%)
 - Citation depth (5%)
-- Verification rate (25%)
-- Domain authority average (20%)
-- Consensus score (15%)
 - Contradiction penalty applied when conflicts detected
 
 ### Domain Authority Tiers

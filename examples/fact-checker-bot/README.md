@@ -71,7 +71,7 @@ User sends: !verify The Great Wall of China is visible from space
     |  4. BM25 verification     |
     |  5. Cross-source consensus|
     |  6. Contradiction check   |
-    |  7. 7-factor confidence   |
+    |  7. 8-factor confidence   |
     |  8. Auto-retry if < 60%   |
     +---------------------------+
                 |

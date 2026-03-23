@@ -948,7 +948,7 @@ export interface VerificationResult {
  *   Contradictions detected via NLI entailment model (with heuristic fallback).
  *
  * Phase 3 — Enhanced confidence integration
- *   Consensus score + NLI scores feed into the 7-factor confidence formula.
+ *   Consensus score + NLI scores feed into the 8-factor confidence formula.
  *   Contradictions are surfaced to agents for trust decisions.
  */
 export async function verifyEvidence(

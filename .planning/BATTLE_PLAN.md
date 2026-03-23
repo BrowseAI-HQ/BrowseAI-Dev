@@ -12,7 +12,7 @@ No competitor does what we do. Verified across all 8 major competitors:
 | Capability | BrowseAI Dev | Perplexity | Tavily | Exa | Google Vertex | Everyone Else |
 |---|---|---|---|---|---|---|
 | Claim Verification (BM25+NLI) | YES | No | No | No | Partial | No |
-| Evidence-Based Confidence | YES (7-factor) | No | No | No | Regressing | No |
+| Evidence-Based Confidence | YES (8-factor) | No | No | No | Regressing | No |
 | Cross-Source Consensus | YES | No | No | No | No | No |
 | Contradiction Detection | YES | No | No | No | No | No |
 | Atomic Claim Decomposition | YES | No | No | No | No | No |
@@ -145,10 +145,10 @@ Measure:
 |---|---|---|---|---|---|
 | Price/1K queries | Free (100/day) | $8 | ~$1-15/M tokens | $5-15 | $5 |
 | Claim verification | BM25+NLI hybrid | No | No | No | No |
-| Confidence scores | 7-factor evidence-based | No | No | No | No |
+| Confidence scores | 8-factor evidence-based | No | No | No | No |
 | Consensus scoring | Cross-source | No | No | No | No |
 | Contradiction detection | NLI-based | No | No | No | No |
-| MCP server | 12 tools | 4 tools | Moving away | 3 tools | 6 tools |
+| MCP server | 13 tools | 4 tools | Moving away | 3 tools | 6 tools |
 | Python SDK | Yes | Yes | No native | Yes | No |
 | Open source | MIT | No | No | No | No |
 | Deep research mode | Yes (iterative) | No | No | Yes ($12/1K) | No |
@@ -170,7 +170,7 @@ Measure:
 - [ ] Twitter launch thread drafted (8-10 tweets)
 - [ ] Reddit posts drafted for r/LocalLLaMA, r/SideProject, r/OpenSource
 - [ ] 15-20 developer contacts ready to engage honestly on day 1
-- [ ] Blog post: "How we built a 7-factor verification pipeline" (HN bait)
+- [ ] Blog post: "How we built an 8-factor verification pipeline" (HN bait)
 
 ### Launch Week
 

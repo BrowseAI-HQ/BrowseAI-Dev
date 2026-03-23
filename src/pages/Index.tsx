@@ -769,7 +769,7 @@ const Index = () => {
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Hybrid BM25 + embedding + NLI verified claims against source text</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Atomic claim decomposition — compound facts split and verified independently</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Domain authority scoring (10,000+ domains)</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (7-factor score, auto-calibrated from feedback)</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Evidence-based confidence (8-factor score, auto-calibrated from feedback)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Neural re-ranking — cross-encoder semantic scoring for best source selection</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> 3 depth modes — fast (default), thorough (auto-retry + multi-pass), deep (premium: NLI reranking, multi-provider search, multi-pass consistency)</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Clarity — anti-hallucination answer engine. Returns LLM answers with reduced hallucinations (fast, no internet). With verify=true, also runs web pipeline and fuses the best of both into one source-backed answer</li>
@@ -919,7 +919,7 @@ curl -X POST https://browseai.dev/api/browse/answer \\
       <section className="py-24 px-6 border-t border-border">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">12 Tools for Agents</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">13 Tools for Agents</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               Each tool returns structured JSON with sources. No HTML parsing, no hallucination. Available via MCP and REST API.
             </p>

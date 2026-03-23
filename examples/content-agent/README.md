@@ -243,7 +243,7 @@ The Content Agent relies on BrowseAI's verification pipeline:
 | Cross-source consensus | Claims verified across multiple independent sources |
 | Domain authority | 10,000+ domains scored (5-tier + Bayesian dynamic blending) |
 | Contradiction detection | Identifies conflicting claims across sources |
-| 7-factor confidence | Source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score |
+| 8-factor confidence | Source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score, source recency |
 
 The `depth="thorough"` mode auto-retries with a rephrased query when confidence is below 60%, ensuring higher-quality results.
 

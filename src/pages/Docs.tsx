@@ -450,7 +450,7 @@ Another agent: "Fork the shared session abc123def456"
           </Section>
 
           {/* Confidence */}
-          <Section id="confidence" title="7-Factor Confidence Score" icon={BarChart3}>
+          <Section id="confidence" title="8-Factor Confidence Score" icon={BarChart3}>
             <p>
               Confidence scores are <strong className="text-foreground">evidence-based</strong>, not LLM self-assessed.
               The score is computed from 7 real signals after verification:
@@ -642,11 +642,12 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
             <h4 className="text-sm font-semibold text-foreground pt-4">MCP Server</h4>
             <CodeBlock label="Setup">{`npx browseai-dev setup`}</CodeBlock>
             <p>
-              12 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
+              13 tools: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_search</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_open</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_extract</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_answer</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_compare</code>,{" "}
+              <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_clarity</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_feedback</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_create</code>,{" "}
               <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">browse_session_ask</code>,{" "}

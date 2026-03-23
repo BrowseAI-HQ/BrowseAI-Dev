@@ -487,7 +487,7 @@ const Developers = () => {
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
                   Install as an MCP server for Claude Desktop, Cursor, or Windsurf. Your AI assistant
-                  gets 12 research tools it can call to verify information.
+                  gets 13 research tools it can call to verify information.
                 </p>
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary">
                   <Terminal className="w-4 h-4 text-accent" />

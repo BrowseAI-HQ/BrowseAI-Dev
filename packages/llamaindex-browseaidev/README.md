@@ -39,7 +39,7 @@ All tools are returned as `FunctionTool` instances, compatible with any LlamaInd
 
 ## Why BrowseAI Dev?
 
-Unlike raw search APIs, BrowseAI Dev fact-checks results. Every answer includes per-claim verification (BM25 + NLI), cross-source consensus, contradiction detection, and 7-factor evidence-based confidence scores. Open source (MIT).
+Unlike raw search APIs, BrowseAI Dev fact-checks results. Every answer includes per-claim verification (BM25 + NLI), cross-source consensus, contradiction detection, and 8-factor evidence-based confidence scores. Open source (MIT).
 
 ## Links
 

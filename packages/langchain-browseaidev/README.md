@@ -107,7 +107,7 @@ print(result["output"])
 | Feature | BrowseAI Dev | Tavily | Exa |
 |---|---|---|---|
 | Claim verification (BM25+NLI) | Yes | No | No |
-| Evidence-based confidence scores | 7-factor | No | No |
+| Evidence-based confidence scores | 8-factor | No | No |
 | Cross-source consensus | Yes | No | No |
 | Contradiction detection | Yes | No | No |
 | Deep research mode | Yes | No | Yes |

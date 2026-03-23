@@ -65,7 +65,7 @@ Each looks polished and professional. The agents aren't glitching — they're *c
 | Agent | Feature |
 |-------|---------|
 | Claude | `Evidence-backed answers` |
-| Cursor | `7-factor confidence scoring` |
+| Cursor | `8-factor confidence scoring` |
 | Codex | `Source verification` |
 | Copilot | `Contradiction detection` |
 | LangChain | `Thorough mode auto-retry` |

@@ -236,8 +236,8 @@ export function computeConfidence(
 
   let raw: number;
   if (adaptiveWeights) {
-    // Adaptive weights are 7-factor; apply recency as a separate 8% factor
-    // by scaling the 7 adaptive weights down to 92% total
+    // Adaptive weights cover the original 7 base factors; recency is the 8th factor at 8%
+    // Scale the adaptive weights down to 92% total to make room for recency
     const scale = 0.92;
     raw =
       sourceScore * adaptiveWeights.source * scale +
