@@ -96,7 +96,7 @@ const Results = () => {
     // Run clarity in parallel if enabled
     if (clarityFromUrl && !isClarityBlocked(!!user, null)) {
       setClarityLoading(true);
-      browseClarity(query, { verify: false }).then(setClarityResult).catch(() => {}).finally(() => setClarityLoading(false));
+      browseClarity(query, { verify: true }).then(setClarityResult).catch(() => {}).finally(() => setClarityLoading(false));
     }
 
     streamAnswer(query, depth, handleStreamEvent)
