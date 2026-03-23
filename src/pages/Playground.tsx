@@ -245,7 +245,7 @@ const Playground = () => {
     const shouldRunClarity = clarityEnabled && currentTab === "answer" && !isClarityBlocked(!!user, quota);
     if (shouldRunClarity) {
       setClarityLoading(true);
-      browseClarity(q, { verify: false }).then(setClarityResult).catch(() => {}).finally(() => setClarityLoading(false));
+      browseClarity(q, { verify: true }).then(setClarityResult).catch(() => {}).finally(() => setClarityLoading(false));
     }
 
     try {
