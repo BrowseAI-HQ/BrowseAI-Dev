@@ -46,7 +46,7 @@ npx pnpm --filter browseai-dev build  # Build MCP only
 - **Tier gating:** `bai_` API key users get premium pipeline (NLI reranking, multi-provider search, multi-pass consistency). BYOK/demo users get BM25-only verification. Controlled via `hasBaiKey` flag in `getRequestEnv`.
 - **Premium quota:** Free BAI key users get 100 premium queries/day (`FREE_PREMIUM_DAILY_LIMIT`). Deep mode costs 3x. Tracked via Redis counter (`premium_quota:{userId}`, 24hr TTL). When exceeded, premium keys (HF_API_KEY, BRAVE_API_KEY) are stripped — graceful fallback to BM25 keyword verification. Quota info returned in API responses as `{ quota: { used, limit, premiumActive, resetsInSeconds } }`. Increment happens after successful answer/stream queries only.
 - **Caching:** Upstash Redis (via Vercel KV) with smart TTL (time-sensitive queries get shorter TTL). Falls back to in-memory if KV env vars not set. Cache key includes depth param.
-- **Demo rate limit:** 5/hour per IP for unauthenticated users. BYOK headers (`X-Tavily-Key`, `X-OpenRouter-Key`) bypass it.
+- **Demo rate limit:** 1 query/hour per IP for unauthenticated users. BYOK headers (`X-Tavily-Key`, `X-OpenRouter-Key`) bypass it.
 - **API keys:** Users can bring their own keys via headers, or use a BrowseAI Dev API key (`bai_xxx` prefix), or fall back to server-side keys with demo limits.
 
 ## Environment variables
@@ -140,4 +140,4 @@ Every time a new feature is implemented, go through this checklist before consid
 - **Discord:** https://discord.gg/ubAuT4YQsT
 - **npm:** https://www.npmjs.com/package/browseai-dev
 - **PyPI:** https://pypi.org/project/browseaidev/
-- **License:** MIT (clients), MIT + Commons Clause (API server — cannot be offered as competing hosted service)
+- **License:** Apache 2.0

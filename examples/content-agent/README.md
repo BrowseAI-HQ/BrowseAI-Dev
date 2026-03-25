@@ -238,12 +238,12 @@ The Content Agent relies on BrowseAI's verification pipeline:
 
 | Step | What it does |
 |------|-------------|
-| Web search | Tavily API finds relevant sources |
-| BM25 matching | Sentence-level matching finds supporting quotes |
+| Web search | Finds relevant sources across the web |
+| Claim verification | Extracts and verifies claims against source text |
 | Cross-source consensus | Claims verified across multiple independent sources |
-| Domain authority | 10,000+ domains scored (5-tier + Bayesian dynamic blending) |
+| Domain authority | Domains scored with dynamic authority scoring |
 | Contradiction detection | Identifies conflicting claims across sources |
-| 8-factor confidence | Source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, consensus score, source recency |
+| Evidence-based confidence | Analyzes multiple quality signals from sources |
 
 The `depth="thorough"` mode auto-retries with a rephrased query when confidence is below 60%, ensuring higher-quality results.
 
@@ -255,4 +255,4 @@ The `depth="thorough"` mode auto-retries with a rephrased query when confidence 
 
 ## License
 
-MIT — part of the [BrowseAI](https://github.com/BrowseAI-HQ/BrowseAI-Dev) project.
+Apache 2.0 — part of the [BrowseAI Dev](https://github.com/BrowseAI-HQ/BrowseAI-Dev) project.

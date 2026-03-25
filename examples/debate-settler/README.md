@@ -7,9 +7,9 @@ Settle arguments with evidence, not opinions. Two people submit opposing claims,
 1. You enter two opposing claims (Side A and Side B)
 2. BrowseAI researches both using `depth="thorough"` — this triggers automatic query rephrasing and retry when initial confidence is low
 3. For each side, the tool evaluates:
-   - **Confidence score** — 8-factor evidence-based algorithm (not LLM self-assessment)
+   - **Confidence score** — evidence-based algorithm (not LLM self-assessment)
    - **Source count** — How many sources back the claim
-   - **Verified claims** — Claims that passed BM25 sentence matching and cross-source consensus
+   - **Verified claims** — Claims that passed sentence matching and cross-source consensus
    - **Domain diversity** — Number of unique authoritative domains
    - **Contradictions** — Internal contradictions found in each side's evidence
 4. A composite score (0-100) determines the winner
@@ -103,7 +103,7 @@ The composite score (0-100) breaks down as:
 
 | Factor | Max points | How it's calculated |
 |--------|-----------|---------------------|
-| Confidence | 40 | BrowseAI's 8-factor confidence score |
+| Confidence | 40 | BrowseAI's evidence-based confidence score |
 | Sources | 20 | Number of sources (capped at 10) |
 | Verification rate | 20 | Ratio of verified to total claims |
 | Domain diversity | 15 | Unique domains (capped at 8) |
@@ -170,4 +170,4 @@ Researching Side B: Coffee is bad for health
 
 ## License
 
-MIT — part of the [BrowseAI](https://github.com/BrowseAI-HQ/BrowserAI-Dev) project.
+Apache 2.0 — part of the [BrowseAI Dev](https://github.com/BrowseAI-HQ/BrowseAI-Dev) project.

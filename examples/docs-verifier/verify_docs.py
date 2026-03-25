@@ -6,7 +6,7 @@ Flags outdated or contradicted statements with confidence scores.
 
 Usage:
     # Verify a remote README
-    python verify_docs.py https://github.com/BrowseAI-HQ/BrowserAI-Dev/blob/main/README.md
+    python verify_docs.py https://github.com/BrowseAI-HQ/BrowseAI-Dev/blob/main/README.md
 
     # Verify a local markdown file
     python verify_docs.py ./README.md
@@ -426,7 +426,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python verify_docs.py https://raw.githubusercontent.com/BrowseAI-HQ/BrowserAI-Dev/main/README.md
+  python verify_docs.py https://raw.githubusercontent.com/BrowseAI-HQ/BrowseAI-Dev/main/README.md
   python verify_docs.py ./README.md --depth thorough
   python verify_docs.py ./docs/api.md --output report.md --max-claims 10
         """,

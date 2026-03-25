@@ -25,7 +25,7 @@ print(result)
 
 ### `BrowseAIDevAnswerTool` — Verified Research (recommended)
 
-The primary tool. Searches the web, extracts claims, verifies them using BM25 + NLI semantic entailment, detects contradictions, and returns an answer with confidence scores.
+The primary tool. Searches the web, extracts claims, verifies them using multi-signal evidence matching, detects contradictions, and returns an answer with confidence scores.
 
 ```python
 from langchain_browseaidev import BrowseAIDevAnswerTool
@@ -106,12 +106,12 @@ print(result["output"])
 
 | Feature | BrowseAI Dev | Tavily | Exa |
 |---|---|---|---|
-| Claim verification (BM25+NLI) | Yes | No | No |
-| Evidence-based confidence scores | 8-factor | No | No |
+| Claim verification | Yes | No | No |
+| Evidence-based confidence scores | Yes | No | No |
 | Cross-source consensus | Yes | No | No |
 | Contradiction detection | Yes | No | No |
 | Deep research mode | Yes | No | Yes |
-| Open source (MIT) | Yes | No | No |
+| Open source (Apache 2.0) | Yes | No | No |
 | Free tier | 100 verified/day | 1K search/mo | Limited |
 
 ## Get an API Key
@@ -133,4 +133,4 @@ Or bring your own keys (Tavily + OpenRouter) for unlimited usage.
 
 ## License
 
-MIT
+Apache 2.0

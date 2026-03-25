@@ -79,7 +79,7 @@ class BrowseAIDevAnswerTool(_BrowseAIDevBase):
     """Research a question with evidence-backed verification, citations, and confidence scores.
 
     This is the primary BrowseAI Dev tool. It searches the web, extracts claims,
-    verifies them against sources using BM25 + NLI semantic entailment, detects
+    verifies them against sources using multi-signal evidence matching, detects
     contradictions, and returns an answer with per-claim confidence scores.
 
     Unlike raw search, this tool fact-checks the results before returning them.

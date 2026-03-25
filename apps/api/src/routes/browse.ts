@@ -30,7 +30,7 @@ import type { Env } from "../config/env.js";
 
 import type { ZodError } from "zod";
 
-const DEMO_LIMIT = 5;
+const DEMO_LIMIT = 1;
 const DEMO_WINDOW_SECONDS = 3600;
 
 /** Free BAI key users get 100 premium queries/day before graceful fallback to BM25 */
@@ -212,7 +212,7 @@ async function checkDemoLimit(
   const key = `demo:${ip}`;
   const count = await cache.incr(key, DEMO_WINDOW_SECONDS);
   if (count > DEMO_LIMIT) {
-    return `Demo limit reached (${DEMO_LIMIT}/hour). Sign in and generate a free API key at browseai.dev/dashboard for unlimited access with premium features.`;
+    return `DEMO_LIMIT_REACHED: Sign in to continue using BrowseAI Dev. Create a free account at browseai.dev to get 100 queries/day with premium features.`;
   }
   return null;
 }
@@ -250,6 +250,18 @@ function errorResponse(e: unknown, fallbackMsg: string): { status: number; error
   if (msg.includes("Tavily") || msg.includes("search failed")) return { status: 502, error: "Search service temporarily unavailable. Please try again." };
   if (msg.includes("LLM") || msg.includes("parse")) return { status: 502, error: "AI processing error. Please try again." };
   return { status: 500, error: fallbackMsg };
+}
+
+const SSE_ALLOWED_ORIGINS = new Set([
+  "https://browseai.dev",
+  "https://www.browseai.dev",
+  ...(process.env.NODE_ENV !== "production" ? ["http://localhost:8080", "http://localhost:5173", "http://localhost:3000"] : []),
+]);
+
+function getSseOrigin(request: FastifyRequest): string {
+  const origin = request.headers.origin;
+  if (origin && SSE_ALLOWED_ORIGINS.has(origin)) return origin;
+  return "https://browseai.dev";
 }
 
 export function registerBrowseRoutes(
@@ -480,7 +492,7 @@ export function registerBrowseRoutes(
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": getSseOrigin(request),
       });
 
       const emit = (event: string, data: unknown) => {

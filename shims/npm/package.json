@@ -3,7 +3,7 @@
   "version": "0.3.2",
   "description": "Research infrastructure for AI agents. Renamed to browseai-dev — installing browse-ai automatically installs browseai-dev. MCP server, REST API, Python SDK.",
   "keywords": ["browse-ai", "browseai-dev", "browseai", "mcp", "mcp-server", "ai-agent", "web-search", "research", "citations", "fact-checking", "claude", "cursor", "windsurf", "model-context-protocol"],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BrowseAI-HQ/BrowseAI-Dev.git"

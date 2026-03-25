@@ -154,7 +154,7 @@ export function ApiKeySettings() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Without your own keys, you get 5 demo queries per hour. With your own keys, usage is unlimited.
+            Without your own keys, you get 1 demo query. Sign in and add your keys for unlimited access.
           </p>
 
           {user && (
