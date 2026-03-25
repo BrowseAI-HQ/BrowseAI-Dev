@@ -61,7 +61,7 @@ export function StreamingAnswer({ text, streaming, confidence }: StreamingAnswer
       {streaming && (
         <div className="flex items-center gap-2 mb-2">
           <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-          <span className="text-xs text-muted-foreground">Generating answer…</span>
+          <span className="text-xs text-muted-foreground">Synthesizing from verified sources…</span>
         </div>
       )}
       <div

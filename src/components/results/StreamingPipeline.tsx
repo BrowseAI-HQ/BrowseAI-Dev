@@ -99,6 +99,33 @@ function groupDeepSteps(steps: TraceEvent[], done: boolean): GroupedStep[] {
   return groups;
 }
 
+// ── Human-friendly step labels ──
+
+const STEP_DISPLAY: Record<string, string> = {
+  "Searching": "Scouring the web",
+  "Search Web": "Scouring the web",
+  "Query Plan": "Planning research strategy",
+  "Fetching": "Reading sources",
+  "Fetch Pages": "Reading sources",
+  "Analyzing": "Extracting claims",
+  "Extract Claims": "Extracting claims",
+  "Verify Evidence": "Verifying against evidence",
+  "Cross-Source Consensus": "Cross-referencing sources",
+  "Build Evidence Graph": "Mapping the evidence",
+  "Generate Answer": "Synthesizing findings",
+  "Generating Answer": "Synthesizing findings",
+  "Rephrase Query": "Refining the search",
+  "Select Best Result": "Selecting best evidence",
+  "Gap Analysis": "Looking for gaps",
+  "Deep Complete": "Research complete",
+  "Final Verification": "Final verification pass",
+  "Neural Rerank": "Ranking by relevance",
+};
+
+function displayName(step: string): string {
+  return STEP_DISPLAY[step] || step;
+}
+
 // ── Shared row components ──
 
 const PROGRESS_STEPS = new Set(["Searching", "Fetching", "Analyzing", "Generating Answer"]);
@@ -120,7 +147,7 @@ function StepRow({ step, active, completed }: { step: TraceEvent; active: boolea
         {active ? <Loader2 className="w-4 h-4 animate-spin" /> : completed ? <CheckCircle2 className="w-4 h-4" /> : icon}
       </div>
       <span className={`text-sm flex-1 ${completed ? "text-foreground" : active ? "text-accent font-medium" : "text-muted-foreground"}`}>
-        {step.step}
+        {displayName(step.step)}
       </span>
       <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
         {step.detail && !active && (
@@ -261,9 +288,9 @@ export function StreamingPipeline({ steps, sources, done, depth = "fast" }: Prop
         const suffix = getStepGroup(lastStep.step);
         if (suffix) {
           const baseName = lastStep.step.replace(/\s*\(.*\)$/, "");
-          return `${GROUP_LABELS[suffix] || suffix}: ${baseName}`;
+          return `${GROUP_LABELS[suffix] || suffix}: ${displayName(baseName)}`;
         }
-        return lastStep.step;
+        return displayName(lastStep.step);
       })()
     : null;
 

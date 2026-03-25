@@ -98,7 +98,7 @@ const Compare = () => {
               <div className="absolute -inset-2 rounded-full bg-accent/20 blur-md glow-pulse" />
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent relative" />
             </div>
-            <p className="text-sm text-muted-foreground">Running both pipelines in parallel...</p>
+            <p className="text-sm text-muted-foreground">Researching with and without verification…</p>
           </div>
         )}
 
