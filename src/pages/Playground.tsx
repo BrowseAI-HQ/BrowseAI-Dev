@@ -174,7 +174,7 @@ const Playground = () => {
   const [quota, setQuota] = useState<QuotaInfo | null>(null);
   const [clarityEnabled, setClarityEnabled] = useState(false);
   const [clarityResult, setClarityResult] = useState<ClarityResult | null>(null);
-  const [clarityLoading, setClarityLoading] = useState(false);
+  const [showLoginGate, setShowLoginGate] = useState(false);
 
   // Streaming state (answer tab only)
   const [streamingText, setStreamingText] = useState("");
@@ -236,17 +236,11 @@ const Playground = () => {
     setResponse(null);
     setShowRawJson(false);
     setFeedbackSent(null);
+    setShowLoginGate(false);
     resetStreamState();
     setClarityResult(null);
     setLastQuery(q);
     saveRecentQuery(q);
-
-    // Run clarity in parallel if enabled + not blocked
-    const shouldRunClarity = clarityEnabled && currentTab === "answer" && !isClarityBlocked(!!user, quota);
-    if (shouldRunClarity) {
-      setClarityLoading(true);
-      browseClarity(q, { verify: true }).then(setClarityResult).catch(() => {}).finally(() => setClarityLoading(false));
-    }
 
     try {
       let result;
@@ -258,13 +252,35 @@ const Playground = () => {
         result = await browseExtract(q);
       } else if (currentTab === "compare") {
         result = await browseCompare(q);
+      } else if (clarityEnabled && !isClarityBlocked(!!user, quota)) {
+        // Clarity mode: rewrite prompt → LLM + browse pipeline → fuse
+        const clarityRes = await browseClarity(q, { verify: true });
+        setClarityResult(clarityRes);
+        // Map ClarityResult to answer-like response for shared display
+        result = {
+          answer: clarityRes.answer,
+          claims: clarityRes.claims.map((c) => ({
+            claim: c.claim,
+            sources: c.sources || [],
+            verified: c.verified,
+            verificationScore: c.verificationScore,
+          })),
+          sources: clarityRes.sources || [],
+          confidence: clarityRes.confidence,
+          trace: clarityRes.trace,
+          contradictions: clarityRes.contradictions,
+        };
       } else {
-        // Use streaming API for answer tab
+        // Normal streaming answer
         result = await streamAnswerApi(q, currentDepth, handleStreamEvent);
       }
       setResponse(result);
     } catch (e: any) {
-      setResponse({ error: e.message });
+      if (e.message?.includes("DEMO_LIMIT_REACHED")) {
+        setShowLoginGate(true);
+      } else {
+        setResponse({ error: e.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -310,7 +326,8 @@ const Playground = () => {
       canonical="/playground"
     />
     <div className="min-h-screen">
-      <nav className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border">
+      <nav className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border relative">
+        <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none" />
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-4 h-4" />
@@ -345,9 +362,9 @@ const Playground = () => {
             onClick={() => setShowScenarios(!showScenarios)}
             aria-haspopup="listbox"
             aria-expanded={showScenarios}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card hover:border-accent/40 transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 text-sm"
           >
-            <Beaker className="w-3.5 h-3.5 text-accent" />
+            <Beaker className="w-3.5 h-3.5 text-accent bg-accent/10 rounded" />
             <span className="text-muted-foreground">Try an example</span>
             <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${showScenarios ? "rotate-180" : ""}`} />
           </button>
@@ -357,14 +374,14 @@ const Playground = () => {
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               role="listbox"
-              className="absolute z-20 top-12 left-0 w-full sm:w-[500px] max-w-[calc(100vw-2rem)] bg-card border border-border rounded-xl shadow-lg overflow-hidden"
+              className="absolute z-20 top-12 left-0 w-full sm:w-[500px] max-w-[calc(100vw-2rem)] bg-card border border-border rounded-xl shadow-lg shadow-accent/5 overflow-hidden"
             >
               {TUTORIAL_SCENARIOS.map((scenario) => (
                 <button
                   key={scenario.name}
                   role="option"
                   onClick={() => runScenario(scenario)}
-                  className="w-full flex items-start gap-3 p-4 hover:bg-secondary/50 transition-colors text-left border-b border-border last:border-0"
+                  className="w-full flex items-start gap-3 p-4 hover:bg-accent/5 transition-all duration-300 text-left border-b border-border last:border-0"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -475,7 +492,7 @@ const Playground = () => {
                     <button
                       key={ex}
                       onClick={() => handleExample(ex)}
-                      className="px-3 py-1 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-accent/40 transition-all truncate max-w-[180px] sm:max-w-[280px]"
+                      className="px-3 py-1 rounded-full border border-border text-xs text-muted-foreground hover:text-foreground hover:border-accent/20 transition-all duration-300 hover:shadow-md hover:shadow-accent/5 truncate max-w-[180px] sm:max-w-[280px]"
                     >
                       {ex}
                     </button>
@@ -486,8 +503,22 @@ const Playground = () => {
           ))}
         </Tabs>
 
+        {/* ── Clarity loading (no streaming) ── */}
+        {activeTab === "answer" && loading && clarityEnabled && !isClarityBlocked(!!user, quota) && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="relative">
+              <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+              <div className="absolute inset-0 w-8 h-8 rounded-full bg-amber-400/10 animate-ping" />
+            </div>
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-medium text-amber-400 mt-3">
+              Running Clarity pipeline…
+            </motion.span>
+            <p className="text-xs text-muted-foreground mt-1">Rewriting prompt + LLM answer + evidence verification</p>
+          </div>
+        )}
+
         {/* ── Streaming answer (tokens flowing in) ── */}
-        {activeTab === "answer" && loading && (
+        {activeTab === "answer" && loading && !(clarityEnabled && !isClarityBlocked(!!user, quota)) && (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-6">
             <div>
               {streamingText ? (
@@ -528,22 +559,30 @@ const Playground = () => {
           </motion.div>
         )}
 
+        {/* Login gate: shown when demo limit (1 free query) is reached */}
+        {showLoginGate && !user && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-8 rounded-xl bg-card border border-border border-glow text-center space-y-4">
+            <div className="w-12 h-12 mx-auto rounded-full bg-accent/10 flex items-center justify-center animate-float">
+              <Shield className="w-6 h-6 text-accent" />
+            </div>
+            <h3 className="text-lg font-semibold">Sign in to continue</h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Create a free account to get 100 queries/day with premium verification, citations, and confidence scores.
+            </p>
+            <div className="pt-2">
+              <LoginModal open={true} onOpenChange={(open) => { if (!open) { setShowLoginGate(false); navigate("/"); } }} redirectTo="/dashboard#api-keys" />
+            </div>
+          </motion.div>
+        )}
+
         {/* Error */}
-        {response?.error && (
+        {response?.error && !showLoginGate && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="p-4 rounded-xl bg-red-400/10 border border-red-400/30 text-sm space-y-3"
           >
             <p className="text-red-400">{response.error}</p>
-            {response.error.includes("Demo limit") && !user && (
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" className="text-xs border-accent/30 text-accent hover:bg-accent/10" onClick={() => setLoginOpen(true)}>
-                  Sign in — get a free BAI key
-                </Button>
-                <span className="text-xs text-muted-foreground">Unlimited queries + premium verification</span>
-              </div>
-            )}
           </motion.div>
         )}
 
@@ -590,79 +629,94 @@ const Playground = () => {
             </div>
 
             {/* Answer text */}
-            <div className="p-4 rounded-xl bg-card border border-border text-sm leading-relaxed">
+            <div className="p-4 rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 text-sm leading-relaxed">
               {response.answer}
             </div>
 
-            {/* Clarity — Anti-Hallucination Answer */}
-            {(clarityResult || clarityLoading) && (
+            {/* Clarity Improvement — how clarity reduced hallucinations */}
+            {clarityResult && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-amber-400" />
-                  <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Clarity</h3>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-amber-400/60 border-amber-500/20">
-                    {clarityResult?.verified ? "verified" : "LLM only"}
+                  <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">How Clarity Improved This Answer</h3>
+                  <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${
+                    clarityResult.confidence >= 0.75 ? "text-green-400 border-green-500/30" :
+                    clarityResult.confidence >= 0.55 ? "text-yellow-400 border-yellow-500/30" :
+                    "text-red-400 border-red-500/30"
+                  }`}>
+                    {Math.round(clarityResult.confidence * 100)}% confidence
                   </Badge>
-                  {clarityResult && (
-                    <span className="text-[10px] text-muted-foreground">
-                      {Math.round(clarityResult.confidence * 100)}% confidence
-                    </span>
-                  )}
-                  {clarityLoading && <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />}
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Anti-hallucination answer engine — analyzes your query, detects hallucination risks, and generates an answer using grounding techniques (chain-of-verification, quote extraction, source attribution) to reduce LLM hallucinations. No internet search — pure LLM with smarter instructions.
+                  Clarity rewrote your query with anti-hallucination techniques, generated an LLM answer, then fused it with evidence from real sources. Claims confirmed by both LLM and sources are trustworthy. LLM-only claims had no source backing and were flagged.
                 </p>
-                {clarityResult && (
-                  <>
-                    {/* Techniques + Intent */}
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/30">
-                        {clarityResult.intent}
-                      </Badge>
-                      {clarityResult.techniques.map((t) => (
-                        <Badge key={t} variant="outline" className="text-[10px] px-2 py-0.5 text-muted-foreground">
-                          {t.replace(/_/g, " ")}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Clarity Answer */}
-                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
-                      <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">Clarity Answer</p>
-                      <div className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">{clarityResult.answer}</div>
-                    </div>
-
-                    {/* Clarity Claims */}
-                    {clarityResult.claims.length > 0 && (
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-semibold text-amber-400 uppercase">Claims ({clarityResult.claims.length})</p>
-                        {clarityResult.claims.map((c, i) => (
-                          <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-card border border-border text-[11px]">
-                            <Badge variant="outline" className={`text-[9px] px-1.5 py-0 shrink-0 ${
-                              c.origin === "confirmed" ? "text-green-400 border-green-500/30" :
-                              c.origin === "source" ? "text-blue-400 border-blue-500/30" :
-                              "text-amber-400 border-amber-500/30"
-                            }`}>
-                              {c.origin}
-                            </Badge>
-                            <span className="text-muted-foreground">{c.claim}</span>
-                          </div>
+                {(() => {
+                  const confirmed = clarityResult.claims.filter(c => c.origin === "confirmed");
+                  const llmOnly = clarityResult.claims.filter(c => c.origin === "llm");
+                  const sourceOnly = clarityResult.claims.filter(c => c.origin === "source");
+                  return (
+                    <>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-center">
+                          <p className="text-lg font-semibold text-emerald-400">{confirmed.length}</p>
+                          <p className="text-[10px] text-muted-foreground">Confirmed</p>
+                          <p className="text-[9px] text-emerald-400/50">LLM + sources agree</p>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/20 text-center">
+                          <p className="text-lg font-semibold text-amber-400">{llmOnly.length}</p>
+                          <p className="text-[10px] text-muted-foreground">LLM-only</p>
+                          <p className="text-[9px] text-amber-400/50">No source backing</p>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/20 text-center">
+                          <p className="text-lg font-semibold text-blue-400">{sourceOnly.length}</p>
+                          <p className="text-[10px] text-muted-foreground">Source-only</p>
+                          <p className="text-[9px] text-blue-400/50">Evidence found</p>
+                        </div>
+                      </div>
+                      {/* Techniques used */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {clarityResult.techniques.map((t) => (
+                          <Badge key={t} variant="outline" className="text-[10px] px-2 py-0.5 text-muted-foreground">
+                            {t.replace(/_/g, " ")}
+                          </Badge>
                         ))}
                       </div>
-                    )}
-
-                    {/* Risks */}
-                    {clarityResult.risks && clarityResult.risks.length > 0 && (
-                      <div className="p-2 rounded-lg bg-red-500/5 border border-red-500/20">
-                        <p className="text-[10px] font-semibold text-red-400 uppercase mb-1">Hallucination Risks</p>
-                        {clarityResult.risks.map((r, i) => (
-                          <p key={i} className="text-[11px] text-red-400/70">• {r}</p>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
+                      {/* Risks identified */}
+                      {clarityResult.risks && clarityResult.risks.length > 0 && (
+                        <div className="p-2.5 rounded-lg bg-red-500/5 border border-red-500/20">
+                          <p className="text-[10px] font-semibold text-red-400 uppercase mb-1">Hallucination Risks Detected</p>
+                          {clarityResult.risks.map((r, i) => (
+                            <p key={i} className="text-[11px] text-red-400/70">• {r}</p>
+                          ))}
+                        </div>
+                      )}
+                      {/* LLM-only claims warning */}
+                      {llmOnly.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] font-semibold text-amber-400 uppercase">Unconfirmed Claims ({llmOnly.length})</p>
+                          {llmOnly.map((c, i) => (
+                            <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[11px]">
+                              <AlertTriangle className="w-3 h-3 text-amber-400 mt-0.5 shrink-0" />
+                              <span className="text-muted-foreground">{c.claim}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Confirmed claims */}
+                      {confirmed.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] font-semibold text-emerald-400 uppercase">Confirmed Claims ({confirmed.length})</p>
+                          {confirmed.map((c, i) => (
+                            <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-[11px]">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" />
+                              <span className="text-muted-foreground">{c.claim}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
 
@@ -671,7 +725,7 @@ const Playground = () => {
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Verified Claims</h3>
                 {response.claims.map((claim: BrowseClaim, i: number) => (
-                  <div key={i} className="p-3 rounded-lg bg-card border border-border flex gap-3">
+                  <div key={i} className="p-3 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 flex gap-3">
                     <div className="shrink-0 mt-0.5">
                       {claim.verified ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
@@ -725,7 +779,7 @@ const Playground = () => {
                       href={src.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-3 rounded-lg bg-card border border-border hover:border-accent/40 transition-colors flex gap-3 group"
+                      className="p-3 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 flex gap-3 group"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -765,7 +819,7 @@ const Playground = () => {
             {response.trace?.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {response.trace.map((t: any, i: number) => (
-                  <span key={i} className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded">
+                  <span key={i} className="text-xs text-muted-foreground bg-accent/5 border border-accent/10 px-2 py-1 rounded">
                     {t.step}: {t.duration_ms}ms
                   </span>
                 ))}
@@ -785,7 +839,7 @@ const Playground = () => {
               </div>
             )}
             {response.text && (
-              <div className="px-2 sm:px-4 py-4 rounded-xl bg-card border border-border text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">
+              <div className="px-2 sm:px-4 py-4 rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">
                 {response.text.slice(0, 5000)}{response.text.length > 5000 && "…"}
               </div>
             )}
@@ -799,7 +853,7 @@ const Playground = () => {
         {isCompareResult && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-card border border-border space-y-3">
+              <div className="p-4 rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">Raw LLM</Badge>
                   <span className="text-xs text-muted-foreground">
@@ -809,7 +863,7 @@ const Playground = () => {
                 <p className="text-sm leading-relaxed line-clamp-[12]">{response.raw_llm.answer}</p>
                 <p className="text-xs text-muted-foreground">No confidence score — LLM cannot self-assess accuracy</p>
               </div>
-              <div className="p-4 rounded-xl bg-card border border-accent/30 space-y-3">
+              <div className="p-4 rounded-xl bg-card border border-accent/30 border-glow hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 space-y-3">
                 <div className="flex items-center gap-2">
                   <Badge className={`${confidenceBg(response.evidence_backed.confidence)} text-xs`}>
                     {(response.evidence_backed.confidence * 100).toFixed(0)}% confidence
@@ -854,7 +908,7 @@ const Playground = () => {
                 >
                   {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                 </button>
-                <pre className="px-2 sm:px-5 py-5 rounded-xl bg-card border border-border overflow-x-auto text-xs font-mono text-secondary-foreground leading-relaxed max-h-[500px] overflow-y-auto">
+                <pre className="px-2 sm:px-5 py-5 rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 overflow-x-auto text-xs font-mono text-secondary-foreground leading-relaxed max-h-[500px] overflow-y-auto">
                   {JSON.stringify(response, null, 2)}
                 </pre>
               </div>
@@ -873,18 +927,21 @@ const Playground = () => {
                 { tab: "extract", label: "Claim Extraction", desc: "Extract structured claims from any page" },
                 { tab: "compare", label: "Raw vs Evidence", desc: "Side-by-side: raw LLM vs evidence-backed answer" },
                 { tab: "sessions", label: "Research Sessions", desc: "Multi-query sessions with persistent memory", link: "/sessions" },
-              ].map((item) => (
-                <button
+              ].map((item, idx) => (
+                <motion.button
                   key={item.tab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + idx * 0.07 }}
                   onClick={() => item.link ? navigate(item.link) : setActiveTab(item.tab)}
-                  className="p-4 rounded-xl bg-card border border-border hover:border-accent/40 transition-colors text-left group"
+                  className="p-4 rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 text-left group"
                 >
                   <p className="text-sm font-medium group-hover:text-accent transition-colors">
                     {item.label}
                     {item.link && <ExternalLink className="w-3 h-3 inline ml-1.5 opacity-50" />}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
-                </button>
+                </motion.button>
               ))}
             </div>
           </motion.div>

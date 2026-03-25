@@ -72,3 +72,180 @@
     box-shadow: 0 0 40px -10px hsl(150 60% 45% / 0.3);
   }
 }
+
+/* ── Flow dot animation ── */
+@keyframes flowRight {
+  0% { left: -8px; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: calc(100% + 8px); opacity: 0; }
+}
+
+/* ── Subtle glow pulse on accent elements ── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px -5px hsl(150 60% 45% / 0.15); }
+  50% { box-shadow: 0 0 40px -5px hsl(150 60% 45% / 0.3); }
+}
+
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+  will-change: box-shadow;
+}
+
+/* ── Respect reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .glow-pulse, .border-glow, .animate-float, .text-shimmer, .dot-pulse, .terminal-card::after {
+    animation: none !important;
+  }
+  .gradient-border::before {
+    animation: none !important;
+  }
+  .card-lift:hover {
+    transform: none;
+  }
+}
+
+/* ── Animated gradient border ── */
+@keyframes borderGlow {
+  0%, 100% { border-color: hsl(150 60% 45% / 0.2); }
+  50% { border-color: hsl(150 60% 45% / 0.5); }
+}
+
+.border-glow {
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+/* ── Grid background pattern ── */
+.grid-bg {
+  background-image:
+    linear-gradient(hsl(0 0% 15% / 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(0 0% 15% / 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.grid-bg-fade {
+  -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* ── Floating animation ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ── Gradient shimmer for headings ── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(0 0% 95%) 0%,
+    hsl(150 60% 55%) 25%,
+    hsl(0 0% 95%) 50%,
+    hsl(150 60% 55%) 75%,
+    hsl(0 0% 95%) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+/* ── Radial glow behind hero ── */
+.hero-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(150 60% 45% / 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Scan line effect for terminal cards ── */
+@keyframes scanline {
+  0% { top: -4px; }
+  100% { top: 100%; }
+}
+
+.terminal-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.terminal-card::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(180deg, transparent, hsl(150 60% 45% / 0.1), transparent);
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Rotating gradient border ── */
+@keyframes rotate-gradient {
+  0% { --angle: 0deg; }
+  100% { --angle: 360deg; }
+}
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.gradient-border {
+  position: relative;
+  background: hsl(var(--card));
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--angle), hsl(150 60% 45% / 0.3), transparent 40%, hsl(150 60% 45% / 0.3), transparent 80%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+  animation: rotate-gradient 4s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Pulsing dot ── */
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.dot-pulse {
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+/* ── Card lift on hover ── */
+.card-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px -10px hsl(150 60% 45% / 0.15);
+}

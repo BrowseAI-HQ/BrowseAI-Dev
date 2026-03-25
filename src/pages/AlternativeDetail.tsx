@@ -40,7 +40,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
       "Full MCP server (tavily-mcp on npm, including remote MCP with OAuth)",
       "First-class LangChain integration; CrewAI compatible via LangChain tools",
       "Relevance scoring on each search result",
-      "Open-source SDKs and MCP server (MIT license)",
+      "Open-source SDKs and MCP server (Apache 2.0)",
       "Good developer documentation and affordable pricing",
     ],
     limitations: [
@@ -57,7 +57,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
     ],
     browseaiDifferentiators: [
       "BrowseAI Dev decomposes claims and verifies each individually — adding a verification layer on top of search",
-      "Evidence-based confidence scores (8-factor model) derived from verification data, not query-match relevance",
+      "Evidence-based confidence scores derived from verification data, not query-match relevance",
       "Contradiction detection surfaces conflicting information across sources",
       "Cross-source consensus ensures answers are corroborated by multiple independent sources",
       "Full verification pipeline is open-source and self-hostable — not just the SDKs",
@@ -96,7 +96,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
       "Research summaries for human readers",
     ],
     browseaiDifferentiators: [
-      "Evidence-based confidence scores (8-factor algorithm) vs. no confidence scoring in Perplexity API",
+      "Evidence-based confidence scores vs. no confidence scoring in Perplexity API",
       "Claim decomposition and individual verification vs. monolithic grounded answers",
       "Contradiction detection surfaces conflicting information across sources",
       "Both have MCP servers and LangChain integration — comparable distribution",
@@ -135,8 +135,8 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
       "Research exploration and literature review",
     ],
     browseaiDifferentiators: [
-      "Native claim verification pipeline (BM25 + NLI) built into the API — no external tooling needed",
-      "8-factor evidence-based confidence scores vs. no factual confidence scoring in API",
+      "Native claim verification pipeline built into the API — no external tooling needed",
+      "Evidence-based confidence scores vs. no factual confidence scoring in API",
       "Contradiction detection and cross-source consensus as native features",
       "Both have MCP servers, Python SDKs, and LangChain — comparable distribution",
       "Full pipeline is source-available and self-hostable, not just SDKs",
@@ -174,7 +174,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
     ],
     browseaiDifferentiators: [
       "Native verification pipeline built into the API vs. unverified AI summaries",
-      "Evidence-based confidence scores (8-factor model) vs. no scoring",
+      "Evidence-based confidence scores vs. no scoring",
       "Contradiction detection catches conflicting sources automatically",
       "Both have MCP servers and LangChain — comparable distribution",
       "Source-available pipeline, self-hostable, BYOK — You.com core is proprietary",
@@ -214,7 +214,7 @@ const COMPETITOR_DETAILS: Record<string, CompetitorDetail> = {
     browseaiDifferentiators: [
       "BrowseAI Dev uses Brave as one of its underlying search providers for source diversity",
       "Native claim verification, contradiction detection, and consensus scoring built on top of search",
-      "8-factor evidence-backed confidence scores derived from verification data",
+      "Evidence-backed confidence scores derived from verification data",
       "Brave provides excellent grounded search — BrowseAI Dev adds the verification intelligence layer",
       "Full pipeline is source-available and self-hostable with BYOK support",
       "Both have MCP servers and LangChain integration — comparable distribution",
@@ -235,8 +235,8 @@ const AlternativeDetail = () => {
 
   if (!competitor) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
+      <div className="min-h-screen bg-background grid-bg grid-bg-fade flex items-center justify-center">
+        <div className="terminal-card text-center space-y-4 p-8 rounded-lg border border-border hover:border-accent/20 transition-all duration-300">
           <h1 className="text-2xl font-bold">Competitor not found</h1>
           <Button onClick={() => navigate("/alternatives")}>
             <ArrowLeft className="w-4 h-4 mr-1.5" />
@@ -263,7 +263,7 @@ const AlternativeDetail = () => {
         }}
       />
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background grid-bg grid-bg-fade">
         {/* Nav */}
         <motion.nav
           initial={{ opacity: 0, y: -20 }}
@@ -304,7 +304,7 @@ const AlternativeDetail = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs border-accent/30 text-accent">
               vs. {competitor.name}
             </Badge>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -325,9 +325,9 @@ const AlternativeDetail = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
             >
-              <div className="p-4 rounded-xl bg-accent/5 border border-accent/15">
+              <div className="terminal-card gradient-border p-4 rounded-xl bg-accent/5 border border-accent/15 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
                 <div className="flex items-start gap-3">
-                  <Layers className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                  <Layers className="w-4 h-4 text-accent bg-accent/10 rounded mt-0.5 shrink-0" />
                   <div className="text-sm text-muted-foreground leading-relaxed">
                     <strong className="text-foreground">Transparency:</strong>{" "}
                     {competitor.transparencyNote}
@@ -345,7 +345,7 @@ const AlternativeDetail = () => {
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             {/* Competitor strengths */}
-            <div className="p-5 rounded-lg border border-border bg-card space-y-4">
+            <div className="terminal-card card-lift p-5 rounded-lg border border-border bg-card space-y-4 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
               <h3 className="font-medium text-lg">
                 {competitor.name} strengths
               </h3>
@@ -355,7 +355,7 @@ const AlternativeDetail = () => {
                     key={s}
                     className="flex items-start gap-2 text-sm text-muted-foreground"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-accent bg-accent/10 rounded-full mt-0.5 shrink-0" />
                     {s}
                   </li>
                 ))}
@@ -363,7 +363,7 @@ const AlternativeDetail = () => {
             </div>
 
             {/* Competitor limitations */}
-            <div className="p-5 rounded-lg border border-border bg-card space-y-4">
+            <div className="terminal-card card-lift p-5 rounded-lg border border-border bg-card space-y-4 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
               <h3 className="font-medium text-lg">
                 {competitor.name} limitations
               </h3>
@@ -389,10 +389,10 @@ const AlternativeDetail = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="p-6 rounded-lg border border-emerald-400/20 bg-emerald-400/5 space-y-4"
+            className="terminal-card gradient-border glow-pulse p-6 rounded-lg border border-accent/20 bg-accent/5 space-y-4 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
           >
             <h3 className="font-medium text-lg flex items-center gap-2">
-              <Shield className="w-5 h-5 text-emerald-400" />
+              <Shield className="w-5 h-5 text-accent bg-accent/10 rounded" />
               How BrowseAI Dev is differentiated
             </h3>
             <p className="text-xs text-muted-foreground">
@@ -405,7 +405,7 @@ const AlternativeDetail = () => {
                   key={a}
                   className="flex items-start gap-2 text-sm text-foreground"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-accent mt-0.5 shrink-0" />
                   {a}
                 </li>
               ))}
@@ -428,7 +428,7 @@ const AlternativeDetail = () => {
             </p>
             <div className="flex flex-wrap gap-2">
               {competitor.useCases.map((uc) => (
-                <Badge key={uc} variant="outline" className="text-xs">
+                <Badge key={uc} variant="outline" className="text-xs border-accent/20 hover:border-accent/40 transition-all duration-300">
                   {uc}
                 </Badge>
               ))}
@@ -460,7 +460,7 @@ const AlternativeDetail = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-center py-8 space-y-4 border-t border-border"
+            className="terminal-card gradient-border text-center py-8 px-6 space-y-4 rounded-lg border border-accent/15 bg-accent/5 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
           >
             <h2 className="text-2xl font-bold">Try it yourself</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
@@ -468,12 +468,12 @@ const AlternativeDetail = () => {
               with claim verification, confidence scores, and verified sources.
             </p>
             <div className="flex items-center justify-center gap-3">
-              <Button onClick={() => navigate("/playground")}>
-                <Terminal className="w-4 h-4 mr-1.5" />
+              <Button onClick={() => navigate("/playground")} className="glow-pulse">
+                <Terminal className="w-4 h-4 mr-1.5 text-accent" />
                 Playground
               </Button>
               <Button variant="outline" onClick={() => navigate("/docs")}>
-                <BookOpen className="w-4 h-4 mr-1.5" />
+                <BookOpen className="w-4 h-4 mr-1.5 text-accent bg-accent/10 rounded" />
                 API Docs
               </Button>
             </div>

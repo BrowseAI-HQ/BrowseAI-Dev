@@ -50,7 +50,7 @@ const Terms = () => {
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
               <li>You may use your own API keys (BYOK) for unlimited access at no cost.</li>
               <li>BrowseAI Dev API keys (bai_xxx) are personal and should not be shared publicly.</li>
-              <li>Demo access is limited to 5 queries per hour per IP address.</li>
+              <li>Demo access is limited to 1 query per hour per IP address.</li>
               <li>We reserve the right to revoke API keys that are abused or used in violation of these terms.</li>
             </ul>
           </section>
@@ -70,7 +70,7 @@ const Terms = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">6. Open Source License</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Client packages (MCP server, Python SDK, LangChain, CrewAI, LlamaIndex integrations) are licensed under the MIT License. The API server (apps/api/) is licensed under MIT + Commons Clause — you may self-host and modify it, but you may not offer it as a competing hosted commercial service. These Terms of Service apply specifically to the hosted service at browseai.dev.
+              BrowseAI Dev is licensed under the Apache License 2.0. You may use, modify, and distribute the software in accordance with the license terms. These Terms of Service apply specifically to the hosted service at browseai.dev.
             </p>
           </section>
 
@@ -91,7 +91,7 @@ const Terms = () => {
               We do not sell your data or share individual queries with third parties. All improvements are based on aggregate, statistical patterns — not individual query content. Your queries are sent to third-party search and LLM providers solely to process your request. See our <button onClick={() => navigate("/privacy")} className="text-accent hover:underline">Privacy Policy</button> for full details.
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">If you require full data privacy, self-host BrowseAI Dev.</strong> The source code is MIT-licensed and self-hosted instances do not send any data to our servers.
+              <strong className="text-foreground">If you require full data privacy, self-host BrowseAI Dev.</strong> The source code is Apache 2.0 licensed and self-hosted instances do not send any data to our servers.
             </p>
           </section>
 

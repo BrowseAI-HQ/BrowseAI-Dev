@@ -14,7 +14,7 @@ The agent uses `session.ask()` with `depth="thorough"` to search the web for the
 
 The output includes:
 - Recommended libraries with their features
-- Confidence score (8-factor evidence-based algorithm)
+- Confidence score (evidence-based algorithm)
 - Number of verified claims and sources consulted
 - Any contradictions found in the research
 
@@ -210,4 +210,4 @@ python agent.py "Create a real-time chat application"
 
 ## License
 
-MIT — part of the [BrowseAI](https://github.com/BrowseAI-HQ/BrowserAI-Dev) project.
+Apache 2.0 — part of the [BrowseAI Dev](https://github.com/BrowseAI-HQ/BrowseAI-Dev) project.

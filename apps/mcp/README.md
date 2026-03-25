@@ -14,8 +14,8 @@ Your question → Web search → Neural rerank → Fetch pages → Extract claim
 
 Every answer includes:
 - **Claims** with source URLs, verification status, and consensus level
-- **8-factor confidence score** (0-1) — evidence-based, not LLM self-assessed, auto-calibrated from feedback
-- **Source quotes** verified against actual page text via hybrid BM25 + NLI matching
+- **Evidence-based confidence score** (0-1), not LLM self-assessed, auto-calibrated from feedback
+- **Source quotes** verified against actual page text
 - **Atomic claim decomposition** — compound facts split and verified independently
 - **Execution trace** with timing
 - **3 depth modes** — `"fast"` (default), `"thorough"` (auto-retry with rephrased queries), `"deep"` (premium multi-step agentic research: iterative think-search-extract-evaluate cycles with gap analysis, up to 4 steps, targets 0.85 confidence — requires BAI key + sign-in, 3x quota cost, falls back to thorough when exhausted)
@@ -23,16 +23,16 @@ Every answer includes:
 ### Premium Features (with `BROWSE_API_KEY`)
 
 Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
-- **Neural cross-encoder re-ranking** — search results re-scored by semantic query-document relevance
-- **NLI semantic reranking** — evidence matched by meaning, not just keywords
+- **Semantic re-ranking** — search results re-scored by semantic query-document relevance
+- **Semantic reranking** — evidence matched by meaning, not just keywords
 - **Multi-provider search** — parallel search across multiple sources for broader coverage
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes
 - **Deep reasoning mode** — multi-step agentic research with iterative think-search-extract-evaluate cycles, gap analysis, and cross-step claim merging (up to 4 steps, 3x quota cost, 100 deep queries/day)
 - **Research Sessions** — persistent memory across queries
 
-Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to BM25 keyword verification (deep falls back to thorough). Quota resets every 24 hours.
+Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to keyword verification (deep falls back to thorough). Quota resets every 24 hours.
 
-**No account needed** — all tools work with BYOK (your own Tavily + OpenRouter keys) with no signup, no limits, and BM25 keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
+**No account needed** — all tools work with BYOK (your own Tavily + OpenRouter keys) with no signup, no limits, and keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
 
 ## Quick Start
 
@@ -189,7 +189,7 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browseai-dev
 |---------|---------|-----------|
 | Sources | None | Real URLs with quotes |
 | Citations | Hallucinated | Verified from pages |
-| Confidence | Unknown | 8-factor evidence-based score |
+| Confidence | Unknown | Evidence-based score |
 | Depth | Single pass | 3 modes: fast, thorough, deep reasoning |
 | Freshness | Training data | Real-time web |
 | Claims | Mixed in text | Structured + linked |
@@ -203,7 +203,7 @@ All API calls include automatic retry with exponential backoff on transient fail
 - **Search**: Multi-provider (parallel search across sources)
 - **Parsing**: @mozilla/readability + linkedom
 - **AI**: OpenRouter (100+ models)
-- **Verification**: Hybrid BM25 + NLI semantic entailment
+- **Verification**: Hybrid keyword and semantic verification
 - **Protocol**: Model Context Protocol (MCP)
 
 ## Agent Skills
@@ -223,4 +223,4 @@ Skills work with Claude Code, Codex CLI, Gemini CLI, Cursor, and more. [View ski
 
 ## License
 
-MIT
+Apache 2.0

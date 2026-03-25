@@ -30,7 +30,7 @@ import type { Env } from "../config/env.js";
 
 import type { ZodError } from "zod";
 
-const DEMO_LIMIT = 5;
+const DEMO_LIMIT = 1;
 const DEMO_WINDOW_SECONDS = 3600;
 
 /** Free BAI key users get 100 premium queries/day before graceful fallback to BM25 */
@@ -212,7 +212,7 @@ async function checkDemoLimit(
   const key = `demo:${ip}`;
   const count = await cache.incr(key, DEMO_WINDOW_SECONDS);
   if (count > DEMO_LIMIT) {
-    return `Demo limit reached (${DEMO_LIMIT}/hour). Sign in and generate a free API key at browseai.dev/dashboard for unlimited access with premium features.`;
+    return `DEMO_LIMIT_REACHED: Sign in to continue using BrowseAI Dev. Create a free account at browseai.dev to get 100 queries/day with premium features.`;
   }
   return null;
 }

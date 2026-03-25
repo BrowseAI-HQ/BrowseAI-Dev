@@ -58,9 +58,16 @@ export function StreamingAnswer({ text, streaming, confidence }: StreamingAnswer
         </motion.div>
       )}
 
+      {streaming && (
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+          <span className="text-xs text-muted-foreground">Generating answer…</span>
+        </div>
+      )}
       <div
         ref={containerRef}
         className="p-4 rounded-xl bg-card border border-border text-sm leading-relaxed max-h-[500px] overflow-y-auto"
+        style={streaming ? { borderColor: "rgba(52, 211, 153, 0.3)" } : undefined}
       >
         <span className="whitespace-pre-wrap">{text}</span>
         {streaming && (

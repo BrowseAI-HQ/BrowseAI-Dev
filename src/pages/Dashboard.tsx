@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, CheckCircle2, Sparkles, Shield } from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Activity, History, Settings, Search, FileText, GitCompare, ExternalLink, CheckCircle2, Sparkles, Shield, Key, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -133,7 +133,7 @@ const Dashboard = () => {
       <div className="max-w-4xl mx-auto px-6 py-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
           <div className="flex items-center gap-3">
-            <LayoutDashboard className="w-5 h-5 text-accent" />
+            <LayoutDashboard className="w-5 h-5 text-accent animate-float" />
             <h1 className="text-2xl font-bold">Dashboard</h1>
             <Badge variant="outline" className="text-xs">Free</Badge>
             {isAdmin && (
@@ -149,11 +149,34 @@ const Dashboard = () => {
             )}
           </div>
 
+          {/* Welcome banner for new users without API keys */}
+          {!loadingData && stats?.thisMonth === 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6 rounded-xl bg-accent/5 border border-accent/20 border-glow">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 glow-pulse">
+                  <Key className="w-5 h-5 text-accent" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold">Welcome! Create your BAI key to get started</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Add your Tavily and OpenRouter keys below to generate a BAI key. This gives you 100 premium queries/day with semantic verification, multi-source search, and more.
+                  </p>
+                  <button
+                    onClick={() => document.getElementById("api-keys")?.scrollIntoView({ behavior: "smooth" })}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent/80 mt-2"
+                  >
+                    Create your key <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
+            <Card className="hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Activity className="w-5 h-5" />
+                  <Activity className="w-5 h-5 animate-float" />
                   Queries This Month
                 </CardTitle>
               </CardHeader>
@@ -167,10 +190,10 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <History className="w-5 h-5" />
+                  <History className="w-5 h-5 animate-float" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>
@@ -184,10 +207,10 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
+                  <Settings className="w-5 h-5 animate-float" />
                   Account
                 </CardTitle>
               </CardHeader>
@@ -200,7 +223,7 @@ const Dashboard = () => {
 
           {/* Query History */}
           {history.length > 0 && (
-            <Card>
+            <Card className="hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <History className="w-5 h-5 text-accent" />
@@ -237,7 +260,7 @@ const Dashboard = () => {
             <ApiKeyManager />
           </div>
 
-          <Card className="border-amber-400/20">
+          <Card className="border-amber-400/20 hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-400" />

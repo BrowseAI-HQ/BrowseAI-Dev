@@ -18,14 +18,10 @@ Customer asks a question
 +-------------------+
 | BrowseAI research |  depth="thorough"
 |                   |
-| 1. Web search     |  Search company docs + public web
-| 2. Fetch sources  |  Pull content from top results
-| 3. Extract claims |  LLM extracts factual claims
-| 4. BM25 verify    |  Match claims against source text
-| 5. Consensus      |  Cross-source agreement check
-| 6. Contradictions |  Flag conflicting information
-| 7. Confidence     |  8-factor evidence-based score
-| 8. Auto-retry     |  Rephrase if confidence < 60%
+| 1. Search         |  Find relevant sources
+| 2. Verify         |  Extract and verify claims against sources
+| 3. Score          |  Evidence-based confidence with contradiction detection
+| 4. Cite           |  Structured JSON with sources and scores
 +-------------------+
          |
          v
@@ -171,8 +167,8 @@ Traditional support bots either:
 
 This agent takes a third path: it verifies before responding, escalates when uncertain, and builds a knowledge base over time. The result is a bot that gets more reliable with every interaction while keeping humans in the loop for edge cases.
 
-The confidence score is not LLM self-assessment. It is an 8-factor evidence-based algorithm that measures source count, domain diversity, claim grounding, citation depth, verification rate, domain authority, cross-source consensus, and source recency. When sources contradict each other, a penalty is applied. This is the difference between "the model thinks it knows" and "the evidence supports this answer."
+The confidence score is not LLM self-assessment. It is an evidence-based algorithm that analyzes multiple quality signals from sources. When sources contradict each other, a penalty is applied. This is the difference between "the model thinks it knows" and "the evidence supports this answer."
 
 ## License
 
-MIT -- same as the parent BrowseAI Dev project.
+Apache 2.0 -- same as the parent BrowseAI Dev project.

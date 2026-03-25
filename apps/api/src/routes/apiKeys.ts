@@ -90,7 +90,7 @@ export function registerApiKeyRoutes(
       return {
         success: true,
         ...(isLastKey && {
-          warning: "All API keys removed. You're now on the free demo tier (5 queries/hour). Add keys again anytime to get unlimited access.",
+          warning: "All API keys removed. You're now on the free demo tier (1 query). Add keys again anytime to get unlimited access.",
         }),
       };
     } catch (e: unknown) {

@@ -26,12 +26,12 @@ Previously known as `browse-ai` (npm) and `browseai` (PyPI) — renamed to `brow
 ## Verification Pipeline
 1. Web search (Tavily API)
 2. Page fetch and parse
-3. Claim extraction (Gemini 2.5 Flash)
-4. BM25 sentence-level verification
+3. Claim extraction via LLM
+4. Sentence-level verification
 5. Cross-source consensus detection
 6. Contradiction detection
-7. Domain authority scoring (10,000+ domains, Bayesian dynamic blending)
-8. 8-factor evidence-based confidence score
+7. Domain authority scoring (10,000+ domains)
+8. Evidence-based confidence scoring
 
 ## Confidence Score
 Not LLM self-assessed. Computed from: verification rate, domain authority, source count, consensus score, domain diversity, claim grounding, source recency, citation depth. Contradiction penalty applied.

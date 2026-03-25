@@ -36,7 +36,7 @@ def detect_contradictions(query: str):
             print(f"     Claim A: {c.claim_a}")
             print(f"     Claim B: {c.claim_b}")
             if hasattr(c, "nli_confidence") and c.nli_confidence:
-                print(f"     NLI Confidence: {c.nli_confidence:.0%}")
+                print(f"     Semantic Confidence: {c.nli_confidence:.0%}")
     else:
         print("\nNo contradictions detected across sources.")
 

@@ -172,7 +172,7 @@ const Sessions = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen grid-bg grid-bg-fade">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
@@ -201,7 +201,7 @@ const Sessions = () => {
             </div>
 
             {/* Create new session */}
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-8 terminal-card p-4 rounded-xl">
               <div className="relative flex-1 max-w-sm">
                 <input
                   type="text"
@@ -229,8 +229,8 @@ const Sessions = () => {
                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
               </div>
             ) : sessions.length === 0 ? (
-              <div className="text-center py-16">
-                <Brain className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+              <div className="text-center py-16 terminal-card rounded-xl">
+                <Brain className="w-12 h-12 text-accent/30 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No sessions yet</h3>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto">
                   Create a research session to start building persistent knowledge.
@@ -245,10 +245,10 @@ const Sessions = () => {
                     role="listitem"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors cursor-pointer group"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 cursor-pointer group"
                     onClick={() => openSession(session)}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 glow-pulse">
                       <Brain className="w-5 h-5 text-accent" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -333,7 +333,7 @@ const Sessions = () => {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="mb-4 flex items-center gap-2 p-2.5 rounded-lg bg-accent/5 border border-accent/20"
+                className="mb-4 flex items-center gap-2 p-2.5 rounded-lg bg-accent/5 border border-accent/20 gradient-border"
               >
                 <Link2 className="w-3.5 h-3.5 text-accent shrink-0" />
                 <code className="text-xs text-accent flex-1 truncate">{shareUrl}</code>
@@ -353,7 +353,7 @@ const Sessions = () => {
             )}
 
             {/* Ask input */}
-            <div className="relative mb-6">
+            <div className="relative mb-6 terminal-card rounded-xl p-3">
               <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors z-10" />
                 <input
@@ -387,7 +387,7 @@ const Sessions = () => {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8 p-5 rounded-xl bg-card border border-border"
+                className="mb-8 p-5 rounded-xl bg-card border border-border gradient-border card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <Badge variant="outline" className="text-xs text-accent border-accent/30">
@@ -441,7 +441,7 @@ const Sessions = () => {
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pipeline</span>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {lastResult.trace.map((t, i) => (
-                      <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-secondary text-muted-foreground">
+                      <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-accent/5 border border-accent/10 text-muted-foreground">
                         {t.step} <span className="hidden sm:inline">{t.duration_ms > 0 ? `${(t.duration_ms / 1000).toFixed(1)}s` : ""}</span>
                       </span>
                     ))}
@@ -451,15 +451,17 @@ const Sessions = () => {
             )}
 
             {/* Knowledge base */}
-            <div>
+            <div className="terminal-card rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
-                <Brain className="w-5 h-5 text-accent" />
+                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center glow-pulse">
+                  <Brain className="w-5 h-5 text-accent" />
+                </div>
                 <h2 className="text-sm font-semibold uppercase tracking-wider">Session Knowledge</h2>
                 <span className="text-xs text-muted-foreground">({knowledge.length} claims)</span>
               </div>
 
               {knowledge.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12 text-muted-foreground rounded-lg border border-border/50">
                   <p className="text-sm">No knowledge yet. Ask a question to start building.</p>
                 </div>
               ) : (
@@ -467,7 +469,7 @@ const Sessions = () => {
                   {knowledge.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border"
+                      className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
                     >
                       <CheckCircle2
                         className={`w-4 h-4 mt-0.5 shrink-0 ${entry.verified ? "text-emerald-400" : "text-muted-foreground/30"}`}

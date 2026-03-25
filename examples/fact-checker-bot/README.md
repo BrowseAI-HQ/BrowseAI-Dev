@@ -68,10 +68,10 @@ User sends: !verify The Great Wall of China is visible from space
     |  1. Web search (Tavily)   |
     |  2. Fetch top sources     |
     |  3. Extract claims + LLM  |
-    |  4. BM25 verification     |
+    |  4. Claim verification     |
     |  5. Cross-source consensus|
     |  6. Contradiction check   |
-    |  7. 8-factor confidence   |
+    |  7. Evidence-based scoring |
     |  8. Auto-retry if < 60%   |
     +---------------------------+
                 |
@@ -166,10 +166,10 @@ The heavy lifting (search, extraction, verification, confidence scoring) all hap
 ## Tips
 
 - **Thorough mode** takes 5-15 seconds because it does multi-pass research. Users see the typing indicator while it works.
-- **Rate limits**: Without a BrowseAI API key, the demo limit is 5 queries/hour. Get an API key for unlimited use.
+- **Rate limits**: Without a BrowseAI API key, the demo limit is 1 query/hour. Get an API key for unlimited use.
 - **BYOK**: You can bypass BrowseAI keys entirely by setting `TAVILY_KEY` and `OPENROUTER_KEY` in your environment. Update the client initialization in `bot.py` accordingly.
 - **Hosting**: For a production bot, run with `systemd`, Docker, or a cloud VM. The bot is stateless so it can restart freely.
 
 ## License
 
-MIT -- same as the parent BrowseAI project.
+Apache 2.0 -- same as the parent BrowseAI Dev project.

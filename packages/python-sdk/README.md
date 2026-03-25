@@ -156,17 +156,17 @@ async with AsyncBrowseAIDev(api_key="bai_xxx") as client:
 ## Premium Features (with API Key)
 
 Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
-- **Neural cross-encoder re-ranking** — search results re-scored by semantic query-document relevance
-- **NLI semantic reranking** — evidence matched by meaning, not just keywords
+- **Semantic re-ranking** — search results re-scored by semantic query-document relevance
+- **Semantic reranking** — evidence matched by meaning, not just keywords
 - **Multi-provider search** — parallel search across multiple sources for broader coverage
 - **Multi-pass consistency** — claims cross-checked across independent extraction passes (in thorough mode)
 - **Deep reasoning mode** — premium multi-step agentic research with iterative think-search-extract-evaluate cycles, gap analysis, and cross-step claim merging (up to 4 steps, targets 0.85 confidence, 3x quota cost, 100 deep queries/day). Falls back to thorough when quota is exhausted
 - **Token streaming** — per-token answer delivery via SSE for real-time UI
 - **Research Sessions** — persistent memory across queries
 
-Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to BM25 keyword verification (deep falls back to thorough) — still works, just basic matching. Quota resets every 24 hours. Check `client.last_quota` after any API call for current usage.
+Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to keyword verification (deep falls back to thorough) — still works, just basic matching. Quota resets every 24 hours. Check `client.last_quota` after any API call for current usage.
 
-**No account needed** — BYOK works out of the box with no signup, no limits, and BM25 keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
+**No account needed** — BYOK works out of the box with no signup, no limits, and keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
 
 ## Contradictions
 

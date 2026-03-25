@@ -27,9 +27,11 @@ const NAV_ITEMS = [
 
 const Section = ({ id, title, icon: Icon, children }: { id: string; title: string; icon: any; children: React.ReactNode }) => (
   <section id={id} className="scroll-mt-24">
-    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className="w-5 h-5 text-accent" />
+    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true, margin: "-50px" }}>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <Icon className="w-5 h-5 text-accent" />
+        </div>
         <h2 className="text-2xl font-bold">{title}</h2>
       </div>
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">{children}</div>
@@ -38,7 +40,7 @@ const Section = ({ id, title, icon: Icon, children }: { id: string; title: strin
 );
 
 const CodeBlock = ({ children, label }: { children: string; label?: string }) => (
-  <div className="rounded-xl bg-card border border-border overflow-hidden">
+  <div className="rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 overflow-hidden">
     {label && (
       <div className="px-4 py-2 border-b border-border bg-secondary/50">
         <span className="text-xs font-mono text-muted-foreground">{label}</span>
@@ -114,7 +116,7 @@ const Docs = () => {
                 href={`#${item.id}`}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               >
-                <item.icon className="w-3.5 h-3.5" />
+                <item.icon className="w-3.5 h-3.5 text-accent" />
                 {item.label}
               </a>
             ))}
@@ -124,7 +126,7 @@ const Docs = () => {
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-16">
           {/* Hero */}
-          <div>
+          <div className="relative grid-bg grid-bg-fade rounded-2xl px-6 py-10 -mx-6">
             <Badge variant="outline" className="text-xs font-normal mb-4">Documentation</Badge>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">How BrowseAI Dev Works</h1>
             <p className="text-muted-foreground max-w-2xl leading-relaxed">
@@ -141,11 +143,11 @@ const Docs = () => {
                 { step: "1. Search", desc: "Query the web via Tavily API. Returns 5-10 relevant results." },
                 { step: "2. Fetch", desc: "Parse each page with Readability. Strip ads, nav, scripts — keep content." },
                 { step: "3. Extract", desc: "LLM extracts structured claims with source attribution." },
-                { step: "4. Verify", desc: "BM25 scores each claim against its cited source text." },
+                { step: "4. Verify", desc: "Each claim is scored against its cited source text." },
                 { step: "5. Consensus", desc: "Cross-source check — claims verified against ALL pages, not just cited ones." },
                 { step: "6. Answer", desc: "Generate cited answer with confidence score, claims, sources, and trace." },
               ].map((s) => (
-                <div key={s.step} className="p-3 rounded-lg bg-card border border-border">
+                <div key={s.step} className="p-3 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
                   <span className="text-xs font-semibold text-accent">{s.step}</span>
                   <p className="text-xs text-muted-foreground mt-1">{s.desc}</p>
                 </div>
@@ -417,18 +419,15 @@ Another agent: "Fork the shared session abc123def456"
               This catches hallucinated claims that have no basis in the cited sources.
             </p>
 
-            <h4 className="text-sm font-semibold text-foreground">BM25 sentence matching</h4>
+            <h4 className="text-sm font-semibold text-foreground">Hybrid evidence matching</h4>
             <p>
-              Each claim is tokenized and scored against every sentence in its cited sources using
-              the <a href="https://en.wikipedia.org/wiki/Okapi_BM25" className="text-accent hover:underline" target="_blank" rel="noopener">BM25 algorithm</a> — the
-              same ranking function behind Elasticsearch and Lucene. This catches paraphrased claims that simple keyword overlap would miss.
+              Claims are verified using a hybrid matching approach that combines keyword relevance with semantic understanding to find supporting evidence.
             </p>
 
             <h4 className="text-sm font-semibold text-foreground">Source quote verification</h4>
             <p>
-              LLM-extracted quotes are verified against actual page text using hybrid matching:
-              first tries exact substring match, then falls back to BM25 scoring.
-              Sources get a <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">verified: true</code> flag when their quote is found.
+              LLM-extracted quotes are verified against actual page text using multi-strategy matching.
+              Sources get a <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">verified: true</code> flag when their quote is confirmed in the original content.
             </p>
 
             <h4 className="text-sm font-semibold text-foreground">Cross-source consensus</h4>
@@ -491,7 +490,7 @@ Another agent: "Fork the shared session abc123def456"
                 { range: "0.40-0.59", label: "Low", color: "text-orange-400", desc: "Weak verification or few sources" },
                 { range: "< 0.40", label: "Very Low", color: "text-red-400", desc: "Unverified or unreliable sources" },
               ].map((s) => (
-                <div key={s.range} className="p-3 rounded-lg bg-card border border-border">
+                <div key={s.range} className="p-3 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
                   <span className={`text-xs font-mono font-bold ${s.color}`}>{s.range}</span>
                   <p className="text-xs font-semibold text-foreground mt-1">{s.label}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
@@ -503,7 +502,7 @@ Another agent: "Fork the shared session abc123def456"
           {/* Domain Authority */}
           <Section id="domain-authority" title="Domain Authority" icon={Brain}>
             <p>
-              10,000+ domains are classified into 5 tiers of trustworthiness, loaded from a database seeded with curated domains and Majestic Million rankings. Scores self-improve over time via Bayesian smoothing. Unknown domains get a neutral score (0.50).
+              10,000+ domains are classified into 5 tiers of trustworthiness, with dynamic authority scoring that improves from real query data. Unknown domains get a neutral score (0.50).
             </p>
 
             <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:[mask-image:none]">
@@ -527,16 +526,11 @@ Another agent: "Fork the shared session abc123def456"
 
             <h4 className="text-sm font-semibold text-foreground pt-2">Self-improving scores</h4>
             <p>
-              Domain authority scores <strong className="text-foreground">improve automatically over time</strong>.
-              Every query feeds verification data back into the system. We use Bayesian cold-start smoothing to blend
-              static tier scores with real verification rates:
+              Authority scores blend curated ratings with real verification data, improving automatically over time.
+              Every query feeds verification signals back into the system.
             </p>
-            <CodeBlock label="Formula">{`blended = (static_score * PRIOR_WEIGHT + dynamic_score * sample_count) / (PRIOR_WEIGHT + sample_count)
-
-PRIOR_WEIGHT = 15  (static scores dominate until ~15+ samples)
-Minimum 3 samples before dynamic data is used at all`}</CodeBlock>
             <p>
-              This means static tier scores are trusted initially. As evidence accumulates for a domain,
+              Curated tier scores are trusted initially. As evidence accumulates for a domain,
               its real verification rate gradually takes over. The more your agents use BrowseAI Dev, the more
               accurate future results become.
             </p>
@@ -671,7 +665,7 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
                 <tbody className="divide-y divide-border/50">
                   <tr><td className="py-2 pr-4">BYOK</td><td className="py-2 pr-4">Pass <code className="bg-secondary px-1 rounded">X-Tavily-Key</code> + <code className="bg-secondary px-1 rounded">X-OpenRouter-Key</code> headers</td><td className="py-2">Unlimited, free (no sessions)</td></tr>
                   <tr><td className="py-2 pr-4">API Key</td><td className="py-2 pr-4"><code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code></td><td className="py-2">Unlimited + sessions</td></tr>
-                  <tr><td className="py-2 pr-4">Demo</td><td className="py-2 pr-4">No auth</td><td className="py-2">5 queries/hour per IP</td></tr>
+                  <tr><td className="py-2 pr-4">Demo</td><td className="py-2 pr-4">No auth</td><td className="py-2">1 query/hour per IP</td></tr>
                 </tbody>
               </table>
             </div>
@@ -680,7 +674,7 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
           {/* Hosted vs Self-Hosted */}
           <Section id="hosted-vs-self" title="Hosted vs Self-Hosted" icon={Cloud}>
             <p>
-              BrowseAI Dev is MIT-licensed and can be self-hosted. But the hosted service at{" "}
+              BrowseAI Dev is Apache 2.0 licensed and can be self-hosted. But the hosted service at{" "}
               <a href="https://browseai.dev" className="text-accent hover:underline">browseai.dev</a>{" "}
               provides advantages that can't be replicated by running your own instance:
             </p>
@@ -802,7 +796,7 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
                 tip: "Frame as a balanced question. BrowseAI Dev will surface contradictions and multiple viewpoints automatically.",
               },
             ].map((item) => (
-              <div key={item.type} className="p-4 rounded-xl bg-card border border-border space-y-3">
+              <div key={item.type} className="p-4 rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 space-y-3">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-semibold text-foreground">{item.type}</h4>
                 </div>
@@ -851,11 +845,11 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
               },
               {
                 q: "What does 'self-improving accuracy' mean?",
-                a: "Domain authority scores start from static tiers (gov/edu = high, content farms = low). Over time, real verification data from queries is blended in using Bayesian smoothing. Domains that consistently produce verified claims get higher scores; unreliable ones get lower scores. The system gets smarter with use.",
+                a: "Domain authority scores start from curated tiers (gov/edu = high, content farms = low). Over time, real verification data from queries is blended in automatically. Domains that consistently produce verified claims get higher scores; unreliable ones get lower scores. The system gets smarter with use.",
               },
               {
                 q: "Can I self-host BrowseAI Dev?",
-                a: "Yes — client packages (MCP, SDK, framework integrations) are MIT. The API server is MIT + Commons Clause (you can self-host but cannot offer it as a competing hosted service). Self-hosted instances miss the key advantages of the hosted service: the self-improving data flywheel (domain authority scores that get smarter from aggregated verification data across all users), shared cache (popular queries are instant), automatic updates, and upcoming Pro features (multi-model verification, priority queue).",
+                a: "Yes — BrowseAI Dev is Apache 2.0 licensed. You can self-host, modify, and distribute it. Self-hosted instances miss the key advantages of the hosted service: the self-improving data flywheel (domain authority scores that get smarter from aggregated verification data across all users), shared cache (popular queries are instant), automatic updates, and upcoming Pro features (multi-model verification, priority queue).",
               },
               {
                 q: "What do I miss by self-hosting?",
@@ -871,10 +865,10 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
               },
               {
                 q: "What LLM does BrowseAI Dev use?",
-                a: "Google Gemini 2.5 Flash via OpenRouter. The model extracts claims and generates answers. All verification (BM25, consensus, domain authority, contradictions) happens in code — not in the LLM.",
+                a: "An advanced LLM via OpenRouter handles claim extraction and answer generation. All verification (evidence matching, consensus, domain authority, contradictions) happens in code — not in the LLM.",
               },
             ].map((item) => (
-              <div key={item.q} className="p-4 rounded-xl bg-card border border-border">
+              <div key={item.q} className="p-4 rounded-xl bg-card border border-border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5">
                 <h4 className="text-sm font-semibold text-foreground mb-2">{item.q}</h4>
                 <p className="text-xs">{item.a}</p>
               </div>

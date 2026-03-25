@@ -34,7 +34,7 @@ def BrowseAIDevAnswerTool(api_key: str, base_url: str = "https://browseai.dev/ap
     """Create a LlamaIndex tool for verified research with citations and confidence scores.
 
     This is the primary BrowseAI Dev tool. It searches the web, verifies claims
-    using BM25 + NLI semantic entailment, detects contradictions, and returns
+    using multi-signal evidence matching, detects contradictions, and returns
     an answer with per-claim confidence scores.
     """
     client = _get_client(api_key, base_url)

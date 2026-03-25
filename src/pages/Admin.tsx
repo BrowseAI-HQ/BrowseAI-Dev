@@ -555,7 +555,7 @@ const Admin = () => {
                   ) : (
                     <Download className="w-4 h-4 mr-2" />
                   )}
-                  Import Majestic Million
+                  Import Domain Authority Data
                 </Button>
               </div>
 

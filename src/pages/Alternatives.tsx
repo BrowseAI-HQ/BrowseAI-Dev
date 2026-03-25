@@ -35,7 +35,7 @@ const COMPETITORS: Competitor[] = [
       "Fast response times with AI answer synthesis",
       "Strong LangChain, CrewAI, and MCP integrations",
       "Relevance scoring on search results",
-      "Open-source SDKs and MCP server (MIT)",
+      "Open-source SDKs and MCP server (Apache 2.0)",
     ],
     limitations: [
       "Relevance scores measure query match, not factual accuracy",
@@ -153,11 +153,11 @@ const FEATURE_MATRIX: FeatureRow[] = [
   { feature: "LangChain integration", browseai: "full", tavily: "full", perplexity: "full", exa: "full", you: "full", brave: "full" },
   { feature: "CrewAI integration", browseai: "full", tavily: "full", perplexity: "partial", exa: "partial", you: "none", brave: "none" },
   // BrowseAI Dev differentiation — native built-in verification features
-  { feature: "Native claim verification", tooltip: "Built-in claim-level BM25+NLI verification pipeline", browseai: "full", tavily: "none", perplexity: "none", exa: "partial", you: "none", brave: "none" },
-  { feature: "Evidence-based confidence scores", tooltip: "8-factor algorithm, not LLM self-assessment", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
-  { feature: "Contradiction detection", tooltip: "NLI-powered cross-source contradiction scanning", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Native claim verification", tooltip: "Built-in claim-level verification pipeline", browseai: "full", tavily: "none", perplexity: "none", exa: "partial", you: "none", brave: "none" },
+  { feature: "Evidence-based confidence scores", tooltip: "Evidence-based algorithm, not LLM self-assessment", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Contradiction detection", tooltip: "Cross-source contradiction scanning", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   { feature: "Cross-source consensus", tooltip: "Claims verified across multiple independent sources", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
-  { feature: "Domain authority scoring", tooltip: "Bayesian domain authority with 10K+ domains", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Domain authority scoring", tooltip: "Domain authority scoring with 10K+ domains", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   // Infrastructure
   { feature: "Open source (full pipeline)", browseai: "full", tavily: "partial", perplexity: "partial", exa: "partial", you: "partial", brave: "partial" },
   { feature: "Self-hostable", browseai: "partial", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
@@ -229,12 +229,13 @@ const Alternatives = () => {
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-4"
+            className="relative text-center space-y-4 py-8 grid-bg grid-bg-fade rounded-2xl"
           >
-            <Badge variant="outline" className="text-xs">
+            <div className="hero-glow" />
+            <Badge variant="outline" className="text-xs border-accent/30 text-accent">
               Agent-First Research Infrastructure
             </Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-shimmer">
               BrowseAI Dev vs. the alternatives
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
@@ -243,7 +244,7 @@ const Alternatives = () => {
               claim verification and evidence-based confidence, rather than search
               or citations alone.
             </p>
-            <p className="text-sm text-muted-foreground max-w-xl mx-auto font-mono">
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto font-mono terminal-card px-4 py-2 rounded-lg bg-card/50 border border-border/50 inline-block">
               Agent → BrowseAI Dev → Internet → Evidence-backed answers + confidence scores
             </p>
           </motion.section>
@@ -254,9 +255,9 @@ const Alternatives = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
           >
-            <div className="p-4 rounded-xl bg-accent/5 border border-accent/15">
+            <div className="p-4 rounded-xl bg-accent/5 border border-accent/15 glow-pulse">
               <div className="flex items-start gap-3">
-                <Layers className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                <Layers className="w-4 h-4 text-accent bg-accent/10 mt-0.5 shrink-0" />
                 <div className="text-sm text-muted-foreground leading-relaxed">
                   <strong className="text-foreground">Full transparency:</strong> BrowseAI Dev is a verification and intelligence layer,
                   not a search engine replacement. We use providers like Tavily and Brave for web search,
@@ -276,7 +277,7 @@ const Alternatives = () => {
             className="space-y-6"
           >
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Feature comparison</h2>
+              <h2 className="text-xl font-semibold text-shimmer inline-block">Feature comparison</h2>
               <p className="text-sm text-muted-foreground max-w-2xl">
                 Based on publicly documented product features as of March 2026. "Not documented as native" means we did not find
                 the capability described as a built-in product feature in official public documentation.
@@ -284,7 +285,7 @@ const Alternatives = () => {
                 We are actively verifying these claims and will correct any inaccuracies found.
               </p>
             </div>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="overflow-x-auto rounded-lg border border-border/50 glow-pulse">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
@@ -296,7 +297,7 @@ const Alternatives = () => {
                         key={key}
                         className={`text-center px-3 py-3 font-medium min-w-[100px] ${
                           key === "browseai"
-                            ? "text-emerald-400 bg-emerald-400/5"
+                            ? "text-accent bg-accent/5"
                             : "text-muted-foreground"
                         }`}
                       >
@@ -327,7 +328,7 @@ const Alternatives = () => {
                         <td
                           key={key}
                           className={`text-center px-3 py-2.5 ${
-                            key === "browseai" ? "bg-emerald-400/5" : ""
+                            key === "browseai" ? "bg-accent/5" : ""
                           }`}
                         >
                           <div className="flex justify-center">
@@ -362,7 +363,7 @@ const Alternatives = () => {
             transition={{ delay: 0.15 }}
             className="space-y-6"
           >
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-xl font-semibold text-shimmer inline-block">
               What BrowseAI Dev adds on top
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl">
@@ -376,24 +377,24 @@ const Alternatives = () => {
                 {
                   icon: Shield,
                   title: "Evidence-based confidence",
-                  desc: "8-factor confidence score derived from verification data (source count, domain authority, consensus, claim grounding, source recency) — not LLM self-assessment. Your agent knows how much to trust each answer.",
+                  desc: "Multi-factor confidence score derived from verification data (source count, domain authority, consensus, claim grounding, source recency) — not LLM self-assessment. Your agent knows how much to trust each answer.",
                 },
                 {
                   icon: Brain,
                   title: "Native verification pipeline",
-                  desc: "Claims decomposed, verified via hybrid BM25 + NLI entailment, cross-checked for consensus, and scanned for contradictions. All built into the API — no external tooling needed.",
+                  desc: "Claims decomposed and individually verified against sources, cross-checked for consensus, and scanned for contradictions. All built into the API — no external tooling needed.",
                 },
                 {
                   icon: Code2,
                   title: "Open infrastructure",
-                  desc: "Source-available pipeline you can self-host. Client packages (MCP, SDK, framework integrations) are MIT. API server is MIT + Commons Clause. Bring your own keys, plug in your own search backends.",
+                  desc: "Open-source infrastructure licensed under Apache 2.0. All packages licensed under Apache 2.0. Bring your own keys, plug in your own search backends.",
                 },
               ].map((item) => (
                 <div
                   key={item.title}
-                  className="p-5 rounded-lg border border-border bg-card space-y-2"
+                  className="p-5 rounded-lg border border-border bg-card space-y-2 card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
                 >
-                  <item.icon className="w-5 h-5 text-emerald-400" />
+                  <item.icon className="w-5 h-5 text-accent bg-accent/10 rounded p-0.5" />
                   <h3 className="font-medium">{item.title}</h3>
                   <p className="text-sm text-muted-foreground">{item.desc}</p>
                 </div>
@@ -408,12 +409,12 @@ const Alternatives = () => {
             transition={{ delay: 0.2 }}
             className="space-y-6"
           >
-            <h2 className="text-xl font-semibold">Detailed comparisons</h2>
+            <h2 className="text-xl font-semibold text-shimmer inline-block">Detailed comparisons</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {COMPETITORS.map((c) => (
                 <div
                   key={c.slug}
-                  className="group p-5 rounded-lg border border-border bg-card hover:border-emerald-400/30 transition-colors cursor-pointer"
+                  className="group p-5 rounded-lg border border-border bg-card card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 cursor-pointer"
                   onClick={() => navigate(`/alternatives/${c.slug}`)}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -423,7 +424,7 @@ const Alternatives = () => {
                         {c.tagline}
                       </p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-emerald-400 transition-colors mt-1" />
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors mt-1" />
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
                     {c.pricing}
@@ -465,19 +466,20 @@ const Alternatives = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-center py-12 space-y-4"
+            className="relative text-center py-12 space-y-4 rounded-2xl grid-bg grid-bg-fade"
           >
-            <h2 className="text-2xl font-bold">Try it yourself</h2>
+            <div className="hero-glow" />
+            <h2 className="text-2xl font-bold text-shimmer inline-block">Try it yourself</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               Run your own queries through BrowseAI Dev and see evidence-backed answers
               with claim verification, confidence scores, and verified sources.
             </p>
             <div className="flex items-center justify-center gap-3">
-              <Button onClick={() => navigate("/playground")}>
+              <Button className="glow-pulse" onClick={() => navigate("/playground")}>
                 <Terminal className="w-4 h-4 mr-1.5" />
                 Playground
               </Button>
-              <Button variant="outline" onClick={() => navigate("/docs")}>
+              <Button variant="outline" className="hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5" onClick={() => navigate("/docs")}>
                 <BookOpen className="w-4 h-4 mr-1.5" />
                 API Docs
               </Button>

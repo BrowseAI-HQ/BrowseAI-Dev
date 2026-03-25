@@ -336,7 +336,7 @@ export function ApiKeyManager() {
             </DialogTitle>
             <DialogDescription>
               This is your only API key. Removing it will put you back on the
-              free demo tier (<strong>5 queries/hour</strong>). You can add new
+              free demo tier (<strong>1 query</strong>). You can add new
               keys anytime to get unlimited access again.
             </DialogDescription>
           </DialogHeader>

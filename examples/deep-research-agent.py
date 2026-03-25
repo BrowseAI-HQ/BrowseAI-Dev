@@ -48,7 +48,7 @@ def deep_research(query: str):
             print(f"    A: {c.claim_a}")
             print(f"    B: {c.claim_b}")
             if hasattr(c, "nli_confidence") and c.nli_confidence:
-                print(f"    NLI confidence: {c.nli_confidence:.0%}")
+                print(f"    Semantic confidence: {c.nli_confidence:.0%}")
             print()
 
     # Show verified vs unverified claims

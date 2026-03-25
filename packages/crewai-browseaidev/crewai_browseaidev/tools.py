@@ -60,7 +60,7 @@ class AnswerInput(BaseModel):
 class BrowseAIDevAnswerTool(_ClientMixin, BaseTool):
     """Research a question with evidence-backed verification, citations, and confidence scores.
 
-    Searches the web, verifies claims using BM25 + NLI semantic entailment,
+    Searches the web, verifies claims using multi-signal evidence matching,
     detects contradictions, and returns an answer with per-claim confidence.
     """
 

@@ -7,7 +7,7 @@ name = "browseai"
 version = "0.2.1"
 description = "Research infrastructure for AI agents. This package now installs browseaidev — the updated package name for BrowseAI Dev."
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 requires-python = ">=3.10"
 dependencies = ["browseaidev>=0.1.7"]
 keywords = ["browseai", "browseaidev", "ai-agent", "mcp", "web-search", "research", "citations", "fact-checking", "confidence-scoring", "python-sdk"]

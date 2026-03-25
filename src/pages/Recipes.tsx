@@ -161,33 +161,34 @@ const Recipes = () => {
       </motion.nav>
 
       {/* Hero */}
-      <section className="min-h-[40vh] sm:min-h-[50vh] flex flex-col items-center justify-center px-6 pt-20">
+      <section className="relative min-h-[40vh] sm:min-h-[50vh] flex flex-col items-center justify-center px-6 pt-20 grid-bg grid-bg-fade">
+        <div className="hero-glow" />
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-3xl w-full text-center space-y-6"
+          className="relative max-w-3xl w-full text-center space-y-6"
         >
-          <Badge variant="outline" className="text-xs font-normal">
+          <Badge variant="outline" className="text-xs font-normal border-accent/30 glow-pulse">
             Agent Recipes
           </Badge>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.05]">
             Ready-to-run
             <br />
-            <span className="text-gradient">agent examples</span>
+            <span className="text-gradient text-shimmer">agent examples</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Clone, install, and run. Each recipe shows a different way to use BrowseAI Dev
             as the research layer in your agent pipeline.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
-            <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary flex-1 w-full sm:w-auto">
-              <Terminal className="w-4 h-4 text-accent shrink-0" />
+            <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary border border-border/50 terminal-card flex-1 w-full sm:w-auto">
+              <Terminal className="w-4 h-4 text-accent shrink-0 animate-float" />
               <code className="text-sm font-mono">pip install browseaidev</code>
             </div>
             <span className="text-xs text-muted-foreground">or</span>
-            <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary flex-1 w-full sm:w-auto">
-              <Terminal className="w-4 h-4 text-accent shrink-0" />
+            <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary border border-border/50 terminal-card flex-1 w-full sm:w-auto">
+              <Terminal className="w-4 h-4 text-accent shrink-0 animate-float" />
               <code className="text-sm font-mono">npx browseai-dev setup</code>
             </div>
           </div>
@@ -203,13 +204,13 @@ const Recipes = () => {
             transition={{ delay: 0.3 }}
             className="flex items-center justify-center gap-3 sm:gap-4 text-sm text-muted-foreground"
           >
-            <span className="px-3 py-1.5 rounded-lg bg-card border border-border font-medium text-foreground">Agent</span>
-            <ArrowRight className="w-4 h-4 shrink-0" />
-            <span className="px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 font-medium text-accent">BrowseAI Dev</span>
-            <ArrowRight className="w-4 h-4 shrink-0" />
-            <span className="px-3 py-1.5 rounded-lg bg-card border border-border font-medium text-foreground">Internet</span>
-            <ArrowRight className="w-4 h-4 shrink-0" />
-            <span className="px-3 py-1.5 rounded-lg bg-card border border-border font-medium text-foreground">Verified Answers</span>
+            <span className="px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground">Agent</span>
+            <ArrowRight className="w-4 h-4 shrink-0 text-accent" />
+            <span className="px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 font-medium text-accent gradient-border glow-pulse">BrowseAI Dev</span>
+            <ArrowRight className="w-4 h-4 shrink-0 text-accent" />
+            <span className="px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground">Internet</span>
+            <ArrowRight className="w-4 h-4 shrink-0 text-accent" />
+            <span className="px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground">Verified Answers</span>
           </motion.div>
         </div>
       </section>
@@ -224,27 +225,27 @@ const Recipes = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: Math.min(i * 0.04, 0.3) }}
-                className="p-6 rounded-xl bg-card border border-border hover:border-accent/30 transition-colors flex flex-col"
+                transition={{ delay: Math.min(i * 0.06, 0.4) }}
+                className="p-6 rounded-xl bg-card border border-border card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2 rounded-lg bg-accent/10">
-                    <recipe.icon className="w-5 h-5 text-accent" />
+                    <recipe.icon className="w-5 h-5 text-accent animate-float" />
                   </div>
                   <div>
                     <span className="font-semibold">{recipe.title}</span>
-                    <Badge variant="outline" className="text-[10px] font-mono ml-2">{recipe.file}</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono ml-2 border-accent/20">{recipe.file}</Badge>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4 flex-1">{recipe.desc}</p>
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {recipe.tags.map((tag) => (
-                    <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                    <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/5 text-accent/70 border border-accent/10">
                       {tag}
                     </span>
                   ))}
                 </div>
-                <div className="px-4 py-2.5 rounded-lg bg-secondary overflow-x-auto">
+                <div className="px-4 py-2.5 rounded-lg bg-secondary terminal-card overflow-x-auto">
                   <code className="text-xs font-mono text-muted-foreground whitespace-nowrap">{recipe.cmd}</code>
                 </div>
                 <a
@@ -266,10 +267,10 @@ const Recipes = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: RECIPES.length * 0.08 }}
-              className="p-6 rounded-xl border border-dashed border-border/60 flex flex-col items-center justify-center text-center gap-3"
+              className="p-6 rounded-xl border border-dashed border-accent/20 hover:border-accent/30 transition-all duration-300 flex flex-col items-center justify-center text-center gap-3"
             >
-              <div className="p-2 rounded-lg bg-secondary">
-                <BrowseLogo className="w-4 h-4 text-muted-foreground" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <BrowseLogo className="w-4 h-4 text-accent animate-float" />
               </div>
               <span className="font-semibold text-muted-foreground">More coming soon</span>
               <p className="text-sm text-muted-foreground">
@@ -286,14 +287,16 @@ const Recipes = () => {
       </section>
 
       {/* Quick start guide */}
-      <section className="py-20 px-6 border-t border-border">
+      <section className="py-20 px-6 border-t border-border/50">
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
-              <BookOpen className="w-5 h-5 text-accent" />
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <BookOpen className="w-5 h-5 text-accent" />
+              </div>
               <h2 className="text-sm font-semibold uppercase tracking-wider">Quick Start</h2>
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-8">Get started</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-8 text-shimmer">Get started</h3>
 
             <p className="text-sm font-medium text-foreground mb-4">Python SDK</p>
             <div className="space-y-4 mb-8">
@@ -301,41 +304,53 @@ const Recipes = () => {
                 { step: "1", label: "Clone the repo", cmd: "git clone https://github.com/BrowseAI-HQ/BrowseAI-Dev.git && cd BrowseAI-Dev" },
                 { step: "2", label: "Install the SDK", cmd: "pip install browseaidev" },
                 { step: "3", label: "Run a recipe", cmd: 'python examples/research-agent.py "your question here"' },
-              ].map((item) => (
-                <div key={item.step} className="flex items-start gap-3">
-                  <Badge variant="outline" className="shrink-0 mt-1 text-[10px] px-1.5">{item.step}</Badge>
+              ].map((item, i) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex items-start gap-3"
+                >
+                  <Badge variant="outline" className="shrink-0 mt-1 text-[10px] px-1.5 border-accent/30">{item.step}</Badge>
                   <div className="flex-1">
                     <span className="text-sm font-medium block mb-1">{item.label}</span>
-                    <div className="px-4 py-2.5 rounded-lg bg-secondary overflow-x-auto">
+                    <div className="px-4 py-2.5 rounded-lg bg-secondary terminal-card overflow-x-auto">
                       <code className="text-xs font-mono text-muted-foreground whitespace-nowrap">{item.cmd}</code>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
             <p className="text-sm font-medium text-foreground mb-4 mt-8">MCP Server (Claude Desktop, Cursor, Windsurf)</p>
             <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-3">
-                <Badge variant="outline" className="shrink-0 mt-1 text-[10px] px-1.5">1</Badge>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="flex items-start gap-3"
+              >
+                <Badge variant="outline" className="shrink-0 mt-1 text-[10px] px-1.5 border-accent/30">1</Badge>
                 <div className="flex-1">
                   <span className="text-sm font-medium block mb-1">Run setup</span>
-                  <div className="px-4 py-2.5 rounded-lg bg-secondary overflow-x-auto">
+                  <div className="px-4 py-2.5 rounded-lg bg-secondary terminal-card overflow-x-auto">
                     <code className="text-xs font-mono text-muted-foreground whitespace-nowrap">npx browseai-dev setup</code>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <div className="mt-6 space-y-3">
-              <div className="p-4 rounded-xl bg-accent/5 border border-accent/20">
+              <div className="p-4 rounded-xl bg-accent/5 border border-accent/20 gradient-border card-lift hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
                 <p className="text-sm text-muted-foreground">
                   <span className="text-foreground font-medium">Option 1 — BrowseAI Dev API key:</span>{" "}
                   Log in at <a href="https://browseai.dev" className="text-accent hover:underline">browseai.dev</a>, get a <code className="text-xs bg-secondary px-1.5 py-0.5 rounded">bai_xxx</code> key,
                   and use it everywhere. One key, all tools, no setup.
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-card border border-border">
+              <div className="p-4 rounded-xl bg-card border border-border card-lift hover:border-accent/20 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
                 <p className="text-sm text-muted-foreground">
                   <span className="text-foreground font-medium">Option 2 — Bring Your Own Keys:</span>{" "}
                   Pass your Tavily and OpenRouter keys directly. No BrowseAI Dev account needed.
@@ -347,10 +362,10 @@ const Recipes = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 border-t border-border">
+      <section className="relative py-20 px-6 border-t border-border/50 grid-bg grid-bg-fade">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="space-y-6">
-            <h2 className="text-2xl sm:text-3xl font-bold">Build your own agent recipe</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-shimmer">Build your own agent recipe</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
               BrowseAI Dev gives your agents reliable web research. Build something cool and share it with the community.
             </p>

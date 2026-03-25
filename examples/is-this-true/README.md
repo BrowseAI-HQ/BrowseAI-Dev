@@ -29,10 +29,10 @@ Open [http://localhost:8000](http://localhost:8000).
 2. The app calls `client.ask(query)` via the BrowseAI Python SDK
 3. BrowseAI's verification pipeline runs:
    - Web search across multiple sources
-   - BM25 sentence matching to ground claims
+   - Sentence matching to ground claims
    - Cross-source consensus detection
    - Contradiction detection between sources
-   - 8-factor evidence-based confidence scoring
+   - Evidence-based confidence scoring
 4. You see the result: confidence meter, verified answer, claims breakdown, sources, and any contradictions
 
 ## Features
@@ -76,5 +76,5 @@ This is a standard FastAPI app. Deploy anywhere that runs Python -- Railway, Ren
 
 - [BrowseAI Docs](https://browseai.dev)
 - [Python SDK on PyPI](https://pypi.org/project/browseaidev/)
-- [GitHub](https://github.com/BrowseAI-HQ/BrowserAI-Dev)
+- [GitHub](https://github.com/BrowseAI-HQ/BrowseAI-Dev)
 - [Discord](https://discord.gg/ubAuT4YQsT)

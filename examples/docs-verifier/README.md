@@ -31,7 +31,7 @@ export BROWSEAI_API_KEY="bai_xxx"
 ### Verify a remote README
 
 ```bash
-python verify_docs.py https://raw.githubusercontent.com/BrowseAI-HQ/BrowserAI-Dev/main/README.md
+python verify_docs.py https://raw.githubusercontent.com/BrowseAI-HQ/BrowseAI-Dev/main/README.md
 ```
 
 ### Verify a local file
@@ -94,7 +94,7 @@ Errors          1
 │ 1  │ OK     │ 87%        │ BrowseAI uses a 7-fac... │ 4 source(s)          │
 │ 2  │ OK     │ 72%        │ The verification pipe... │ 3 source(s)          │
 │ 3  │ FLAG   │ 38%        │ Supports 10,000+ doma... │ Low confidence (38%) │
-│ 4  │ OK     │ 91%        │ Licensed under MIT       │ 5 source(s)          │
+│ 4  │ OK     │ 91%        │ Licensed under Apache 2.0│ 5 source(s)          │
 │ ...│        │            │                          │                      │
 └────┴────────┴────────────┴──────────────────────────┴──────────────────────┘
 
