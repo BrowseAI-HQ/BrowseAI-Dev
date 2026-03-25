@@ -140,4 +140,4 @@ Every time a new feature is implemented, go through this checklist before consid
 - **Discord:** https://discord.gg/ubAuT4YQsT
 - **npm:** https://www.npmjs.com/package/browseai-dev
 - **PyPI:** https://pypi.org/project/browseaidev/
-- **License:** Apache 2.0
+- **License:** Apache 2.0 (SDKs, MCP, frontend) + BSL 1.1 (verification engine `apps/api/`)

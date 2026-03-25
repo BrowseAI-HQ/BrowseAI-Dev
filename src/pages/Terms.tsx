@@ -70,7 +70,7 @@ const Terms = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">6. Open Source License</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              BrowseAI Dev is licensed under the Apache License 2.0. You may use, modify, and distribute the software in accordance with the license terms. These Terms of Service apply specifically to the hosted service at browseai.dev.
+              BrowseAI Dev uses a dual-license model. SDKs, MCP server, integrations, and frontend are licensed under Apache 2.0. The verification engine is licensed under the Business Source License 1.1 (BSL) — you may use, modify, and self-host it, but you may not offer it as a competing commercial service. The BSL converts to Apache 2.0 on 2030-03-25. These Terms of Service apply specifically to the hosted service at browseai.dev.
             </p>
           </section>
 
@@ -91,7 +91,7 @@ const Terms = () => {
               We do not sell your data or share individual queries with third parties. All improvements are based on aggregate, statistical patterns — not individual query content. Your queries are sent to third-party search and LLM providers solely to process your request. See our <button onClick={() => navigate("/privacy")} className="text-accent hover:underline">Privacy Policy</button> for full details.
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">If you require full data privacy, self-host BrowseAI Dev.</strong> The source code is Apache 2.0 licensed and self-hosted instances do not send any data to our servers.
+              <strong className="text-foreground">If you require full data privacy, self-host BrowseAI Dev.</strong> The verification engine is available under BSL 1.1 for non-competing use, and self-hosted instances do not send any data to our servers.
             </p>
           </section>
 

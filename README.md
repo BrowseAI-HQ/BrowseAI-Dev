@@ -588,4 +588,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding convention
 
 ## License
 
-[Apache 2.0](LICENSE) — see the [LICENSE](LICENSE) file for details.
+This project uses a dual-license model:
+
+| Component | License | What it means |
+|-----------|---------|---------------|
+| SDKs, MCP server, integrations, frontend | [Apache 2.0](LICENSE) | Use freely, modify, redistribute |
+| Verification engine (`apps/api/`) | [BSL 1.1](apps/api/LICENSE) | Free to use, but cannot offer as a competing service. Converts to Apache 2.0 on 2030-03-25 |
+
+See the [LICENSE](LICENSE) and [apps/api/LICENSE](apps/api/LICENSE) files for details.
