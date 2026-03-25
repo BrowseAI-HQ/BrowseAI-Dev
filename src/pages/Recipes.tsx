@@ -202,15 +202,15 @@ const Recipes = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex items-center justify-center gap-3 sm:gap-4 text-sm text-muted-foreground"
+            className="flex items-center justify-center gap-2 sm:gap-4 text-sm text-muted-foreground flex-wrap"
           >
-            <span className="px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground">Agent</span>
-            <ArrowRight className="w-4 h-4 shrink-0 text-accent" />
-            <span className="px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 font-medium text-accent gradient-border glow-pulse">BrowseAI Dev</span>
-            <ArrowRight className="w-4 h-4 shrink-0 text-accent" />
-            <span className="px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground">Internet</span>
-            <ArrowRight className="w-4 h-4 shrink-0 text-accent" />
-            <span className="px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground">Verified Answers</span>
+            <span className="px-2 sm:px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground text-xs sm:text-sm">Agent</span>
+            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 text-accent" />
+            <span className="px-2 sm:px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 font-medium text-accent gradient-border glow-pulse text-xs sm:text-sm">BrowseAI Dev</span>
+            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 text-accent" />
+            <span className="px-2 sm:px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground text-xs sm:text-sm">Internet</span>
+            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 text-accent" />
+            <span className="px-2 sm:px-3 py-1.5 rounded-lg bg-card border border-border hover:border-accent/20 transition-all duration-300 font-medium text-foreground text-xs sm:text-sm">Verified Answers</span>
           </motion.div>
         </div>
       </section>
@@ -393,7 +393,7 @@ const Recipes = () => {
             <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
             <span className="text-sm font-semibold">BrowseAI Dev</span>
           </div>
-          <div className="flex items-center gap-6 text-xs text-muted-foreground">
+          <div className="flex items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground flex-wrap">
             <a href="https://github.com/BrowseAI-HQ/BrowseAI-Dev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Home</button>

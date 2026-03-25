@@ -18,15 +18,31 @@ const Compare = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showJson, setShowJson] = useState(false);
+  const [showLoginGate, setShowLoginGate] = useState(false);
   const { user, loading: authLoading } = useAuth();
+
+  // When user logs in after hitting demo limit, dismiss the gate and retry
+  useEffect(() => {
+    if (user && showLoginGate) {
+      setShowLoginGate(false);
+      window.location.reload();
+    }
+  }, [user, showLoginGate]);
 
   useEffect(() => {
     if (!query) return;
     setLoading(true);
     setError(null);
+    setShowLoginGate(false);
     browseCompare(query)
       .then(setResult)
-      .catch((e) => setError(e.message))
+      .catch((e) => {
+        if (e.message?.includes("DEMO_LIMIT_REACHED")) {
+          setShowLoginGate(true);
+        } else {
+          setError(e.message);
+        }
+      })
       .finally(() => setLoading(false));
   }, [query]);
 
@@ -86,8 +102,18 @@ const Compare = () => {
           </div>
         )}
 
+        {/* Login gate */}
+        {showLoginGate && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 rounded-xl border border-accent/20 bg-card/60 backdrop-blur-sm text-center space-y-4">
+            <Shield className="w-10 h-10 text-accent mx-auto animate-float" />
+            <h3 className="text-lg font-semibold">Sign in to continue</h3>
+            <p className="text-sm text-muted-foreground">Create a free account to get 100 queries/day with premium features.</p>
+            <LoginModal open={true} onOpenChange={(open) => { if (!open) { setShowLoginGate(false); navigate("/"); } }} />
+          </motion.div>
+        )}
+
         {/* Error */}
-        {error && (
+        {error && !showLoginGate && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

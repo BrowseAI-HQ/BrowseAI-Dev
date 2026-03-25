@@ -4,7 +4,7 @@ import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ArrowRight, GitCompare, Terminal, Globe, Quote,
-  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, Brain, Key,
+  Shield, ShieldAlert, CheckCircle2, Copy, Check, ArrowDown, Target, Github, Sparkles, Mail, Menu, Star, MessageCircle, LogIn, Brain, Cpu, Key,
   Clock, Lock, HeartPulse, Scale, Code2, Newspaper, GraduationCap, ShieldCheck, DollarSign, Microscope, Building2,
   FileText, Share2, GitFork, ThumbsUp, Layers,
 } from "lucide-react";
@@ -481,10 +481,10 @@ const Index = () => {
               className="relative z-10 flex flex-col items-center gap-3 p-6 rounded-2xl bg-card border border-border w-48 shrink-0"
             >
               <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-                <Brain className="w-6 h-6 text-muted-foreground" />
+                <Cpu className="w-6 h-6 text-muted-foreground" />
               </div>
               <span className="text-sm font-semibold">Your Agent</span>
-              <span className="text-[10px] text-muted-foreground text-center leading-tight">Claude, GPT, Gemini,<br/>any LLM</span>
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">Any LLM. Any framework.<br/>Any agent.</span>
             </motion.div>
 
             {/* Animated connection 1 */}
@@ -506,8 +506,9 @@ const Index = () => {
               transition={{ delay: 0.2 }}
               className="relative z-10 flex flex-col items-center gap-3 p-6 rounded-2xl bg-accent/5 border-2 border-accent/30 w-56 shrink-0 glow-pulse"
             >
-              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center animate-float">
-                <Shield className="w-6 h-6 text-accent" />
+              <div className="relative w-12 h-12 flex items-center justify-center animate-float">
+                <Shield className="w-12 h-12 text-accent/30 absolute" />
+                <img src="/logo.svg" alt="B" className="w-5 h-5 relative z-10" />
               </div>
               <span className="text-sm font-bold text-accent">BrowseAI Dev</span>
               <div className="flex flex-wrap justify-center gap-1.5">
@@ -601,17 +602,17 @@ const Index = () => {
             const active = useCases[activeUseCase];
             const ActiveIcon = active.icon;
             return (
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex flex-col md:flex-row gap-0 rounded-xl border border-border overflow-hidden bg-card">
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex flex-col lg:flex-row gap-0 rounded-xl border border-border overflow-hidden bg-card">
                 {/* Sidebar */}
-                <div className="md:w-72 shrink-0 border-b md:border-b-0 md:border-r border-border">
-                  <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible">
+                <div className="lg:w-72 shrink-0 border-b lg:border-b-0 lg:border-r border-border">
+                  <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible">
                     {useCases.map((uc, i) => {
                       const Icon = uc.icon;
                       return (
                         <button
                           key={uc.title}
                           onClick={() => setActiveUseCase(i)}
-                          className={`flex items-center gap-3 px-4 py-3 text-left text-sm transition-all duration-200 whitespace-nowrap md:whitespace-normal w-full border-l-2 md:border-l-2 ${
+                          className={`flex items-center gap-3 px-4 py-3 text-left text-sm transition-all duration-200 whitespace-nowrap lg:whitespace-normal w-full border-l-2 lg:border-l-2 ${
                             i === activeUseCase
                               ? "bg-accent/5 border-accent text-foreground font-medium"
                               : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -619,7 +620,7 @@ const Index = () => {
                         >
                           <Icon className={`w-4 h-4 shrink-0 ${i === activeUseCase ? "text-accent" : ""}`} />
                           <span className="truncate">{uc.title}</span>
-                          {i === activeUseCase && <ArrowRight className="w-3 h-3 text-accent ml-auto hidden md:block" />}
+                          {i === activeUseCase && <ArrowRight className="w-3 h-3 text-accent ml-auto hidden lg:block" />}
                         </button>
                       );
                     })}
@@ -627,7 +628,7 @@ const Index = () => {
                 </div>
 
                 {/* Preview panel */}
-                <div className="flex-1 p-6 md:p-8 min-h-[400px] flex flex-col">
+                <div className="flex-1 p-6 lg:p-8 min-h-[400px] flex flex-col">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={activeUseCase}
@@ -732,10 +733,10 @@ const Index = () => {
             ];
             const active = activeTool !== null ? tools[activeTool] : null;
             return (
-              <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col lg:flex-row gap-4">
                 {/* Tool selector — compact sidebar */}
-                <div className="md:w-52 shrink-0 rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="md:max-h-[460px] md:overflow-y-auto">
+                <div className="lg:w-52 shrink-0 rounded-xl border border-border bg-card overflow-hidden">
+                  <div className="max-h-[280px] overflow-y-auto lg:max-h-[460px]">
                     {(["core", "sessions", "feedback"] as const).map((cat, ci) => {
                       const catTools = tools.filter(t => t.category === cat);
                       const catLabel = cat === "core" ? "Core" : cat === "sessions" ? "Sessions" : "More";
@@ -798,7 +799,7 @@ const Index = () => {
                         </div>
 
                         {/* Access methods */}
-                        <div className="grid grid-cols-3 gap-px bg-border">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-border">
                           {[
                             { label: "MCP", value: active.mcp },
                             { label: "REST", value: active.endpoint },
@@ -1154,7 +1155,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
               </div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Enterprise</h3>
               <p className="text-xs text-muted-foreground mb-3">The adapter architecture is built. Gauging demand before we ship.</p>
-              <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                 <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Search adapters — Elasticsearch, Confluence, custom</div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Zero data retention mode</div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground"><Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" /> Full verification on your data</div>
@@ -1256,7 +1257,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
           <p className="text-sm text-muted-foreground">
             Crafted with <span className="text-red-400">&#9829;</span> and a lot of <span className="text-amber-400">&#9889;</span> by <a href="https://www.instagram.com/shreyassaw/?hl=en" target="_blank" rel="noopener noreferrer" className="text-foreground font-medium hover:text-accent transition-colors">Shreyas</a>
           </p>
-          <div className="flex items-center gap-6 text-xs text-muted-foreground">
+          <div className="flex items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground flex-wrap">
             <a href="mailto:shreyassaw@gmail.com" className="hover:text-foreground transition-colors">shreyassaw@gmail.com</a>
             <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
             <a href="https://www.linkedin.com/in/shreyas-sawant" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">LinkedIn</a>

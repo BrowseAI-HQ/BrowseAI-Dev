@@ -328,16 +328,16 @@ const Playground = () => {
     <div className="min-h-screen">
       <nav className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-border relative">
         <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none" />
-        <div className="flex items-center gap-4">
+        <div className="relative z-10 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
-            <span className="font-semibold text-sm">Playground</span>
+            <span className="font-semibold text-sm">BrowseAI Dev</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="relative z-10 flex items-center gap-2">
           <Button variant="ghost" size="sm" className="text-xs text-muted-foreground gap-1.5" onClick={() => navigate("/sessions")}>
             <Brain className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Sessions</span>
@@ -656,21 +656,21 @@ const Playground = () => {
                   const sourceOnly = clarityResult.claims.filter(c => c.origin === "source");
                   return (
                     <>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-center">
-                          <p className="text-lg font-semibold text-emerald-400">{confirmed.length}</p>
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                        <div className="p-2 sm:p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-center">
+                          <p className="text-base sm:text-lg font-semibold text-emerald-400">{confirmed.length}</p>
                           <p className="text-[10px] text-muted-foreground">Confirmed</p>
-                          <p className="text-[9px] text-emerald-400/50">LLM + sources agree</p>
+                          <p className="text-[9px] text-emerald-400/50 hidden sm:block">LLM + sources agree</p>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/20 text-center">
-                          <p className="text-lg font-semibold text-amber-400">{llmOnly.length}</p>
+                        <div className="p-2 sm:p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/20 text-center">
+                          <p className="text-base sm:text-lg font-semibold text-amber-400">{llmOnly.length}</p>
                           <p className="text-[10px] text-muted-foreground">LLM-only</p>
-                          <p className="text-[9px] text-amber-400/50">No source backing</p>
+                          <p className="text-[9px] text-amber-400/50 hidden sm:block">No source backing</p>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/20 text-center">
-                          <p className="text-lg font-semibold text-blue-400">{sourceOnly.length}</p>
+                        <div className="p-2 sm:p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/20 text-center">
+                          <p className="text-base sm:text-lg font-semibold text-blue-400">{sourceOnly.length}</p>
                           <p className="text-[10px] text-muted-foreground">Source-only</p>
-                          <p className="text-[9px] text-blue-400/50">Evidence found</p>
+                          <p className="text-[9px] text-blue-400/50 hidden sm:block">Evidence found</p>
                         </div>
                       </div>
                       {/* Techniques used */}

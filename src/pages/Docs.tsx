@@ -85,7 +85,7 @@ const Docs = () => {
           </Button>
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <img src="/logo.svg" alt="BrowseAI Dev" className="w-5 h-5" />
-            <span className="font-semibold text-sm tracking-tight">Docs</span>
+            <span className="font-semibold text-sm tracking-tight">BrowseAI Dev</span>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-2">

@@ -53,141 +53,69 @@ const CONTRIBUTION_AREAS = [
 const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
-    title: "Reliable research infrastructure",
-    desc: "Web search, evidence extraction, structured citations, Python SDK, MCP server, agent recipes, intelligent caching.",
+    title: "Research Infrastructure",
+    desc: "Search, extract, cite. Every claim backed by a URL. Every answer has a confidence score.",
     done: true,
   },
   {
     phase: "Shipped",
-    title: "Python SDK & framework integrations",
-    desc: "pip install browseaidev + dedicated packages: langchain-browseaidev, crewai-browseaidev, llamaindex-browseaidev.",
+    title: "Verification Engine",
+    desc: "Multi-source consensus. Contradiction detection. Domain authority. Claims verified against actual source text.",
     done: true,
   },
   {
     phase: "Shipped",
-    title: "Intelligent caching & source tracking",
-    desc: "Smart TTL for time-sensitive queries, automatic domain tracking for every search.",
+    title: "Deep Mode",
+    desc: "Iterative verification that keeps digging until it's confident. Adversarial stress-testing of every claim.",
     done: true,
   },
   {
     phase: "Shipped",
-    title: "Multi-source verification",
-    desc: "Cross-source consensus scoring, contradiction detection, and domain authority analysis across every claim.",
+    title: "SDKs & Integrations",
+    desc: "Python SDK. MCP server. LangChain, CrewAI, LlamaIndex. Plug in however you build.",
     done: true,
   },
   {
     phase: "Shipped",
-    title: "Semantic evidence verification",
-    desc: "Evidence candidates reranked by semantic understanding. Picks the best supporting evidence, not just the best keyword match.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Atomic claim decomposition",
-    desc: "Compound claims auto-split into individual verifiable facts. Each fact verified independently for finer-grained accuracy.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Multi-pass consistency",
-    desc: "Thorough mode cross-checks claims across independent extraction passes. Inconsistent claims are penalized.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Auto-calibrated confidence",
-    desc: "Confidence scores auto-adjust from real user feedback. 75% confidence means actually correct 75% of the time.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Multi-provider search",
-    desc: "Parallel search across multiple providers for broader source diversity. More sources = stronger consensus = higher confidence.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Self-learning verification pipeline",
-    desc: "Adaptive thresholds, consensus tuning, confidence weight optimization, and user feedback loop. Self-improving domain authority scoring. Thorough mode auto-retries when confidence < 60%.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Per-claim evidence retrieval",
-    desc: "Weak claims get targeted follow-up searches, each verified individually across all search providers.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Counter-query adversarial verification",
-    desc: "Verified claims stress-tested with adversarial searches. If counter-evidence is found, claim confidence is penalized.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Iterative confidence-gated retrieval",
-    desc: "Thorough mode runs an iterative loop: verify → identify weak claims → targeted search → re-verify. Up to 3 iterations with early termination.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Token streaming & retry with backoff",
-    desc: "Real-time SSE streaming with per-token answer delivery. Automatic retry with exponential backoff on all external API calls (search, LLM, page fetching). Production-grade reliability.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Intelligent source ranking",
-    desc: "Semantic query-document scoring for true relevance. Re-ranks search results before page fetching, replacing keyword-only heuristics. Premium feature with graceful fallback.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Deep mode",
-    desc: "Premium verification: semantic reranking, multi-provider search, multi-pass consistency, and multi-step agentic reasoning. Requires BAI key and sign-in. 100 deep queries/day (each costs 3x quota). Falls back gracefully to thorough when quota exhausted.",
-    done: true,
-  },
-  {
-    phase: "Shipped",
-    title: "Research Memory (Sessions)",
-    desc: "Persistent sessions that accumulate knowledge across queries. Automatic recall of prior findings, session sharing, forking, and collaborative multi-agent research workflows.",
+    title: "Research Memory",
+    desc: "Persistent sessions. Knowledge accumulates across queries. Share, fork, and collaborate.",
     done: true,
   },
   {
     phase: "Shipped",
     title: "Query Planning",
-    desc: "Intelligent decomposition of complex queries into focused sub-queries with intent labels (definition, evidence, comparison, counterargument). Simple factual queries skip planning — no added latency.",
+    desc: "Complex questions decomposed into focused sub-queries. Simple questions skip the overhead.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Enterprise Ready",
+    desc: "Plug into your internal data. Zero data retention. Your data never leaves your system.",
+    done: true,
+  },
+  {
+    phase: "Shipped",
+    title: "Self-Learning Pipeline",
+    desc: "Confidence calibrated from real feedback. Domain authority that improves with every query.",
     done: true,
   },
   {
     phase: "In Progress",
-    title: "Knowledge graph & entity extraction",
-    desc: "Map relationships between claims and entities. Build reusable, queryable knowledge from every search.",
-    done: false,
-  },
-  {
-    phase: "Shipped",
-    title: "Premium verification tier",
-    desc: "Semantic reranking, multi-provider search, and multi-pass consistency checking via deep mode with BAI keys. 100 deep queries/day (3x quota cost each). Falls back to thorough when exhausted. BYOK/demo get standard verification.",
-    done: true,
-  },
-  {
-    phase: "Coming Soon",
-    title: "Academic papers & broader sources",
-    desc: "Semantic Scholar, arXiv, code search, real-time data feeds. Research beyond the open web.",
+    title: "Knowledge Graph",
+    desc: "Entity extraction. Relationship mapping. Queryable knowledge from every search.",
     done: false,
   },
   {
     phase: "Coming Soon",
-    title: "Fine-tuned verification model",
-    desc: "Custom model trained on 10K+ production examples for per-domain calibration. Purpose-built verification replacing general-purpose models.",
+    title: "Academic & Broader Sources",
+    desc: "arXiv, Semantic Scholar, code search. Research beyond the open web.",
     done: false,
   },
   {
-    phase: "Shipped",
-    title: "Enterprise search adapters",
-    desc: "Plug BrowseAI Dev into your internal data — Elasticsearch, Confluence, or any custom endpoint. Same verification pipeline, zero data retention mode. Your data never leaves your system.",
-    done: true,
+    phase: "Coming Soon",
+    title: "Purpose-Built Verification Model",
+    desc: "Custom-trained. Domain-calibrated. 10x faster than general-purpose.",
+    done: false,
   },
 ];
 
@@ -688,43 +616,64 @@ curl -X POST https://browseai.dev/api/browse/clarity \\
       </section>
 
       {/* Roadmap */}
-      <section className="py-24 px-6 border-t border-border">
-        <div className="max-w-3xl mx-auto">
+      <section className="py-24 px-6 border-t border-border relative grid-bg grid-bg-fade">
+        <div className="max-w-3xl mx-auto relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <div className="flex items-center gap-2 mb-6">
               <Rocket className="w-5 h-5 text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-wider">Roadmap</h2>
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-8">Where we're headed</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-10 text-shimmer">What we've built. What's next.</h3>
 
-            <div className="space-y-4">
-              {ROADMAP_ITEMS.map((item, i) => (
-                <motion.div
-                  key={`${item.phase}-${i}`}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: Math.min(i * 0.03, 0.3) }}
-                  className={`p-5 rounded-xl border hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5 ${item.done ? "bg-accent/5 border-accent/20" : "bg-card border-border"}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <Badge variant="outline" className={`shrink-0 mt-0.5 text-[10px] px-1.5 ${
-                      item.phase === "Shipped" ? "text-emerald-400 border-emerald-400/30" :
-                      item.phase === "In Progress" ? "text-amber-400 border-amber-400/30" :
-                      "text-blue-400 border-blue-400/30"
-                    }`}>
-                      {item.phase}
-                    </Badge>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{item.title}</span>
-                        {item.done && <CheckCircle2 className="w-3.5 h-3.5 text-accent" />}
+            {/* Timeline */}
+            <div className="relative">
+              {/* Vertical timeline line */}
+              <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gradient-to-b from-accent/60 via-accent/30 to-border" />
+
+              <div className="space-y-1">
+                {ROADMAP_ITEMS.map((item, i) => {
+                  const isShipped = item.phase === "Shipped";
+                  const isInProgress = item.phase === "In Progress";
+                  return (
+                    <motion.div
+                      key={`${item.phase}-${i}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: Math.min(i * 0.04, 0.35) }}
+                      className="relative pl-8 py-3 group"
+                    >
+                      {/* Timeline dot */}
+                      <div className={`absolute left-0 top-[18px] w-[15px] h-[15px] rounded-full border-2 transition-all duration-300 ${
+                        isShipped ? "bg-accent/80 border-accent shadow-[0_0_8px_rgba(var(--accent-rgb,56,189,128),0.4)]" :
+                        isInProgress ? "bg-amber-400/80 border-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.4)] animate-pulse" :
+                        "bg-background border-border group-hover:border-blue-400/50"
+                      }`} />
+
+                      <div className={`rounded-lg px-4 py-3 transition-all duration-300 ${
+                        isShipped
+                          ? "hover:bg-accent/5"
+                          : isInProgress
+                            ? "bg-amber-400/5 border border-amber-400/20 hover:border-amber-400/40"
+                            : "bg-card/50 border border-border hover:border-blue-400/30"
+                      }`}>
+                        <div className="flex items-center gap-2.5">
+                          {isShipped && <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />}
+                          {!isShipped && (
+                            <Badge variant="outline" className={`shrink-0 text-[10px] px-1.5 py-0 ${
+                              isInProgress ? "text-amber-400 border-amber-400/30" : "text-blue-400 border-blue-400/30"
+                            }`}>
+                              {item.phase}
+                            </Badge>
+                          )}
+                          <span className={`font-semibold ${isShipped ? "text-foreground/90" : "text-foreground"}`}>{item.title}</span>
+                        </div>
+                        <p className={`text-sm mt-1 ${isShipped ? "text-muted-foreground/70" : "text-muted-foreground"}`}>{item.desc}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">{item.desc}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         </div>

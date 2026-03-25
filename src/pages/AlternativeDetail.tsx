@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BrowseLogo } from "@/components/BrowseLogo";
 
 // --- Competitor data ---
 
@@ -282,7 +281,7 @@ const AlternativeDetail = () => {
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => navigate("/")}
             >
-              <BrowseLogo className="w-4 h-4" />
+              <img src="/logo.svg" alt="BrowseAI Dev" className="w-4 h-4" />
               <span className="font-semibold text-sm">BrowseAI Dev</span>
             </div>
           </div>
