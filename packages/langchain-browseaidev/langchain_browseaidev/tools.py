@@ -206,9 +206,9 @@ class BrowseAIDevCompareTool(_BrowseAIDevBase):
         result = client.compare(query)
 
         parts = [
-            "**Raw LLM Answer (unverified):**",
-            result.raw_llm.answer,
-            f"  Sources: {result.raw_llm.sources}, Claims: {result.raw_llm.claims}",
+            f"**Raw LLM Answer ({result.competitor.label}, unverified):**",
+            result.competitor.answer,
+            f"  Sources: {result.competitor.sources}",
             "",
             "**Evidence-Backed Answer (verified):**",
             result.evidence_backed.answer,

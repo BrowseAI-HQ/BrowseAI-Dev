@@ -157,10 +157,12 @@ class PageResult(BaseModel):
 
 
 class CompareRawLLM(BaseModel):
+    provider: str = "raw_llm"
+    label: str = "Raw LLM"
     answer: str
-    sources: int
-    claims: int
-    confidence: float | None
+    sources: int = 0
+    citations: list[dict[str, str]] = []
+    latency_ms: int = 0
 
 
 class CompareEvidenceBacked(BaseModel):
@@ -177,8 +179,11 @@ class CompareEvidenceBacked(BaseModel):
 
 class CompareResult(BaseModel):
     query: str
-    raw_llm: CompareRawLLM
+    provider: str = "raw_llm"
+    competitor: CompareRawLLM = Field(alias="competitor")
     evidence_backed: CompareEvidenceBacked
+
+    model_config = {"populate_by_name": True}
 
 
 # ── Research Memory models ──
