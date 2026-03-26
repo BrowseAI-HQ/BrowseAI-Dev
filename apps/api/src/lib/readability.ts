@@ -127,12 +127,13 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
   // This prevents DNS rebinding and redirect-to-internal-IP attacks.
   let res = await fetchWithRetry(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; BrowseAI-Dev/1.0)",
-      Accept: "text/html,application/xhtml+xml",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
     },
     redirect: "manual",
-    signal: AbortSignal.timeout(10000),
-  }, { maxRetries: 1 });
+    signal: AbortSignal.timeout(15000),
+  }, { maxRetries: 2 });
 
   // Follow up to 5 redirects, validating each target
   let redirects = 0;
@@ -145,11 +146,12 @@ export async function fetchAndParse(url: string): Promise<ParsedPage> {
     }
     res = await fetch(redirectUrl, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; BrowseAI-Dev/1.0)",
-        Accept: "text/html,application/xhtml+xml",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
       },
       redirect: "manual",
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(15000),
     });
     redirects++;
   }

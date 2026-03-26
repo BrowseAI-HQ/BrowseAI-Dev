@@ -95,7 +95,7 @@ export const AnswerRequestSchema = z.object({
 
 export const CompareRequestSchema = z.object({
   query: z.string().min(1).max(500),
-  provider: z.enum(["perplexity", "tavily", "exa", "you", "brave", "raw_llm"]).optional().default("perplexity"),
+  provider: z.enum(["perplexity", "tavily", "exa", "you", "brave", "raw_llm"]).optional().default("raw_llm"),
 });
 
 // ── Research Memory schemas ──
