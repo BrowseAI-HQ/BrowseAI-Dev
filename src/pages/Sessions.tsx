@@ -172,7 +172,8 @@ const Sessions = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen grid-bg grid-bg-fade">
+    <div className="min-h-screen relative">
+      <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none" />
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-8 py-5 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>

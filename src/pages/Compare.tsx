@@ -47,7 +47,8 @@ const Compare = () => {
   }, [query]);
 
   return (
-    <div className="min-h-screen relative grid-bg grid-bg-fade">
+    <div className="min-h-screen relative">
+      <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none" />
       {/* Nav */}
       <nav className="relative z-10 flex items-center justify-between px-4 sm:px-8 py-5 border-b border-white/5 backdrop-blur-sm">
         <div className="flex items-center gap-4">

@@ -509,6 +509,10 @@ const Results = () => {
 
                 <TracePipeline trace={result.trace} />
                 <AgentJson result={result} />
+                <p className="text-[10px] text-muted-foreground/50 text-center leading-relaxed pt-2">
+                  AI-generated research for informational purposes only. Confidence scores are algorithmic estimates, not guarantees.{" "}
+                  <a href="/terms" className="underline hover:text-muted-foreground transition-colors">Terms</a>
+                </p>
                 <div className="flex justify-center pt-4">
                   <BrowseBadge />
                 </div>

@@ -24,8 +24,8 @@ import { saveRecentQuery } from "@/components/SearchInput";
 const TYPEWRITER_QUERIES = [
   "How does quantum computing work?",
   "Is nuclear energy safe?",
+  "Verify candidate claims on this resume",
   "How does RAG improve LLMs?",
-  "What causes ocean acidification?",
   "Kubernetes vs Docker Swarm?",
 ];
 
@@ -590,6 +590,7 @@ const Index = () => {
           {(() => {
             const useCases = [
               { icon: HeartPulse, title: "Healthcare Agent", desc: "Verify medical claims against peer-reviewed sources. Flag contradictions between studies. Confidence scores clinicians can trust.", example: "Is intermittent fasting safe for diabetics?", depth: "thorough" as const, github: "healthcare-agent", snippet: `result = client.ask(\n  "Is intermittent fasting safe for diabetics?",\n  depth="thorough"\n)\nfor claim in result.claims:\n  if not claim.verified:\n    print(f"⚠ Unverified: {claim.text}")` },
+              { icon: FileText, title: "HR & Recruiting", desc: "Verify candidate claims against web evidence — publications, achievements, skills, speaking history. Flag unverifiable resume claims before hiring.", example: "Verify this candidate's published research and speaking history", depth: "thorough" as const, github: "hr-recruiting-agent", snippet: `result = client.ask(\n  "Verify: John Doe published 3 papers on "\n  "NLP at ACL 2024 and spoke at PyCon",\n  depth="thorough"\n)\nfor claim in result.claims:\n  status = "Verified" if claim.verified else "Unverified"\n  print(f"{status} ({claim.score:.0%}): {claim.text}")` },
               { icon: Scale, title: "Legal Research", desc: "Cross-reference legal precedents across jurisdictions. Verify regulatory claims with authoritative sources. Cite specific rulings.", example: "GDPR requirements for AI-generated content", depth: "thorough" as const, github: "legal-agent", snippet: `result = client.ask(\n  "GDPR requirements for AI-generated content",\n  depth="thorough"\n)\nfor source in result.sources:\n  print(f"[{source.domain}] {source.title}")` },
               { icon: Code2, title: "Coding Agent", desc: "Research libraries, APIs, and best practices before writing code. Verify documentation claims. Compare framework trade-offs.", example: "Best Python library for WebSocket servers?", depth: "fast" as const, github: "coding-agent", snippet: `result = client.ask(\n  "Best Python library for WebSocket servers?"\n)\nprint(result.answer)\nprint(f"Confidence: {result.confidence:.0%}")` },
               { icon: Newspaper, title: "Content & Media", desc: "Fact-check articles before publishing. Detect contradictions across sources. Research briefs with inline citations.", example: "Health effects of intermittent fasting", depth: "thorough" as const, github: "content-agent", snippet: `result = client.ask(\n  "Health effects of intermittent fasting",\n  depth="thorough"\n)\nfor c in result.contradictions:\n  print(f"Conflict: {c.claim_a} vs {c.claim_b}")` },

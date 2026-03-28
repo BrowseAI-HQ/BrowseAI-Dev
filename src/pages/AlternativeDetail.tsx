@@ -234,7 +234,8 @@ const AlternativeDetail = () => {
 
   if (!competitor) {
     return (
-      <div className="min-h-screen bg-background grid-bg grid-bg-fade flex items-center justify-center">
+      <div className="min-h-screen bg-background relative flex items-center justify-center">
+        <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none" />
         <div className="terminal-card text-center space-y-4 p-8 rounded-lg border border-border hover:border-accent/20 transition-all duration-300">
           <h1 className="text-2xl font-bold">Competitor not found</h1>
           <Button onClick={() => navigate("/alternatives")}>
@@ -262,7 +263,8 @@ const AlternativeDetail = () => {
         }}
       />
 
-      <div className="min-h-screen bg-background grid-bg grid-bg-fade">
+      <div className="min-h-screen bg-background relative">
+        <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none" />
         {/* Nav */}
         <motion.nav
           initial={{ opacity: 0, y: -20 }}

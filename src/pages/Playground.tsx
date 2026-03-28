@@ -825,6 +825,12 @@ const Playground = () => {
                 ))}
               </div>
             )}
+
+            {/* Legal disclaimer */}
+            <p className="text-[10px] text-muted-foreground/50 text-center leading-relaxed pt-2">
+              AI-generated research for informational purposes only. Confidence scores are algorithmic estimates, not guarantees.{" "}
+              <a href="/terms" className="underline hover:text-muted-foreground transition-colors">Terms</a>
+            </p>
           </motion.div>
         )}
 

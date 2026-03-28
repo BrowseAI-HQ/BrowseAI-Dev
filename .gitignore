@@ -79,6 +79,9 @@ benchmarks/results/
 .planning/
 docs/launch-video-script.md
 
+# Pitch deck (local only)
+deck/
+
 # Security
 *.pem
 *.key
