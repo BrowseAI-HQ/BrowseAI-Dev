@@ -165,6 +165,10 @@ client.feedback(result_id="abc123", rating="good")
 client.feedback(result_id="abc123", rating="wrong", claim_index=2)
 ```
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/browseai-hq-browserai-dev).
+
 ## Quick Start
 
 ### Python SDK
