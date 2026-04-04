@@ -14,7 +14,7 @@ from browseaidev import BrowseAIDev
 
 
 def research(query: str):
-    client = BrowseAIDev(api_key="bai_xxx")  # or use BYOK: BrowseAIDev(tavily_key="...", openrouter_key="...")
+    client = BrowseAIDev(api_key="bai_xxx")
 
     print(f"\nResearching: {query}\n")
 

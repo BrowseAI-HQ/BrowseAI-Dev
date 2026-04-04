@@ -113,9 +113,9 @@ const Privacy = () => {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">BYOK (Bring Your Own Keys)</h2>
+            <h2 className="text-lg font-semibold">API Keys</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              When using BYOK via browser headers (X-Tavily-Key, X-OpenRouter-Key), your keys are transmitted over HTTPS but are never stored on our servers. They are used only for the duration of the request. Keys stored in browser localStorage are never sent to our servers.
+              All API access requires a BrowseAI Dev API key (bai_xxx). Your API key is transmitted over HTTPS and used to authenticate requests. Keys are stored securely and can be regenerated or deleted from your dashboard at any time.
             </p>
           </section>
 

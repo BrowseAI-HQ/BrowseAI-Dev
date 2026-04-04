@@ -113,7 +113,7 @@ class BrowseAIDev:
         api_key = config.get("api_key")
         if not api_key:
             raise ValueError(
-                "No api_key in config. BYOK mode removed — run 'browseaidev setup' to set a BAI key."
+                "No api_key in config. Run 'browseaidev setup' to configure your BAI key."
             )
         return cls(api_key=api_key, **kwargs)
 
@@ -390,7 +390,7 @@ class AsyncBrowseAIDev:
         api_key = config.get("api_key")
         if not api_key:
             raise ValueError(
-                "No api_key in config. BYOK mode removed — run 'browseaidev setup' to set a BAI key."
+                "No api_key in config. Run 'browseaidev setup' to configure your BAI key."
             )
         return cls(api_key=api_key, **kwargs)
 

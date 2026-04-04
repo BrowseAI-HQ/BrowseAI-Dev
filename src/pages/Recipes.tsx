@@ -352,8 +352,8 @@ const Recipes = () => {
               </div>
               <div className="p-4 rounded-xl bg-card border border-border card-lift hover:border-accent/20 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
                 <p className="text-sm text-muted-foreground">
-                  <span className="text-foreground font-medium">Option 2 — Bring Your Own Keys:</span>{" "}
-                  Pass your Tavily and OpenRouter keys directly. No BrowseAI Dev account needed.
+                  <span className="text-foreground font-medium">Free tier included:</span>{" "}
+                  100 premium queries/day with full verification pipeline. Falls back to unlimited basic after quota.
                 </p>
               </div>
             </div>

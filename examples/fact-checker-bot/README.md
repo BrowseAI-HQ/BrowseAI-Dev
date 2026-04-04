@@ -25,8 +25,6 @@ A Discord bot that verifies claims in real time using [BrowseAI](https://browsea
 
 Sign up at [browseai.dev](https://browseai.dev) and get your API key (starts with `bai_`).
 
-Alternatively, bring your own keys by setting `TAVILY_KEY` and `OPENROUTER_KEY` directly (see comments in `bot.py`).
-
 ### 3. Install and Run
 
 ```bash
@@ -167,7 +165,6 @@ The heavy lifting (search, extraction, verification, confidence scoring) all hap
 
 - **Thorough mode** takes 5-15 seconds because it does multi-pass research. Users see the typing indicator while it works.
 - **Rate limits**: Without a BrowseAI API key, the demo limit is 1 query/hour. Get an API key for unlimited use.
-- **BYOK**: You can bypass BrowseAI keys entirely by setting `TAVILY_KEY` and `OPENROUTER_KEY` in your environment. Update the client initialization in `bot.py` accordingly.
 - **Hosting**: For a production bot, run with `systemd`, Docker, or a cloud VM. The bot is stateless so it can restart freely.
 
 ## License

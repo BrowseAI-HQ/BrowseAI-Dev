@@ -120,7 +120,7 @@ print(result["output"])
 2. Sign in with GitHub
 3. Your `bai_xxx` key is on the dashboard
 
-Or bring your own keys (Tavily + OpenRouter) for unlimited usage.
+Your `bai_xxx` key is on the dashboard.
 
 ## Links
 

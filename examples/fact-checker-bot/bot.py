@@ -22,12 +22,7 @@ load_dotenv()
 
 DISCORD_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 
-# Option 1: BrowseAI API key (recommended)
 BROWSEAI_API_KEY = os.environ.get("BROWSEAI_API_KEY", "bai_xxx")
-
-# Option 2: Bring your own keys (uncomment and set these instead)
-# TAVILY_KEY = os.environ.get("TAVILY_KEY")
-# OPENROUTER_KEY = os.environ.get("OPENROUTER_KEY")
 
 # ── Discord client setup ──────────────────────────────────────────────────────
 
@@ -35,8 +30,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = discord.Client(intents=intents)
 
-# Use BrowseAI API key. For BYOK, replace with:
-#   AsyncBrowseAIDev(tavily_key=TAVILY_KEY, openrouter_key=OPENROUTER_KEY)
 browse = AsyncBrowseAIDev(api_key=BROWSEAI_API_KEY, timeout=120.0)
 
 

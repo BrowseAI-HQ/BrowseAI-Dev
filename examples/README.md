@@ -51,8 +51,7 @@ BrowseAI Dev is **research infrastructure for AI agents** — every answer comes
 
 ## Get API Key
 
-- **Free**: Use BYOK (Bring Your Own Keys) with Tavily + OpenRouter
-- **API Key**: Get a `bai_xxx` key at [browseai.dev](https://browseai.dev)
+- **Free**: Get a BAI key at [browseai.dev](https://browseai.dev)
 
 ## Links
 

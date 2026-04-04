@@ -38,35 +38,15 @@ export async function runSetup() {
 `);
 
   const browseKey = await ask(
-    "  BrowseAI Dev API key (leave blank to use your own Tavily + OpenRouter keys):"
+    "  BrowseAI Dev API key (get one at https://browseai.dev/dashboard): "
   );
 
-  let mcpEnv: Record<string, string>;
-
-  if (browseKey.trim()) {
-    mcpEnv = { BROWSE_API_KEY: browseKey.trim() };
-  } else {
-    const serpKey = await ask("  Tavily API key (get one at https://tavily.com): ");
-    if (!serpKey.trim()) {
-      console.log("\n  Tavily API key is required. Get one at https://tavily.com\n");
-      process.exit(1);
-    }
-
-    const openrouterKey = await ask(
-      "  OpenRouter API key (get one at https://openrouter.ai): "
-    );
-    if (!openrouterKey.trim()) {
-      console.log(
-        "\n  OpenRouter API key is required. Get one at https://openrouter.ai\n"
-      );
-      process.exit(1);
-    }
-
-    mcpEnv = {
-      SERP_API_KEY: serpKey.trim(),
-      OPENROUTER_API_KEY: openrouterKey.trim(),
-    };
+  if (!browseKey.trim()) {
+    console.log("\n  BrowseAI Dev API key is required. Get one at https://browseai.dev/dashboard\n");
+    process.exit(1);
   }
+
+  const mcpEnv: Record<string, string> = { BROWSE_API_KEY: browseKey.trim() };
 
   rl.close();
 

@@ -36,10 +36,10 @@ Instead, please email security concerns or report via [GitHub Security Advisorie
 - **SSRF protection:** URL allowlist prevents requests to localhost and private IPs.
 - **RLS policies:** Supabase Row Level Security ensures users can only access their own data.
 
-## Bring Your Own Keys (BYOK)
+## BAI Key Security
 
-When using BYOK mode, your Tavily and OpenRouter keys are:
-- Sent via request headers (`X-Tavily-Key`, `X-OpenRouter-Key`)
-- Used only for that single request
-- Never stored on BrowseAI Dev servers
-- If stored via BrowseAI Dev API key, encrypted with AES-256-GCM before storage
+All API access requires a BrowseAI Dev API key (`bai_xxx` prefix). Your BAI key:
+- Should be kept secret and never committed to source control
+- Is stored encrypted with AES-256-GCM if saved server-side
+- Can be rotated at any time from the dashboard at [browseai.dev/dashboard](https://browseai.dev/dashboard)
+- Should be set via the `BROWSE_API_KEY` environment variable for MCP and SDK usage

@@ -98,8 +98,7 @@ async function apiCall<T>(
   body: Record<string, unknown>
 ): Promise<T> {
   const authHeaders = await getAuthHeaders();
-  // UI never sends BYOK headers — users sign in (stored keys + premium) or use demo
-  // BYOK still works for MCP/SDK/API packages
+  // UI uses auth headers from signed-in user or falls back to demo
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders },

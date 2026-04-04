@@ -13,9 +13,8 @@ cp .env.example .env
 pnpm dev
 ```
 
-### Required API Keys (free)
-- **Tavily** (web search): https://app.tavily.com
-- **OpenRouter** (LLM): https://openrouter.ai
+### Required API Keys
+- **BrowseAI Dev API key**: https://browseai.dev/dashboard
 
 ## Project Structure
 
@@ -140,7 +139,7 @@ BrowseAI-Dev/
 
 1. Open `apps/mcp/src/index.ts`
 2. Add a new `server.tool(...)` call following existing patterns
-3. Test: `SERP_API_KEY=... OPENROUTER_API_KEY=... pnpm dev:mcp`
+3. Test: `BROWSE_API_KEY=bai_xxx pnpm dev:mcp`
 
 ## CI/CD Pipeline
 

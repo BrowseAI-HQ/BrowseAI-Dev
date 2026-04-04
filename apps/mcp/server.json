@@ -10,13 +10,13 @@
     "id": "1172211006",
     "subfolder": "apps/mcp"
   },
-  "version": "0.2.5",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "browseai-dev",
-      "version": "0.2.5",
+      "version": "0.3.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
@@ -24,20 +24,8 @@
       "environmentVariables": [
         {
           "name": "BROWSE_API_KEY",
-          "description": "BrowseAI Dev API key (get one at https://browseai.dev/dashboard). Recommended — enables premium verification pipeline.",
-          "isRequired": false,
-          "isSecret": true
-        },
-        {
-          "name": "SERP_API_KEY",
-          "description": "Tavily API key for web search (get one at https://tavily.com). Required in BYOK mode if BROWSE_API_KEY is not set.",
-          "isRequired": false,
-          "isSecret": true
-        },
-        {
-          "name": "OPENROUTER_API_KEY",
-          "description": "OpenRouter API key for LLM extraction (get one at https://openrouter.ai). Required in BYOK mode if BROWSE_API_KEY is not set.",
-          "isRequired": false,
+          "description": "BrowseAI Dev API key (get one at https://browseai.dev/dashboard). Required for all API access.",
+          "isRequired": true,
           "isSecret": true
         }
       ]

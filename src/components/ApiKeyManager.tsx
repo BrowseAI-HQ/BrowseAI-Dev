@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { Key, Plus, Trash2, Copy, Check, AlertTriangle, ExternalLink } from "lucide-react";
+import { Key, Plus, Trash2, Copy, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -26,8 +25,6 @@ export function ApiKeyManager() {
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [tavilyKey, setTavilyKey] = useState("");
-  const [openrouterKey, setOpenrouterKey] = useState("");
   const [label, setLabel] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -56,18 +53,11 @@ export function ApiKeyManager() {
   }, [fetchKeys]);
 
   const handleCreate = async () => {
-    if (!tavilyKey.trim() || !openrouterKey.trim()) return;
     setCreating(true);
     setError(null);
     try {
-      const result = await createApiKey(
-        tavilyKey.trim(),
-        openrouterKey.trim(),
-        label.trim() || undefined
-      );
+      const result = await createApiKey(label.trim() || undefined);
       setNewKey(result.apiKey);
-      setTavilyKey("");
-      setOpenrouterKey("");
       setLabel("");
       fetchKeys();
     } catch (e: any) {
@@ -142,58 +132,20 @@ export function ApiKeyManager() {
           {/* Generate form */}
           <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
             <p className="text-sm text-muted-foreground">
-              Save your API keys to get unlimited queries on the website, CLI, MCP,
-              and API. Your default key is used automatically when you're signed in.
-              While search and LLM keys are bring-your-own, we layer on premium
-              verification features at no extra cost — including multi-provider search,
-              semantic claim verification, and neural source re-ranking.
+              Generate a BrowseAI Dev API key to use with MCP, Python SDK, REST API, and CLI.
+              Free keys include 100 premium queries/day with full verification pipeline.
+              After the daily quota, queries fall back to unlimited basic verification.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="tavily" className="text-xs flex items-center justify-between">
-                  Tavily API Key
-                  <a href="https://app.tavily.com" target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-                    Get free key <ExternalLink className="w-3 h-3" />
-                  </a>
-                </Label>
-                <Input
-                  id="tavily"
-                  type="password"
-                  autoComplete="off"
-                  placeholder="tvly-..."
-                  value={tavilyKey}
-                  onChange={(e) => setTavilyKey(e.target.value)}
-                  className="font-mono text-xs"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="openrouter" className="text-xs flex items-center justify-between">
-                  OpenRouter API Key
-                  <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-                    Get free key <ExternalLink className="w-3 h-3" />
-                  </a>
-                </Label>
-                <Input
-                  id="openrouter"
-                  type="password"
-                  autoComplete="off"
-                  placeholder="sk-or-..."
-                  value={openrouterKey}
-                  onChange={(e) => setOpenrouterKey(e.target.value)}
-                  className="font-mono text-xs"
-                />
-              </div>
-            </div>
             <div className="flex items-center gap-3">
               <Input
-                placeholder="Key label (optional)"
+                placeholder="Key label (optional, e.g. 'cursor', 'production')"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 className="text-xs max-w-xs"
               />
               <Button
                 onClick={handleCreate}
-                disabled={creating || !tavilyKey.trim() || !openrouterKey.trim()}
+                disabled={creating}
                 className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
                 size="sm"
               >
@@ -335,9 +287,9 @@ export function ApiKeyManager() {
               Remove last API key?
             </DialogTitle>
             <DialogDescription>
-              This is your only API key. Removing it will put you back on the
-              free demo tier (<strong>1 query</strong>). You can add new
-              keys anytime to get unlimited access again.
+              This is your only API key. Removing it will limit you to the
+              website demo (<strong>1 query/hour</strong>). Generate a new
+              key anytime to restore full access.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">

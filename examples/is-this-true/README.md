@@ -58,12 +58,6 @@ is-this-true/
 
 ## Customization
 
-**Use your own keys instead of a BrowseAI API key:**
-
-```python
-client = BrowseAIDev(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
-```
-
 **Change the default depth:**
 
 Edit `app.py` and change the default `depth` parameter in the `check` endpoint.

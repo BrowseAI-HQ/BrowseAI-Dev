@@ -25,10 +25,7 @@ def stream_research(query: str, depth: str = "fast"):
 
     headers = {
         "Content-Type": "application/json",
-        # Use BYOK headers or BAI key:
-        # "X-Tavily-Key": "tvly-xxx",
-        # "X-OpenRouter-Key": "sk-or-xxx",
-        "Authorization": "Bearer bai_xxx",
+        "X-API-Key": "bai_xxx",
     }
 
     answer_tokens = []

@@ -87,7 +87,7 @@ import httpx
 
 with httpx.stream("POST", "https://browseai.dev/api/browse/answer/stream",
     json={"query": "What is quantum computing?"},
-    headers={"X-Tavily-Key": "tvly-xxx", "X-OpenRouter-Key": "sk-or-xxx"}
+    headers={"X-API-Key": "bai_xxx"}
 ) as response:
     for line in response.iter_lines():
         if line.startswith("data: "):
@@ -100,7 +100,7 @@ Events: `trace` (progress), `sources` (discovered early), `token` (streamed answ
 
 Persistent research sessions that accumulate knowledge across multiple queries. Later queries recall prior knowledge — faster, cheaper, more coherent.
 
-> **Sessions require a BrowseAI Dev API key** (`api_key="bai_xxx"`) for identity and ownership. BYOK clients (`tavily_key`/`openrouter_key` only) can use search/answer but cannot create or access sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
+> **Sessions require a BrowseAI Dev API key** (`api_key="bai_xxx"`) for identity and ownership. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ```python
 from browseaidev import BrowseAIDev
@@ -166,7 +166,7 @@ Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
 
 Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to keyword verification (deep falls back to thorough) — still works, just basic matching. Quota resets every 24 hours. Check `client.last_quota` after any API call for current usage.
 
-**No account needed** — BYOK works out of the box with no signup, no limits, and keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
+Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
 
 ## Contradictions
 
@@ -220,14 +220,6 @@ result = client.ask("Patient protocols", search_provider=SearchProviderConfig(
     auth_header="Bearer token",
     data_retention="none",
 ))
-```
-
-## BYOK (Bring Your Own Keys)
-
-No signup required — just pass your own keys:
-
-```python
-client = BrowseAIDev(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
 ```
 
 ## Framework Integrations

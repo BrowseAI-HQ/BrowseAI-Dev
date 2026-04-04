@@ -41,8 +41,8 @@ jobs:
             5. **Confidence algorithm** — changes to apps/api/src/lib/gemini.ts must preserve evidence-based
                scoring (source count, domain diversity, claim grounding, citation depth). Never allow
                LLM self-assessed confidence to replace this.
-            6. **API key handling** — keys in apps/api/src/lib/crypto.ts use AES-256-GCM. Ensure BYOK
-               headers (X-Tavily-Key, X-OpenRouter-Key) are never logged or persisted.
+            6. **API key handling** — keys in apps/api/src/lib/crypto.ts use AES-256-GCM. Ensure BAI
+               keys are never logged or persisted insecurely.
             7. **Rate limiting** — demo limit is 5/hour per IP. Changes must not bypass this for
                unauthenticated users.
             8. **Cross-package consistency** — changes to shared types must be reflected in API, MCP,

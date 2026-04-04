@@ -17,6 +17,23 @@ src/               — Vite + React frontend (landing, developers, playground pa
 
 > The verification engine (Fastify REST API) has been moved to a separate private repository: [BrowseAI-HQ/browseaidev-engine](https://github.com/BrowseAI-HQ/browseaidev-engine). The public repo's frontend proxies `/api/*` requests to the hosted engine.
 
+## Two-Repo Architecture
+
+This project spans **two repositories**. Always consider both when making changes:
+
+| Repo | Visibility | What lives here | Deploys to |
+|------|-----------|-----------------|------------|
+| **BrowseAI-Dev** (this repo) | Public (Apache 2.0) | MCP server, Python SDK, frontend, shared types, examples, docs | Vercel (frontend + MCP function) |
+| **browseaidev-engine** (`/tmp/browseaidev-engine`) | Private (BSL 1.1) | Verification engine, API routes, NLI, confidence scoring, Redis cache, Supabase | Vercel (separate project) |
+
+**When making changes:**
+- **API parameter changes** → update engine routes + MCP tool schemas + Python SDK methods + shared types
+- **New features** → engine implementation + public repo surfaces (MCP, SDK, docs, frontend)
+- **Auth/key changes** → both repos (engine auth middleware + MCP/SDK client code)
+- **Version bumps** → public repo only (MCP package.json + index.ts, Python SDK pyproject.toml + __init__.py)
+
+**All API access requires a BAI key (`bai_xxx`).** There is no BYOK (bring your own keys) mode. The engine handles all search and LLM calls server-side.
+
 ## Key commands
 
 ```bash
@@ -58,7 +75,7 @@ For this public repo (MCP server + frontend only):
 BROWSE_API_KEY        — BrowseAI Dev API key (bai_xxx) for MCP server
 ```
 
-> Server-side environment variables (SERP_API_KEY, OPENROUTER_API_KEY, SUPABASE_URL, etc.) are configured in the browseaidev-engine private repo.
+> All server-side environment variables (search APIs, LLM keys, Supabase, Redis, etc.) are configured in the browseaidev-engine private repo.
 
 ## Deployment
 

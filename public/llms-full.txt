@@ -259,10 +259,9 @@ result = await async_client.answer("query")
 
 ## Authentication
 
-Three options:
-1. **BYOK (Bring Your Own Keys)**: Pass `X-Tavily-Key` and `X-OpenRouter-Key` headers — unlimited usage
-2. **BrowseAI Dev API Key**: Get a `bai_xxx` key from the dashboard — usage tracked per key
-3. **Demo mode**: No auth needed — 1 query/hour per IP
+Two options:
+1. **BrowseAI Dev API Key**: Get a `bai_xxx` key from the dashboard — usage tracked per key
+2. **Demo mode**: No auth needed — 1 query/hour per IP
 
 ## Self-Hosting
 
@@ -274,7 +273,7 @@ pnpm install
 pnpm dev
 ```
 
-Required env vars: `SERP_API_KEY` (Tavily), `OPENROUTER_API_KEY` (LLM).
+Required env vars: `BROWSE_API_KEY` (BrowseAI Dev API key).
 Optional: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (persistence).
 
 ## Links

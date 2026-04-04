@@ -15,7 +15,7 @@ from browseaidev import BrowseAIDev
 
 
 def research_session(topic: str):
-    client = BrowseAIDev(api_key="bai_xxx")  # or use BYOK: BrowseAIDev(tavily_key="...", openrouter_key="...")
+    client = BrowseAIDev(api_key="bai_xxx")
 
     # Create a named session
     session = client.session(f"{topic}-research")

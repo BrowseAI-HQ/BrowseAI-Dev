@@ -55,13 +55,11 @@ export interface CreateApiKeyResult extends ApiKeyRecord {
 }
 
 export async function createApiKey(
-  tavilyKey: string,
-  openrouterKey: string,
   label?: string
 ): Promise<CreateApiKeyResult> {
   return authFetch("/api-keys", {
     method: "POST",
-    body: JSON.stringify({ tavily_key: tavilyKey, openrouter_key: openrouterKey, label }),
+    body: JSON.stringify({ label }),
   });
 }
 

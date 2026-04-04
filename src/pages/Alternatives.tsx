@@ -160,7 +160,7 @@ const FEATURE_MATRIX: FeatureRow[] = [
   // Infrastructure
   { feature: "Open source (full pipeline)", browseai: "full", tavily: "partial", perplexity: "partial", exa: "partial", you: "partial", brave: "partial" },
   { feature: "Self-hostable", browseai: "partial", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
-  { feature: "BYOK (bring your own keys)", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Free API key with generous quota", browseai: "full", tavily: "partial", perplexity: "none", exa: "partial", you: "none", brave: "partial" },
 ];
 
 const COLUMN_NAMES: Record<string, string> = {
