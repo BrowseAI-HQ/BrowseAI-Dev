@@ -446,23 +446,13 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* ===== TRUST BAR ===== */}
-      <section className="py-6 px-6 border-t border-border bg-card/50">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-accent" /> Every claim verified against real sources</span>
-            <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-accent" /> Multi-source consensus scoring</span>
-            <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-accent" /> Evidence-based confidence scores</span>
-            <span className="flex items-center gap-1.5"><Brain className="w-3.5 h-3.5 text-accent" /> Contradiction detection</span>
-          </div>
-        </div>
-      </section>
+      {/* Trust bar removed — covered by Evidence Engine section below */}
 
       {/* ===== THE INTELLIGENCE LAYER — Flow Visual ===== */}
       <section className="py-24 px-6 border-t border-border overflow-hidden">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <Badge variant="outline" className="text-xs font-normal mb-6">The Trust Layer</Badge>
+            <Badge variant="outline" className="text-xs font-normal mb-6">The Verification Layer</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Agents act fast.
               <br />

@@ -7,6 +7,10 @@ export type BrowseSource = {
   authority?: number;
   /** ISO date (YYYY-MM-DD) when the source was published. null if unknown. */
   publishedDate?: string;
+  /** Age of the source in days (computed from publishedDate). undefined if date unknown. */
+  sourceAge?: number;
+  /** Whether this source is considered outdated for the query context. */
+  outdated?: boolean;
 };
 
 export type NLIScore = {
@@ -64,6 +68,8 @@ export type BrowseResult = {
   reasoningSteps?: ReasoningStep[];
   shareId?: string;
   effectiveDepth?: "fast" | "thorough" | "deep";
+  /** Warning when sources are outdated or time-sensitive info may be stale. */
+  temporalWarning?: string;
 };
 
 export type SearchRequest = {
