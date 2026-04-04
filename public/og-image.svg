@@ -2,19 +2,20 @@
   <!-- Background -->
   <rect width="1200" height="630" fill="#0A0A0A"/>
 
-  <!-- B Logo (centered, larger) -->
-  <g transform="translate(440, 115)">
+  <!-- B Logo (left-center) -->
+  <g transform="translate(200, 140)">
     <!-- Vertical stem -->
-    <line x1="0" y1="0" x2="0" y2="400" stroke="#F97316" stroke-width="28" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="0" y2="350" stroke="#F97316" stroke-width="24" stroke-linecap="round"/>
     <!-- Top curve -->
-    <path d="M0 0 C80 0, 120 8, 120 100 C120 192, 80 200, 0 200"
-          stroke="#F97316" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M0 0 C70 0, 105 8, 105 88 C105 168, 70 175, 0 175"
+          stroke="#F97316" stroke-width="24" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     <!-- Bottom curve (wider) -->
-    <path d="M0 200 C90 200, 145 220, 145 300 C145 380, 90 400, 0 400"
-          stroke="#F97316" stroke-width="28" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M0 175 C80 175, 130 195, 130 265 C130 335, 80 350, 0 350"
+          stroke="#F97316" stroke-width="24" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 
-  <!-- Text to the right of logo -->
-  <text x="660" y="330" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="#FAFAFA">BrowseAI Dev</text>
-  <text x="660" y="390" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#F97316">browseai.dev</text>
+  <!-- Text (vertically centered with logo) -->
+  <text x="430" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="700" fill="#FAFAFA">BrowseAI Dev</text>
+  <text x="430" y="360" font-family="system-ui, -apple-system, sans-serif" font-size="30" fill="#A1A1AA">Research Infra for AI Agents</text>
+  <text x="430" y="410" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#F97316">browseai.dev</text>
 </svg>
