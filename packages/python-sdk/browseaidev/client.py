@@ -42,19 +42,8 @@ DISCLAIMER = (
 )
 
 
-def _build_headers(
-    api_key: str | None,
-    tavily_key: str | None,
-    openrouter_key: str | None,
-) -> dict[str, str]:
-    headers: dict[str, str] = {}
-    if api_key:
-        headers["X-API-Key"] = api_key
-    if tavily_key:
-        headers["X-Tavily-Key"] = tavily_key
-    if openrouter_key:
-        headers["X-OpenRouter-Key"] = openrouter_key
-    return headers
+def _build_headers(api_key: str) -> dict[str, str]:
+    return {"X-API-Key": api_key}
 
 
 def _handle_error(response: httpx.Response) -> None:
@@ -95,17 +84,15 @@ class BrowseAIDev:
 
     def __init__(
         self,
-        api_key: str | None = None,
+        api_key: str,
         *,
-        tavily_key: str | None = None,
-        openrouter_key: str | None = None,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = DEFAULT_TIMEOUT,
     ):
-        if not api_key and not (tavily_key and openrouter_key):
-            raise ValueError("Provide api_key or both tavily_key and openrouter_key")
+        if not api_key:
+            raise ValueError("api_key is required. Get a free one at https://browseai.dev/dashboard")
 
-        self._headers = _build_headers(api_key, tavily_key, openrouter_key)
+        self._headers = _build_headers(api_key)
         self._last_quota: PremiumQuota | None = None
         self._client = httpx.Client(
             base_url=base_url,
@@ -123,12 +110,12 @@ class BrowseAIDev:
             )
         with open(path) as f:
             config = json.load(f)
-        return cls(
-            api_key=config.get("api_key"),
-            tavily_key=config.get("tavily_key"),
-            openrouter_key=config.get("openrouter_key"),
-            **kwargs,
-        )
+        api_key = config.get("api_key")
+        if not api_key:
+            raise ValueError(
+                "No api_key in config. BYOK mode removed — run 'browseaidev setup' to set a BAI key."
+            )
+        return cls(api_key=api_key, **kwargs)
 
     @property
     def last_quota(self) -> PremiumQuota | None:
@@ -374,17 +361,15 @@ class AsyncBrowseAIDev:
 
     def __init__(
         self,
-        api_key: str | None = None,
+        api_key: str,
         *,
-        tavily_key: str | None = None,
-        openrouter_key: str | None = None,
         base_url: str = DEFAULT_BASE_URL,
         timeout: float = DEFAULT_TIMEOUT,
     ):
-        if not api_key and not (tavily_key and openrouter_key):
-            raise ValueError("Provide api_key or both tavily_key and openrouter_key")
+        if not api_key:
+            raise ValueError("api_key is required. Get a free one at https://browseai.dev/dashboard")
 
-        self._headers = _build_headers(api_key, tavily_key, openrouter_key)
+        self._headers = _build_headers(api_key)
         self._last_quota: PremiumQuota | None = None
         self._client = httpx.AsyncClient(
             base_url=base_url,
@@ -402,12 +387,12 @@ class AsyncBrowseAIDev:
             )
         with open(path) as f:
             config = json.load(f)
-        return cls(
-            api_key=config.get("api_key"),
-            tavily_key=config.get("tavily_key"),
-            openrouter_key=config.get("openrouter_key"),
-            **kwargs,
-        )
+        api_key = config.get("api_key")
+        if not api_key:
+            raise ValueError(
+                "No api_key in config. BYOK mode removed — run 'browseaidev setup' to set a BAI key."
+            )
+        return cls(api_key=api_key, **kwargs)
 
     @property
     def last_quota(self) -> PremiumQuota | None:

@@ -62,11 +62,10 @@ Three depth levels control research thoroughness:
 # Thorough mode
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
-  -H "X-Tavily-Key: tvly-xxx" \
-  -H "X-OpenRouter-Key: sk-or-xxx" \
+  -H "Authorization: Bearer bai_xxx" \
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'
 
-# Deep mode (requires BAI key — uses premium features)
+# Deep mode (uses premium features)
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer bai_xxx" \
@@ -84,8 +83,7 @@ Get real-time progress with per-token answer streaming. The streaming endpoint s
 ```bash
 curl -N -X POST https://browseai.dev/api/browse/answer/stream \
   -H "Content-Type: application/json" \
-  -H "X-Tavily-Key: tvly-xxx" \
-  -H "X-OpenRouter-Key: sk-or-xxx" \
+  -H "Authorization: Bearer bai_xxx" \
   -d '{"query": "What is quantum computing?"}'
 ```
 
@@ -99,7 +97,7 @@ All external API calls (search providers, LLM, page fetching) automatically retr
 
 Persistent research sessions that accumulate knowledge across multiple queries. Later queries automatically recall prior verified claims, building deeper understanding over time.
 
-> **Sessions require a BrowseAI Dev API key (`bai_xxx`)** for identity and ownership. BYOK users can use search/answer but cannot use sessions. Get a free key at [browseai.dev/dashboard](https://browseai.dev/dashboard). For MCP, set `BROWSE_API_KEY` env var. For Python SDK, pass `api_key="bai_xxx"`. For REST API, use `Authorization: Bearer bai_xxx`.
+> **Sessions require a BrowseAI Dev API key (`bai_xxx`)** for identity and ownership. Get a free key at [browseai.dev/dashboard](https://browseai.dev/dashboard). For MCP, set `BROWSE_API_KEY` env var. For Python SDK, pass `api_key="bai_xxx"`. For REST API, use `Authorization: Bearer bai_xxx`.
 
 ```python
 # Python SDK
@@ -231,8 +229,6 @@ Or manually add to your MCP config:
       "command": "npx",
       "args": ["-y", "browseai-dev"],
       "env": {
-        "SERP_API_KEY": "your-search-key",
-        "OPENROUTER_API_KEY": "your-llm-key",
         "BROWSE_API_KEY": "bai_xxx"
       }
     }
@@ -240,63 +236,52 @@ Or manually add to your MCP config:
 }
 ```
 
-> `BROWSE_API_KEY` is optional for search/answer but required for Research Memory (sessions).
+> Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ### REST API
 
 ```bash
-# With your own keys (BYOK — free, no limits)
+# Basic query
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
-  -H "X-Tavily-Key: tvly-xxx" \
-  -H "X-OpenRouter-Key: sk-or-xxx" \
+  -H "Authorization: Bearer bai_xxx" \
   -d '{"query": "What is quantum computing?"}'
 
 # Thorough mode (auto-retries if confidence < 60%)
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
-  -H "X-Tavily-Key: tvly-xxx" \
-  -H "X-OpenRouter-Key: sk-or-xxx" \
+  -H "Authorization: Bearer bai_xxx" \
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'
 
-# Deep mode (multi-step reasoning — requires BAI key)
+# Deep mode (multi-step reasoning)
 curl -X POST https://browseai.dev/api/browse/answer \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer bai_xxx" \
   -d '{"query": "Compare CRISPR approaches", "depth": "deep"}'
-
-# With a BrowseAI Dev API key
-curl -X POST https://browseai.dev/api/browse/answer \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer bai_xxx" \
-  -d '{"query": "What is quantum computing?"}'
 ```
 
 ### Self-Host
+
+The MCP server and frontend are open-source and can be run locally. The verification engine is a hosted service — all API requests are processed by the BrowseAI Dev cloud infrastructure.
 
 ```sh
 git clone https://github.com/BrowseAI-HQ/BrowseAI-Dev.git
 cd BrowseAI-Dev
 pnpm install
-cp .env.example .env
-# Fill in: SERP_API_KEY, OPENROUTER_API_KEY
-pnpm dev
+pnpm dev:web    # Run the frontend locally (API calls go to browseai.dev)
 ```
 
 ## API Keys
 
-**No account needed** — MCP, Python SDK, and REST API all work with BYOK (bring your own keys) out of the box. No signup, no limits. Sign in for free to unlock premium verification features.
-
-Four ways to authenticate:
+All API access requires a BrowseAI Dev API key (`bai_xxx`). Sign up for free at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 | Method | How | Verification | Limits |
 |--------|-----|-------------|--------|
 | **BrowseAI Dev API Key** (Free) | `Authorization: Bearer bai_xxx` | Full premium — semantic verification, multi-provider, multi-pass consistency | Generous quota with graceful fallback |
 | **BrowseAI Dev API Key** (Pro) | `Authorization: Bearer bai_xxx` | Full premium — unlimited, no fallback | Unlimited + priority queue, managed keys, team seats |
-| **BYOK** (MCP, SDK, API) | `X-Tavily-Key` + `X-OpenRouter-Key` headers | Keyword verification | Unlimited, free (search/answer only — no sessions) |
 | **Demo** (website) | No auth needed | Keyword verification | 1 query/hour per IP |
 
-Sign in at [browseai.dev](https://browseai.dev) to create a free BAI key — it bundles your keys into one key and unlocks the premium verification pipeline (semantic matching, multi-provider search, consistency checking) with a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When the quota is reached, queries gracefully fall back to keyword verification (or deep falls back to thorough) — still works, just basic matching. Quota resets every 24 hours. Pro removes all limits. BYOK works for all packages (MCP, Python SDK, REST API) without an account.
+The free tier includes 100 premium queries/day (or ~33 deep queries/day at 3x cost each). When the quota is reached, queries gracefully fall back to keyword verification (or deep falls back to thorough) — still works, just basic matching. Quota resets every 24 hours. Pro removes all limits.
 
 API responses include quota info when using a BAI key:
 ```json
@@ -310,13 +295,14 @@ API responses include quota info when using a BAI key:
 ## Project Structure
 
 ```
-/apps/api              Fastify API server (port 3001)
 /apps/mcp              MCP server (stdio transport, npm: browseai-dev)
 /packages/shared       Shared types, Zod schemas, constants
 /packages/python-sdk   Python SDK (PyPI: browseaidev)
 /src                   React frontend (Vite, port 8080)
 /supabase              Database migrations
 ```
+
+> The verification engine (API server) is in a separate private repository ([BrowseAI-HQ/browseaidev-engine](https://github.com/BrowseAI-HQ/browseaidev-engine)) and runs as a hosted service.
 
 ## API Endpoints
 
@@ -530,17 +516,11 @@ See the [examples/](examples/) directory for ready-to-run agent recipes:
 
 ## Environment Variables
 
+These are for running the MCP server or frontend locally. The verification engine runs as a hosted service and does not require local configuration.
+
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SERP_API_KEY` | Yes | Web search API key ([Tavily](https://app.tavily.com)) |
-| `OPENROUTER_API_KEY` | Yes | LLM API key ([OpenRouter](https://openrouter.ai/keys)) |
-| `KV_REST_API_URL` | No | Vercel KV / Upstash Redis REST URL (falls back to in-memory cache) |
-| `KV_REST_API_TOKEN` | No | Vercel KV / Upstash Redis REST token |
-| `SUPABASE_URL` | No | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key |
-| `BRAVE_API_KEY` | No | Brave Search API key (adds source diversity) |
-| `HF_API_KEY` | No | Enables semantic verification (optional) |
-| `PORT` | No | API server port (default: 3001) |
+| `BROWSE_API_KEY` | Yes (MCP) | BrowseAI Dev API key (`bai_xxx`) — get one at [browseai.dev/dashboard](https://browseai.dev/dashboard) |
 
 ## Tech Stack
 
@@ -588,11 +568,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, coding convention
 
 ## License
 
-This project uses a dual-license model:
+This project uses an open-core model:
 
 | Component | License | What it means |
 |-----------|---------|---------------|
-| SDKs, MCP server, integrations, frontend | [Apache 2.0](LICENSE) | Use freely, modify, redistribute |
-| Verification engine (`apps/api/`) | [BSL 1.1](apps/api/LICENSE) | Free to use, but cannot offer as a competing service. Converts to Apache 2.0 on 2030-03-25 |
+| SDKs, MCP server, integrations, frontend (this repo) | [Apache 2.0](LICENSE) | Use freely, modify, redistribute |
+| Verification engine (separate private repo) | BSL 1.1 | Hosted service — free to use via API, but source is not public. Converts to Apache 2.0 on 2030-03-25 |
 
-See the [LICENSE](LICENSE) and [apps/api/LICENSE](apps/api/LICENSE) files for details.
+See the [LICENSE](LICENSE) file for details on this repository.

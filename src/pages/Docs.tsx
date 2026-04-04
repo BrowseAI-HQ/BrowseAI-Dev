@@ -185,8 +185,7 @@ const Docs = () => {
 
             <CodeBlock label="REST API">{`curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\
-  -H "X-Tavily-Key: tvly-xxx" \\
-  -H "X-OpenRouter-Key: sk-or-xxx" \\
+  -H "Authorization: Bearer bai_xxx" \\
   -d '{"query": "What is quantum computing?", "depth": "thorough"}'`}</CodeBlock>
 
             <CodeBlock label="Python SDK">{`from browseaidev import BrowseAIDev
@@ -230,7 +229,7 @@ Or append &depth=thorough to the results URL.`}</CodeBlock>
               <h4 className="text-sm font-semibold text-foreground mb-2">Quota &amp; requirements</h4>
               <ul className="list-disc list-inside space-y-1 text-xs">
                 <li>Deep mode costs <strong>3x</strong> a normal query against your premium quota</li>
-                <li>Requires a BrowseAI API key (<code className="bg-secondary px-1 rounded">bai_xxx</code>) — not available with BYOK</li>
+                <li>Requires a BrowseAI API key (<code className="bg-secondary px-1 rounded">bai_xxx</code>)</li>
                 <li>Falls back to thorough mode if premium quota is exceeded</li>
                 <li>Latency: 10-30s depending on how many follow-up rounds are needed</li>
               </ul>
@@ -370,7 +369,6 @@ Then: "How is entanglement used in computing?" — prior findings are recalled a
               <h4 className="text-sm font-semibold text-foreground mb-1">API key required</h4>
               <p className="text-xs">
                 Sessions require a BrowseAI Dev API key (<code className="bg-secondary px-1 rounded">bai_xxx</code>) for identity and ownership.
-                BYOK (Tavily + OpenRouter keys only) works for search/answer but cannot use sessions.
                 Get a free key at <a href="https://browseai.dev/dashboard" className="text-accent hover:underline">browseai.dev/dashboard</a>.
                 For MCP, set <code className="bg-secondary px-1 rounded">BROWSE_API_KEY</code> env var.
                 For Python SDK, pass <code className="bg-secondary px-1 rounded">api_key="bai_xxx"</code>.
@@ -663,8 +661,8 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
-                  <tr><td className="py-2 pr-4">BYOK</td><td className="py-2 pr-4">Pass <code className="bg-secondary px-1 rounded">X-Tavily-Key</code> + <code className="bg-secondary px-1 rounded">X-OpenRouter-Key</code> headers</td><td className="py-2">Unlimited, free (no sessions)</td></tr>
-                  <tr><td className="py-2 pr-4">API Key</td><td className="py-2 pr-4"><code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code></td><td className="py-2">Unlimited + sessions</td></tr>
+                  <tr><td className="py-2 pr-4">API Key (Free)</td><td className="py-2 pr-4"><code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code></td><td className="py-2">100 queries/day + sessions</td></tr>
+                  <tr><td className="py-2 pr-4">API Key (Pro)</td><td className="py-2 pr-4"><code className="bg-secondary px-1 rounded">Authorization: Bearer bai_xxx</code></td><td className="py-2">Unlimited + priority</td></tr>
                   <tr><td className="py-2 pr-4">Demo</td><td className="py-2 pr-4">No auth</td><td className="py-2">1 query/hour per IP</td></tr>
                 </tbody>
               </table>
@@ -674,9 +672,10 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
           {/* Hosted vs Self-Hosted */}
           <Section id="hosted-vs-self" title="Hosted vs Self-Hosted" icon={Cloud}>
             <p>
-              BrowseAI Dev is Apache 2.0 licensed and can be self-hosted. But the hosted service at{" "}
-              <a href="https://browseai.dev" className="text-accent hover:underline">browseai.dev</a>{" "}
-              provides advantages that can't be replicated by running your own instance:
+              BrowseAI Dev follows an open-core model. The SDKs, MCP server, and frontend are Apache 2.0 licensed.
+              The verification engine runs as a hosted service at{" "}
+              <a href="https://browseai.dev" className="text-accent hover:underline">browseai.dev</a>.
+              Here's what the hosted service provides:
             </p>
 
             <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)] sm:[mask-image:none]">
@@ -849,11 +848,11 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
               },
               {
                 q: "Can I self-host BrowseAI Dev?",
-                a: "Yes — BrowseAI Dev is Apache 2.0 licensed. You can self-host, modify, and distribute it. Self-hosted instances miss the key advantages of the hosted service: the self-improving data flywheel (domain authority scores that get smarter from aggregated verification data across all users), shared cache (popular queries are instant), automatic updates, and upcoming Pro features (multi-model verification, priority queue).",
+                a: "The SDKs, MCP server, and frontend are open-source (Apache 2.0) and can be run locally. The verification engine runs as a hosted service — all API requests are processed by BrowseAI Dev cloud infrastructure. This gives you the benefit of the self-improving data flywheel, shared cache, and automatic updates without managing any infrastructure.",
               },
               {
-                q: "What do I miss by self-hosting?",
-                a: "Three things you can't replicate by forking: (1) The data flywheel — hosted domain authority scores are continuously refined from thousands of queries across all users. A self-hosted instance only has its own data. (2) Shared cache — when someone else already searched your query, you get instant results. (3) Continuous improvement — new verification algorithms, domain tiers, and features ship to hosted users automatically.",
+                q: "What is the open-core model?",
+                a: "BrowseAI Dev uses an open-core model. The client-side components (MCP server, Python SDK, LangChain integration, frontend) are fully open-source under Apache 2.0. The verification engine (search, extraction, verification pipeline, confidence scoring) is a hosted service. All API access requires a BrowseAI Dev API key (bai_xxx) — get a free one at browseai.dev/dashboard.",
               },
               {
                 q: "How is my query data used?",

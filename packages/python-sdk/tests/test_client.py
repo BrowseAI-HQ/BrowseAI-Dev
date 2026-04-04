@@ -6,26 +6,19 @@ from browseaidev import BrowseAIDev, AsyncBrowseAIDev, BrowseAIDevError
 from browseaidev.models import BrowseResult, SearchResult, PageResult, CompareResult
 
 
-def test_client_requires_auth():
-    with pytest.raises(ValueError, match="Provide api_key"):
+def test_client_requires_api_key():
+    with pytest.raises(TypeError):
         BrowseAIDev()
 
 
-def test_async_client_requires_auth():
-    with pytest.raises(ValueError, match="Provide api_key"):
+def test_async_client_requires_api_key():
+    with pytest.raises(TypeError):
         AsyncBrowseAIDev()
 
 
 def test_client_accepts_api_key():
     client = BrowseAIDev(api_key="bai_test")
     assert client._headers["X-API-Key"] == "bai_test"
-    client.close()
-
-
-def test_client_accepts_byok():
-    client = BrowseAIDev(tavily_key="tvly-xxx", openrouter_key="sk-or-xxx")
-    assert client._headers["X-Tavily-Key"] == "tvly-xxx"
-    assert client._headers["X-OpenRouter-Key"] == "sk-or-xxx"
     client.close()
 
 

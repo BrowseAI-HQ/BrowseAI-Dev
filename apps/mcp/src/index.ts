@@ -10,16 +10,16 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.2.6";
+const VERSION = "0.3.0";
 const LLM_MODEL = "google/gemini-2.5-flash";
 const LLM_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
 const MAX_PAGE_CONTENT_LENGTH = 3000;
 
-// --- API mode (BrowseAI Dev API key) ---
+// --- API mode (BrowseAI Dev API key — required) ---
 const BROWSE_API_KEY = process.env.BROWSE_API_KEY;
 const BROWSE_API_URL = process.env.BROWSE_API_URL || "https://browseai.dev/api";
-const API_MODE = !!BROWSE_API_KEY;
+const API_MODE = true; // BYOK removed — BAI key always required
 
 // --- CLI handling ---
 const args = process.argv.slice(2);
@@ -37,9 +37,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browseai-dev --version    Show version
 
   Environment Variables:
-    BROWSE_API_KEY         BrowseAI Dev API key (get one at https://browseai.dev/dashboard)
-    SERP_API_KEY           Tavily API key (get one at https://tavily.com) — BYOK mode
-    OPENROUTER_API_KEY     OpenRouter API key (get one at https://openrouter.ai) — BYOK mode
+    BROWSE_API_KEY         BrowseAI Dev API key (required — get one at https://browseai.dev/dashboard)
     MCP_HTTP_PORT          Port for HTTP transport (default: 3100)
 
   MCP Tools:
@@ -56,15 +54,9 @@ if (args.includes("--help") || args.includes("-h")) {
     browse_session_knowledge  Export all knowledge from a session
 
   Quick Setup:
-    Option A: Use a BrowseAI Dev API key (one key for everything)
-      1. Sign in at https://browseai.dev and generate an API key
-      2. Run: npx browseai-dev setup
-      3. Restart Claude Desktop
-
-    Option B: Bring your own keys (BYOK)
-      1. Get API keys: https://tavily.com + https://openrouter.ai
-      2. Run: npx browseai-dev setup
-      3. Restart Claude Desktop
+    1. Sign in at https://browseai.dev and generate a free API key
+    2. Run: npx browseai-dev setup
+    3. Restart Claude Desktop
 `);
   process.exit(0);
 }
@@ -100,26 +92,22 @@ async function apiCall(path: string, body: Record<string, unknown>) {
 }
 
 // --- Env validation ---
-function getEnvKeys() {
-  if (API_MODE) return { SERP_API_KEY: "", OPENROUTER_API_KEY: "" };
-
-  const SERP_API_KEY = process.env.SERP_API_KEY;
-  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-
-  if (!SERP_API_KEY || !OPENROUTER_API_KEY) {
+function validateEnv() {
+  if (!BROWSE_API_KEY) {
     console.error(`
-  browseai-dev: Missing required environment variables
+  browseai-dev: Missing BROWSE_API_KEY
 
-  ${!SERP_API_KEY ? "  SERP_API_KEY       - Get one at https://tavily.com" : "  SERP_API_KEY       - Set"}
-  ${!OPENROUTER_API_KEY ? "  OPENROUTER_API_KEY - Get one at https://openrouter.ai" : "  OPENROUTER_API_KEY - Set"}
+  A BrowseAI Dev API key is required. Get a free one at https://browseai.dev/dashboard
 
   Quick fix: run 'npx browseai-dev setup' to configure automatically.
-  Or use a BrowseAI Dev API key: BROWSE_API_KEY=bai_xxx npx browseai-dev
 `);
     process.exit(1);
   }
+}
 
-  return { SERP_API_KEY, OPENROUTER_API_KEY };
+// Legacy stub — BYOK removed, all calls go through API. Kept for dead code paths.
+function getEnvKeys() {
+  return { SERP_API_KEY: "", OPENROUTER_API_KEY: "" };
 }
 
 // --- In-memory cache ---
@@ -889,7 +877,7 @@ Select 2-4 techniques. Return a Clarity system prompt with anti-hallucination te
 // --- MCP Server ---
 function startServer() {
   // Validate env before starting
-  getEnvKeys();
+  validateEnv();
 
   const useHttp = args.includes("--http") || !!process.env.MCP_HTTP_PORT;
   const port = parseInt(process.env.MCP_HTTP_PORT || process.env.PORT || "3100", 10);

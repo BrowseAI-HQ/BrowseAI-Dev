@@ -942,7 +942,7 @@ const Index = () => {
                 { name: "CrewAI", hint: "pip install crewai-browseaidev" },
                 { name: "LlamaIndex", hint: "pip install llamaindex-browseaidev" },
                 { name: "SSE Streaming", hint: "POST /browse/answer/stream" },
-                { name: "BYOK Mode", hint: "X-Tavily-Key + X-OpenRouter-Key headers" },
+                { name: "Free API Keys", hint: "Get a bai_ key at browseai.dev" },
               ]).map((item, i) => (
                 <motion.span
                   key={item.name}
@@ -1087,7 +1087,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
   -H "Content-Type: application/json" \\
   -H "X-API-Key: bai_your_key" \\
   -d '{"query": "What causes aurora borealis?"}'`}</pre>
-              <p className="text-xs text-muted-foreground mt-2">Works with any HTTP client or agent framework. BYOK headers also supported.</p>
+              <p className="text-xs text-muted-foreground mt-2">Works with any HTTP client or agent framework. Free API keys available.</p>
             </motion.div>
 
             {/* Framework Integrations */}
@@ -1130,7 +1130,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
             <Badge variant="outline" className="text-xs font-normal mb-6">Pricing</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Free to start. Scale when ready.</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              No credit card. No limits on BYOK. Premium verification free with BAI key.
+              No credit card. Free API keys with premium verification included.
             </p>
           </motion.div>
 
@@ -1143,7 +1143,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> All 5 tools + compare mode</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Standard keyword verification</li>
                 <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> MCP, Python SDK &amp; REST API</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Unlimited with BYOK — no signup</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" /> Try instantly — no signup needed</li>
               </ul>
             </motion.div>
 
@@ -1183,7 +1183,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
               <ul className="space-y-2.5 text-sm text-muted-foreground flex-1">
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Unlimited premium verification</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> No quotas, no fallback</li>
-                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Managed keys — no BYOK needed</li>
+                <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Managed keys — zero configuration</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> 15+ sources per query</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Multi-model verification</li>
                 <li className="flex items-start gap-2"><Sparkles className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" /> Priority queue &amp; webhooks</li>

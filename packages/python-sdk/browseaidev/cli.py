@@ -18,25 +18,13 @@ def cmd_setup(args: argparse.Namespace) -> None:
     print("  =================")
     print("  Configure the BrowseAI Dev Python SDK\n")
 
-    api_key = input("  BrowseAI Dev API key (leave blank to use your own keys):").strip()
+    api_key = input("  BrowseAI Dev API key (get a free one at https://browseai.dev/dashboard): ").strip()
 
-    config: dict[str, str] = {}
+    if not api_key:
+        print("\n  API key is required. Sign up at https://browseai.dev to get a free key.\n")
+        sys.exit(1)
 
-    if api_key:
-        config["api_key"] = api_key
-    else:
-        tavily_key = input("  Tavily API key (get one at https://tavily.com): ").strip()
-        if not tavily_key:
-            print("\n  Tavily API key is required. Get one at https://tavily.com\n")
-            sys.exit(1)
-
-        openrouter_key = input("  OpenRouter API key (get one at https://openrouter.ai): ").strip()
-        if not openrouter_key:
-            print("\n  OpenRouter API key is required. Get one at https://openrouter.ai\n")
-            sys.exit(1)
-
-        config["tavily_key"] = tavily_key
-        config["openrouter_key"] = openrouter_key
+    config: dict[str, str] = {"api_key": api_key}
 
     with open(config_path, "w") as f:
         json.dump(config, f, indent=2)

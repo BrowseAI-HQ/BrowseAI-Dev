@@ -94,7 +94,7 @@ const Privacy = () => {
               <strong className="text-foreground">What we do NOT do:</strong> We do not sell your data. We do not share individual queries or results with third parties (beyond the search/LLM providers needed to process your request). We do not use your queries to train LLM models. Aggregate statistical improvements are computed from patterns across all queries — your individual queries are not exposed to other users.
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              This data flywheel is a core part of how BrowseAI Dev improves over time. By using the hosted service, you benefit from the collective verification data of all users — making every result more accurate. <strong className="text-foreground">If you need full privacy, self-host</strong> — self-hosted instances do not participate in this shared data pool and start with static domain scores only.
+              This data flywheel is a core part of how BrowseAI Dev improves over time. By using the managed service, you benefit from the collective verification data of all users — making every result more accurate. <strong className="text-foreground">Your data stays private</strong> — individual queries are never exposed to other users, and we do not use your queries to train LLM models. Only aggregate statistical patterns are used to improve domain authority scores and verification accuracy.
             </p>
           </section>
 

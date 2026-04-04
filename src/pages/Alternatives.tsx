@@ -386,7 +386,7 @@ const Alternatives = () => {
                 {
                   icon: Code2,
                   title: "Open infrastructure",
-                  desc: "Open-source infrastructure licensed under Apache 2.0. All packages licensed under Apache 2.0. Bring your own keys, plug in your own search backends.",
+                  desc: "Open-core model: SDKs, MCP server, and integrations are Apache 2.0. Verification engine runs as managed service with free API keys.",
                 },
               ].map((item) => (
                 <div

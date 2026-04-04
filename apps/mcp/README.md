@@ -32,7 +32,7 @@ Users with a BrowseAI Dev API key (`bai_xxx`) get enhanced verification:
 
 Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 deep queries/day at 3x cost each). When exceeded, queries gracefully fall back to keyword verification (deep falls back to thorough). Quota resets every 24 hours.
 
-**No account needed** — all tools work with BYOK (your own Tavily + OpenRouter keys) with no signup, no limits, and keyword verification. Sign in at [browseai.dev](https://browseai.dev) for a free BAI key to unlock premium features.
+Sign up at [browseai.dev](https://browseai.dev) for a free API key — 100 premium queries/day with full verification pipeline.
 
 ## Quick Start
 
@@ -40,9 +40,7 @@ Free BAI key users get a generous daily quota (100 premium queries/day, or ~33 d
 npx browseai-dev setup
 ```
 
-This auto-configures Claude Desktop. You'll need:
-- [Tavily API key](https://tavily.com) (free tier available)
-- [OpenRouter API key](https://openrouter.ai)
+This auto-configures Claude Desktop. You'll need a BrowseAI Dev API key — get one free at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ## Manual Setup
 
@@ -57,16 +55,12 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "command": "npx",
       "args": ["-y", "browseai-dev"],
       "env": {
-        "SERP_API_KEY": "tvly-your-key",
-        "OPENROUTER_API_KEY": "your-openrouter-key",
         "BROWSE_API_KEY": "bai_xxx"
       }
     }
   }
 }
 ```
-
-> `BROWSE_API_KEY` is optional for search/answer but **required for Research Memory (sessions)**. Get one free at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ### Cursor / Windsurf
 
@@ -78,15 +72,11 @@ Add to your MCP settings:
     "command": "npx",
     "args": ["-y", "browseai-dev"],
     "env": {
-      "SERP_API_KEY": "tvly-your-key",
-      "OPENROUTER_API_KEY": "your-openrouter-key",
       "BROWSE_API_KEY": "bai_xxx"
     }
   }
 }
 ```
-
-> Add `BROWSE_API_KEY` to enable Research Memory (sessions). Get one free at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ### HTTP Transport
 
@@ -129,7 +119,7 @@ docker run -p 3100:3100 -e BROWSE_API_KEY=bai_xxx browseai-dev
 | `browse_session_fork` | Fork a shared session to continue the research |
 | `browse_feedback` | Submit accuracy feedback on a result |
 
-> **Note:** Session tools (`browse_session_*`) require a BrowseAI Dev API key (`bai_xxx`) for identity and ownership. Set `BROWSE_API_KEY` in your env config. BYOK users can use search/answer but cannot use sessions. Get a free API key at [browseai.dev/dashboard](https://browseai.dev/dashboard).
+> **Note:** All tools require a BrowseAI Dev API key (`bai_xxx`). Get a free one at [browseai.dev/dashboard](https://browseai.dev/dashboard).
 
 ## Examples
 
