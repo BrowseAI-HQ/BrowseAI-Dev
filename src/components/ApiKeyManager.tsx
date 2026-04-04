@@ -187,6 +187,13 @@ export function ApiKeyManager() {
                 />
               </div>
 
+              <div className="p-2.5 rounded-md bg-emerald-500/5 border border-emerald-500/15 space-y-1">
+                <p className="text-[11px] font-medium text-emerald-400">What you get beyond raw search & LLM</p>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  Your keys power search and answer generation. BrowseAI Dev layers <strong className="text-foreground">Grounded Intelligence</strong> on top — semantic NLI verification, cross-source consensus analysis, contradiction detection, Bayesian domain authority scoring, evidence-based confidence calibration, and multi-provider source diversity. One <code className="bg-secondary px-0.5 rounded">bai_xxx</code> key unlocks the full pipeline across MCP, SDK, and API.
+                </p>
+              </div>
+
               <h4 className="text-xs font-semibold text-foreground pt-1">Step 3: Generate your BrowseAI Dev key</h4>
               <div className="flex items-center gap-3">
                 <Input
