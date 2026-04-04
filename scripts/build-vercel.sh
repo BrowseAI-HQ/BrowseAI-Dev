@@ -40,6 +40,17 @@ ENGINE_URL="${ENGINE_URL:-https://browseaidev-engine.vercel.app}"
 cat > .vercel/output/config.json << CONF
 {
   "version": 3,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" }
+      ]
+    }
+  ],
   "routes": [
     { "src": "/api/mcp", "dest": "/api/mcp" },
     { "src": "/api/(.*)", "dest": "${ENGINE_URL}/api/\$1" },
