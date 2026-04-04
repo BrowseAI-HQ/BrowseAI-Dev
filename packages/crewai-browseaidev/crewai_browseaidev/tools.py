@@ -8,12 +8,34 @@ from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
 
+_KEY_ERROR = (
+    "api_key is required. Sign in and get your free API key at https://browseai.dev"
+)
+_KEY_FORMAT_ERROR = (
+    "Invalid API key format — must start with 'bai_'. "
+    "Sign in and get your free API key at https://browseai.dev"
+)
+
+
 class _ClientMixin:
     """Shared client initialization."""
 
     api_key: str = ""
     base_url: str = "https://browseai.dev/api"
     _client: Any = None
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        original_init = cls.__init__
+
+        def _validated_init(self: Any, *args: Any, **kw: Any) -> None:
+            original_init(self, *args, **kw)
+            if not self.api_key:
+                raise ValueError(_KEY_ERROR)
+            if not self.api_key.startswith("bai_"):
+                raise ValueError(_KEY_FORMAT_ERROR)
+
+        cls.__init__ = _validated_init  # type: ignore[assignment]
 
     def _get_client(self) -> Any:
         if self._client is None:

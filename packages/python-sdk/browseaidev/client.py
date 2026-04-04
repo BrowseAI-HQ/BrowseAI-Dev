@@ -90,7 +90,14 @@ class BrowseAIDev:
         timeout: float = DEFAULT_TIMEOUT,
     ):
         if not api_key:
-            raise ValueError("api_key is required. Get a free one at https://browseai.dev/dashboard")
+            raise ValueError(
+                "api_key is required. Sign in and get your free API key at https://browseai.dev"
+            )
+        if not api_key.startswith("bai_"):
+            raise ValueError(
+                "Invalid API key format — must start with 'bai_'. "
+                "Sign in and get your free API key at https://browseai.dev"
+            )
 
         self._headers = _build_headers(api_key)
         self._last_quota: PremiumQuota | None = None
@@ -367,7 +374,14 @@ class AsyncBrowseAIDev:
         timeout: float = DEFAULT_TIMEOUT,
     ):
         if not api_key:
-            raise ValueError("api_key is required. Get a free one at https://browseai.dev/dashboard")
+            raise ValueError(
+                "api_key is required. Sign in and get your free API key at https://browseai.dev"
+            )
+        if not api_key.startswith("bai_"):
+            raise ValueError(
+                "Invalid API key format — must start with 'bai_'. "
+                "Sign in and get your free API key at https://browseai.dev"
+            )
 
         self._headers = _build_headers(api_key)
         self._last_quota: PremiumQuota | None = None

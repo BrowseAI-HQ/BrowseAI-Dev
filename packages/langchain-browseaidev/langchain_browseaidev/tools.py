@@ -6,7 +6,7 @@ from typing import Any, Optional, Type
 
 from langchain_core.callbacks import CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class _BrowseAIDevBase(BaseTool):
@@ -16,6 +16,19 @@ class _BrowseAIDevBase(BaseTool):
     base_url: str = Field(default="https://browseai.dev/api", description="API base URL")
 
     _client: Any = None
+
+    @model_validator(mode="after")
+    def _validate_api_key(self) -> "_BrowseAIDevBase":
+        if not self.api_key:
+            raise ValueError(
+                "api_key is required. Sign in and get your free API key at https://browseai.dev"
+            )
+        if not self.api_key.startswith("bai_"):
+            raise ValueError(
+                "Invalid API key format — must start with 'bai_'. "
+                "Sign in and get your free API key at https://browseai.dev"
+            )
+        return self
 
     def _get_client(self) -> Any:
         if self._client is None:

@@ -8,7 +8,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.3.1";
+const VERSION = "0.3.2";
 
 // --- BrowseAI Dev API key (required) ---
 const BROWSE_API_KEY = process.env.BROWSE_API_KEY;
@@ -30,7 +30,7 @@ if (args.includes("--help") || args.includes("-h")) {
     browseai-dev --version    Show version
 
   Environment Variables:
-    BROWSE_API_KEY         BrowseAI Dev API key (required — get one at https://browseai.dev/dashboard)
+    BROWSE_API_KEY         BrowseAI Dev API key (required — sign in at https://browseai.dev)
     MCP_HTTP_PORT          Port for HTTP transport (default: 3100)
 
   MCP Tools:
@@ -90,7 +90,7 @@ function validateEnv() {
     console.error(`
   browseai-dev: Missing BROWSE_API_KEY
 
-  A BrowseAI Dev API key is required. Get a free one at https://browseai.dev/dashboard
+  A BrowseAI Dev API key is required. Sign in and get your free key at https://browseai.dev
 
   Quick fix: run 'npx browseai-dev setup' to configure automatically.
 `);
