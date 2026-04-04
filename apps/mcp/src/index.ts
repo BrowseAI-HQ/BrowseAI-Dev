@@ -8,7 +8,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // --- Constants (inlined for standalone npm package) ---
-const VERSION = "0.3.0";
+const VERSION = "0.3.1";
 
 // --- BrowseAI Dev API key (required) ---
 const BROWSE_API_KEY = process.env.BROWSE_API_KEY;
