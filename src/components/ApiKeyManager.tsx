@@ -26,6 +26,8 @@ export function ApiKeyManager() {
 
   // Form state
   const [label, setLabel] = useState("");
+  const [openrouterKey, setOpenrouterKey] = useState("");
+  const [tavilyKey, setTavilyKey] = useState("");
   const [creating, setCreating] = useState(false);
 
   // Newly created key dialog
@@ -56,9 +58,15 @@ export function ApiKeyManager() {
     setCreating(true);
     setError(null);
     try {
-      const result = await createApiKey(label.trim() || undefined);
+      const result = await createApiKey(
+        label.trim() || undefined,
+        openrouterKey.trim() || undefined,
+        tavilyKey.trim() || undefined,
+      );
       setNewKey(result.apiKey);
       setLabel("");
+      setOpenrouterKey("");
+      setTavilyKey("");
       fetchKeys();
     } catch (e: any) {
       setError(e.message);
@@ -133,26 +141,44 @@ export function ApiKeyManager() {
           <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
             <p className="text-sm text-muted-foreground">
               Generate a BrowseAI Dev API key to use with MCP, Python SDK, REST API, and CLI.
-              Free keys include 100 premium queries/day with full verification pipeline.
-              After the daily quota, queries fall back to unlimited basic verification.
+              Add your OpenRouter and Tavily keys to get unlimited access with the full Grounded Intelligence verification pipeline.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="space-y-2">
               <Input
-                placeholder="Key label (optional, e.g. 'cursor', 'production')"
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                className="text-xs max-w-xs"
+                placeholder="OpenRouter API key (required)"
+                value={openrouterKey}
+                onChange={(e) => setOpenrouterKey(e.target.value)}
+                className="text-xs max-w-md font-mono"
+                type="password"
               />
-              <Button
-                onClick={handleCreate}
-                disabled={creating}
-                className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
-                size="sm"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                {creating ? "Generating..." : "Generate API Key"}
-              </Button>
+              <Input
+                placeholder="Tavily API key (required)"
+                value={tavilyKey}
+                onChange={(e) => setTavilyKey(e.target.value)}
+                className="text-xs max-w-md font-mono"
+                type="password"
+              />
+              <div className="flex items-center gap-3">
+                <Input
+                  placeholder="Key label (optional, e.g. 'cursor', 'production')"
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  className="text-xs max-w-xs"
+                />
+                <Button
+                  onClick={handleCreate}
+                  disabled={creating || !openrouterKey.trim() || !tavilyKey.trim()}
+                  className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90"
+                  size="sm"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {creating ? "Generating..." : "Generate API Key"}
+                </Button>
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Get your keys: <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" className="text-accent hover:underline">OpenRouter</a> · <a href="https://app.tavily.com/home" target="_blank" rel="noopener" className="text-accent hover:underline">Tavily</a>
+            </p>
           </form>
 
           {/* Existing keys */}
