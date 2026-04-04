@@ -573,6 +573,114 @@ const Index = () => {
               </p>
             </div>
           </motion.div>
+
+          {/* ===== VERIFICATION ENGINE — Pipeline Reveal ===== */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="mt-24"
+          >
+            {/* Hero: Evidence Engine */}
+            <div className="relative max-w-3xl mx-auto">
+              {/* The Engine — center stage */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+                className="relative mx-auto max-w-md"
+              >
+                {/* Outer glow */}
+                <div className="absolute inset-0 bg-accent/5 rounded-3xl blur-3xl -z-10" />
+
+                <div className="relative p-8 md:p-10 rounded-3xl bg-gradient-to-b from-accent/[0.08] to-transparent border border-accent/20">
+                  {/* Neural network visualization */}
+                  <div className="relative w-full h-32 mb-6 overflow-hidden">
+                    {/* Flowing data lines */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 120" fill="none">
+                      {/* Input nodes (left) */}
+                      {[20, 40, 60, 80, 100].map((y, i) => (
+                        <g key={`in-${i}`}>
+                          <circle cx="40" cy={y} r="4" className="fill-muted-foreground/30" />
+                          <line x1="44" y1={y} x2="160" y2="60" className="stroke-accent/10" strokeWidth="1">
+                            <animate attributeName="stroke-opacity" values="0.05;0.3;0.05" dur={`${2 + i * 0.3}s`} repeatCount="indefinite" />
+                          </line>
+                        </g>
+                      ))}
+                      {/* Core node (center) — the engine */}
+                      <circle cx="200" cy="60" r="20" className="fill-accent/10 stroke-accent/40" strokeWidth="2">
+                        <animate attributeName="r" values="18;22;18" dur="3s" repeatCount="indefinite" />
+                      </circle>
+                      <circle cx="200" cy="60" r="8" className="fill-accent/30">
+                        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                      {/* Hidden layer nodes */}
+                      {[30, 60, 90].map((y, i) => (
+                        <g key={`mid-${i}`}>
+                          <line x1="160" y1="60" x2="200" y2={y} className="stroke-accent/15" strokeWidth="1" />
+                          <line x1="200" y1={y} x2="240" y2="60" className="stroke-accent/15" strokeWidth="1" />
+                        </g>
+                      ))}
+                      {/* Output nodes (right) */}
+                      {[30, 60, 90].map((y, i) => (
+                        <g key={`out-${i}`}>
+                          <line x1="220" y1="60" x2="340" y2={y} className="stroke-accent/10" strokeWidth="1">
+                            <animate attributeName="stroke-opacity" values="0.05;0.3;0.05" dur={`${2.5 + i * 0.3}s`} repeatCount="indefinite" />
+                          </line>
+                          <circle cx="340" cy={y} r="4" className={i === 0 ? "fill-emerald-400/50" : i === 1 ? "fill-red-400/50" : "fill-muted-foreground/30"} />
+                        </g>
+                      ))}
+                      {/* Output labels */}
+                      <text x="355" y="34" className="fill-emerald-400/70" fontSize="9" fontFamily="monospace">SUPPORTS</text>
+                      <text x="355" y="64" className="fill-red-400/70" fontSize="9" fontFamily="monospace">REFUTES</text>
+                      <text x="355" y="94" className="fill-muted-foreground/50" fontSize="9" fontFamily="monospace">UNCERTAIN</text>
+                      {/* Flowing particles */}
+                      {[0, 1, 2].map((i) => (
+                        <circle key={`particle-${i}`} r="2" className="fill-accent">
+                          <animateMotion dur={`${3 + i}s`} repeatCount="indefinite" path={`M40,${20 + i * 30} Q120,60 200,60 Q280,60 340,${30 + i * 30}`} />
+                          <animate attributeName="opacity" values="0;0.8;0" dur={`${3 + i}s`} repeatCount="indefinite" />
+                        </circle>
+                      ))}
+                    </svg>
+                  </div>
+
+                  {/* Name */}
+                  <div className="text-center">
+                    <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
+                      Evidence Engine
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Purpose-built verification model. Not an LLM guessing.
+                    </p>
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      <span className="text-[11px] text-accent/70 font-medium">1.4M+ training pairs</span>
+                      <span className="text-accent/30">&middot;</span>
+                      <span className="text-[11px] text-accent/70 font-medium">Improves with every query</span>
+                      <span className="text-accent/30">&middot;</span>
+                      <span className="text-[11px] text-accent/70 font-medium">13-step pipeline</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Pipeline steps below */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-wrap justify-center gap-2 mt-8"
+              >
+                {["Multi-source search", "Claim extraction", "Semantic matching", "NLI verification", "Cross-source consensus", "Contradiction detection", "Confidence scoring"].map((step, i) => (
+                  <span key={step} className="px-3 py-1.5 rounded-full bg-card border border-border text-[10px] text-muted-foreground font-medium">
+                    {step}
+                  </span>
+                ))}
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
