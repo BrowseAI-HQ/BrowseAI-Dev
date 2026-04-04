@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llamaindex-browseaidev"
-version = "0.1.1"
+version = "0.1.2"
 description = "LlamaIndex integration for BrowseAI Dev — research infrastructure with Grounded Intelligence for AI agents"
 readme = "README.md"
 license = "Apache-2.0"

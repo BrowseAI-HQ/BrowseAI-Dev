@@ -1,6 +1,6 @@
 {
   "name": "browseai-dev",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "mcpName": "io.github.BrowseAI-HQ/browseai-dev",
   "type": "module",
   "description": "Grounded Intelligence for AI agents. MCP server with real-time web search, evidence extraction, verification, and structured citations. The research infrastructure for LangChain, CrewAI, and custom agents.",
