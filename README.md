@@ -32,7 +32,7 @@ Confidence scores are **evidence-based** — not LLM self-assessed. After the LL
 
 1. **Atomic claim decomposition** — Compound claims are auto-split into individual verifiable facts. "Tesla had $96B revenue and 1.8M deliveries" becomes two atomic claims, each verified independently.
 2. **Hybrid retrieval combining keyword and semantic matching** — For each claim, keyword matching finds lexical matches and dense embeddings find semantic matches from source text. Rankings are fused to catch paraphrased evidence that keyword matching alone misses (e.g., "prevents fabricated answers" matching "reduces hallucinations"). Premium tier only, with graceful keyword-only fallback.
-3. **Semantic evidence reranking** — Top candidates per claim are reranked by semantic understanding, selecting the best supporting evidence for each claim. Contradiction penalties and paraphrase boosts are applied.
+3. **Semantic evidence reranking** — Top candidates per claim are reranked by a **purpose-built verification model trained on 1.4M+ claim-evidence pairs** that improves with every query. Selects the best supporting evidence, applies contradiction penalties and paraphrase boosts.
 4. **Multi-provider search** — Parallel search across multiple providers for broader source diversity. More independent sources = stronger cross-reference = higher confidence.
 5. **Domain authority scoring** — 10,000+ domains across 5 tiers (institutional `.gov`/`.edu` → major news → tech journalism → community → low-quality). Dynamic scoring that improves from real verification data.
 6. **Source quote verification** — LLM-extracted quotes verified against actual page text using multi-strategy matching.
