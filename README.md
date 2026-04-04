@@ -1,5 +1,7 @@
 # BrowseAI Dev
 
+[![SafeSkill 84/100](https://img.shields.io/badge/SafeSkill-84%2F100_Passes%20with%20Notes-yellow)](https://safeskill.dev/scan/browseai-hq-browseai-dev)
+
 [![npm](https://img.shields.io/npm/v/browseai-dev)](https://www.npmjs.com/package/browseai-dev)
 [![PyPI](https://img.shields.io/pypi/v/browseaidev)](https://pypi.org/project/browseaidev/)
 [![LangChain](https://img.shields.io/pypi/v/langchain-browseaidev?label=langchain-browseaidev)](https://pypi.org/project/langchain-browseaidev/)
