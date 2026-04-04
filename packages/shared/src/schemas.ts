@@ -129,6 +129,7 @@ export const ClarityRequestSchema = z.object({
   context: z.string().max(50000).optional(),
   intent: z.enum(["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]).optional(),
   mode: z.enum(["prompt", "answer", "verified"]).optional(),
+  depth: z.enum(["fast", "thorough", "deep"]).optional(),
   /** @deprecated Use mode instead. verify=true is equivalent to mode="verified". */
   verify: z.boolean().optional(),
 });

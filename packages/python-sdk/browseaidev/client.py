@@ -208,6 +208,7 @@ class BrowseAIDev:
         context: str | None = None,
         intent: str | None = None,
         mode: str | None = None,
+        depth: str | None = None,
         verify: bool = False,
     ) -> ClarityResult:
         """Clarity — anti-hallucination answer engine.
@@ -230,6 +231,8 @@ class BrowseAIDev:
                     content_generation, agent_pipeline, code_generation, general).
             mode: 'prompt' (prompts only), 'answer' (LLM answer), or 'verified'
                   (LLM + web fusion). Defaults to 'answer'.
+            depth: Research depth for verified mode: 'fast' (default), 'thorough',
+                   or 'deep' (agentic multi-step research).
             verify: Deprecated. Use mode='verified' instead.
         """
         body: dict[str, Any] = {"prompt": prompt}
@@ -239,6 +242,8 @@ class BrowseAIDev:
             body["intent"] = intent
         if mode is not None:
             body["mode"] = mode
+        if depth is not None:
+            body["depth"] = depth
         elif verify:
             body["verify"] = True
         data = self._post("/browse/clarity", body)
@@ -485,6 +490,7 @@ class AsyncBrowseAIDev:
         context: str | None = None,
         intent: str | None = None,
         mode: str | None = None,
+        depth: str | None = None,
         verify: bool = False,
     ) -> ClarityResult:
         """Clarity — anti-hallucination answer engine. See sync client for full docs."""
@@ -495,6 +501,8 @@ class AsyncBrowseAIDev:
             body["intent"] = intent
         if mode is not None:
             body["mode"] = mode
+        if depth is not None:
+            body["depth"] = depth
         elif verify:
             body["verify"] = True
         data = await self._post("/browse/clarity", body)

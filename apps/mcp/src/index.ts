@@ -184,13 +184,15 @@ function registerTools(server: McpServer) {
       context: z.string().optional().describe("Optional context documents to ground against"),
       intent: z.enum(["factual_question", "document_qa", "content_generation", "agent_pipeline", "code_generation", "general"]).optional().describe("Override auto-detected intent"),
       mode: z.enum(["prompt", "answer", "verified"]).optional().describe("'prompt' = returns enhanced prompts only (no LLM call), 'answer' = LLM answer with anti-hallucination (default), 'verified' = LLM + web fusion for maximum accuracy"),
+      depth: z.enum(["fast", "thorough", "deep"]).optional().describe("Research depth for verified mode: 'fast' (default), 'thorough' (multi-pass), 'deep' (agentic multi-step research)"),
       verify: z.boolean().optional().describe("Deprecated: use mode instead. verify=true is equivalent to mode='verified'"),
     },
-    async ({ prompt, context, intent, mode, verify }) => {
+    async ({ prompt, context, intent, mode, depth, verify }) => {
       const body: Record<string, unknown> = { prompt };
       if (context) body.context = context;
       if (intent) body.intent = intent;
       if (mode) body.mode = mode;
+      if (depth) body.depth = depth;
       if (verify && !mode) body.verify = verify;
       const result = await apiCall("/browse/clarity", body);
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
