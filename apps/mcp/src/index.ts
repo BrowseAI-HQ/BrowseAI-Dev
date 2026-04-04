@@ -20,7 +20,7 @@ const args = process.argv.slice(2);
 if (args.includes("--help") || args.includes("-h")) {
   console.log(`
   browseai-dev v${VERSION}
-  Open-source deep research MCP server for AI agents
+  Grounded Intelligence — open-source deep research MCP server for AI agents
 
   Usage:
     browseai-dev              Start the MCP server (stdio transport)

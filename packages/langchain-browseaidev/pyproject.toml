@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "langchain-browseaidev"
 version = "0.1.2"
-description = "LangChain integration for BrowseAI Dev — verified web search with citations and confidence scores for AI agents"
+description = "LangChain integration for BrowseAI Dev — research infrastructure with Grounded Intelligence for AI agents"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
@@ -15,6 +15,7 @@ keywords = [
     "ai-agent", "web-search", "fact-checking", "citations",
     "confidence-scoring", "mcp", "rag", "hallucination-prevention",
     "verified-search", "evidence-based", "crewai", "autogen",
+    "grounded-intelligence",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

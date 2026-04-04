@@ -394,10 +394,10 @@ const AlternativeDetail = () => {
           >
             <h3 className="font-medium text-lg flex items-center gap-2">
               <Shield className="w-5 h-5 text-accent bg-accent/10 rounded" />
-              How BrowseAI Dev is differentiated
+              How BrowseAI Dev's Grounded Intelligence is differentiated
             </h3>
             <p className="text-xs text-muted-foreground">
-              BrowseAI Dev is differentiated in offering native claim-level verification, contradiction detection,
+              BrowseAI Dev's Grounded Intelligence is differentiated in offering native claim-level verification, contradiction detection,
               and cross-source consensus in a single agent-focused workflow.
             </p>
             <ul className="space-y-2">
@@ -436,7 +436,7 @@ const AlternativeDetail = () => {
             </div>
             <p className="text-sm text-muted-foreground">
               If your AI agent needs to <em>verify what it can trust before acting</em>,
-              BrowseAI Dev's native verification pipeline is built for that.
+              BrowseAI Dev's Grounded Intelligence verification pipeline is built for that.
             </p>
           </motion.section>
 

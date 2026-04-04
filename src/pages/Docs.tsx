@@ -65,7 +65,7 @@ const Docs = () => {
     <>
     <SEO
       title="Documentation — API Reference, Verification Pipeline, Confidence Scoring"
-      description="Complete API docs for BrowseAI Dev. Learn about the verification pipeline, confidence scoring algorithm, thorough mode, domain authority, and how to integrate with MCP, REST API, or Python SDK."
+      description="Complete API docs for BrowseAI Dev's Grounded Intelligence. Learn about the verification pipeline, confidence scoring algorithm, thorough mode, domain authority, and how to integrate with MCP, REST API, or Python SDK."
       canonical="/docs"
       structuredData={{
         "@context": "https://schema.org",
@@ -130,7 +130,7 @@ const Docs = () => {
             <Badge variant="outline" className="text-xs font-normal mb-4">Documentation</Badge>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">How BrowseAI Dev Works</h1>
             <p className="text-muted-foreground max-w-2xl leading-relaxed">
-              BrowseAI Dev gives AI agents reliable web research with evidence-backed citations.
+              BrowseAI Dev's Grounded Intelligence gives AI agents reliable web research with evidence-backed citations.
               This page explains every feature — how it works, when to use it, and how to integrate it.
             </p>
           </div>

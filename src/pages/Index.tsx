@@ -174,7 +174,7 @@ const Index = () => {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "BrowseAI Dev",
-        "description": "Research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores.",
+        "description": "Grounded Intelligence — research infrastructure for AI agents. Real-time web search with evidence-backed citations and confidence scores.",
         "url": "https://browseai.dev",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",

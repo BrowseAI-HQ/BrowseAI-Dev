@@ -3,7 +3,7 @@
   "version": "0.3.2",
   "mcpName": "io.github.BrowseAI-HQ/browseai-dev",
   "type": "module",
-  "description": "Reliable research infrastructure for AI agents. MCP server with real-time web search, evidence extraction, and structured citations. The research layer for LangChain, CrewAI, and custom agents.",
+  "description": "Grounded Intelligence for AI agents. MCP server with real-time web search, evidence extraction, verification, and structured citations. The research infrastructure for LangChain, CrewAI, and custom agents.",
   "keywords": [
     "mcp",
     "claude",
@@ -32,7 +32,9 @@
     "browseai",
     "browseaidev",
     "hallucination-prevention",
-    "confidence-scoring"
+    "confidence-scoring",
+    "grounded-intelligence",
+    "verified-research"
   ],
   "license": "Apache-2.0",
   "repository": {

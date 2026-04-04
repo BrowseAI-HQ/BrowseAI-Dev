@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0_(open--core)-blue.svg)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/ubAuT4YQsT)
 
-**Research infrastructure for AI agents** — real-time web search, evidence extraction, and structured citations. Every claim is backed by a URL. Every answer has a confidence score.
+**Research infrastructure for AI agents with Grounded Intelligence** — real-time web search, evidence extraction, verification, and structured citations. Every claim is backed by a URL. Every answer has a confidence score.
 
 ```
 Agent → BrowseAI Dev → Internet → Verified answers + sources

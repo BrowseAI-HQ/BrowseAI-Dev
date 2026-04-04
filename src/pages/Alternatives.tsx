@@ -232,7 +232,7 @@ const Alternatives = () => {
           >
             <div className="hero-glow" />
             <Badge variant="outline" className="text-xs border-accent/30 text-accent">
-              Agent-First Research Infrastructure
+              Grounded Intelligence · Agent-First Research Infrastructure
             </Badge>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-shimmer">
               BrowseAI Dev vs. the alternatives
@@ -258,11 +258,11 @@ const Alternatives = () => {
               <div className="flex items-start gap-3">
                 <Layers className="w-4 h-4 text-accent bg-accent/10 mt-0.5 shrink-0" />
                 <div className="text-sm text-muted-foreground leading-relaxed">
-                  <strong className="text-foreground">Full transparency:</strong> BrowseAI Dev is a verification and intelligence layer,
+                  <strong className="text-foreground">Full transparency:</strong> BrowseAI Dev is a Grounded Intelligence and verification layer,
                   not a search engine replacement. We use providers like Tavily and Brave for web search,
                   then add claim extraction, cross-source verification, contradiction detection, domain authority scoring,
                   and confidence calibration on top. These providers are excellent at search. BrowseAI Dev adds the
-                  verification layer that turns raw search results into agent-ready, evidence-backed outputs.
+                  Grounded Intelligence layer that turns raw search results into agent-ready, evidence-backed outputs.
                 </div>
               </div>
             </div>
@@ -380,7 +380,7 @@ const Alternatives = () => {
                 },
                 {
                   icon: Brain,
-                  title: "Native verification pipeline",
+                  title: "Grounded Intelligence verification pipeline",
                   desc: "Claims decomposed and individually verified against sources, cross-checked for consensus, and scanned for contradictions. All built into the API — no external tooling needed.",
                 },
                 {

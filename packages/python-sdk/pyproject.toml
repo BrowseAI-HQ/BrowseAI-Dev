@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "browseaidev"
 version = "0.3.2"
-description = "Python SDK for BrowseAI Dev — reliable research infrastructure for AI agents"
+description = "Python SDK for BrowseAI Dev — Grounded Intelligence research infrastructure for AI agents"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [{ name = "BrowseAI Dev" }]
-keywords = ["ai", "research", "search", "agents", "mcp", "langchain", "crewai", "rag", "deep-search", "web-search", "citations", "evidence", "llm", "agent-tools", "autogpt", "llamaindex", "fact-checking", "ai-search", "browseai", "browse-ai", "browseaidev", "browseai-dev", "confidence-scoring", "hallucination-prevention"]
+keywords = ["ai", "research", "search", "agents", "mcp", "langchain", "crewai", "rag", "deep-search", "web-search", "citations", "evidence", "llm", "agent-tools", "autogpt", "llamaindex", "fact-checking", "ai-search", "browseai", "browse-ai", "browseaidev", "browseai-dev", "confidence-scoring", "hallucination-prevention", "grounded-intelligence", "verified-research"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

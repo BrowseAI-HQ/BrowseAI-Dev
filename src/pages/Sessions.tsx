@@ -388,7 +388,7 @@ const Sessions = () => {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8 p-5 rounded-xl bg-card border border-border gradient-border card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
+                className="mb-8 p-5 rounded-xl bg-card border border-border card-lift hover:border-accent/20 transition-all duration-300 hover:shadow-lg hover:shadow-accent/5"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <Badge variant="outline" className="text-xs text-accent border-accent/30">

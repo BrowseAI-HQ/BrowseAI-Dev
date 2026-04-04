@@ -194,7 +194,7 @@ const Developers = () => {
             <span className="text-gradient text-shimmer">for AI agents</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            BrowseAI Dev is an open-source research engine that gives AI agents the ability to search the web,
+            BrowseAI Dev is Grounded Intelligence — an open-source research engine that gives AI agents the ability to search the web,
             extract evidence, and produce cited answers. No hallucinations. Just facts.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
