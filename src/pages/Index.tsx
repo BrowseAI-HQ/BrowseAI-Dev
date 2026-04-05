@@ -292,9 +292,9 @@ const Index = () => {
           className="max-w-3xl w-full text-center space-y-8"
         >
           <div className="space-y-4">
-            <Badge variant="outline" className="text-xs font-normal gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Powered by E2 Evidence Engine &middot; Fine-tuned on 2.39M+ examples
+            <Badge variant="outline" className="text-[10px] sm:text-xs font-normal gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              Powered by E2 Evidence Engine
             </Badge>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.05]">
               Research Infra
@@ -302,7 +302,7 @@ const Index = () => {
               <span className="text-shimmer">for AI Agents</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">
-              Purpose-built verification models fine-tuned on 2.39M+ real examples and growing.
+              Real-time web search with evidence-backed citations and confidence scores.
               Not an LLM guessing — a dedicated evidence engine. MCP, Python SDK &amp; REST API.
             </p>
           </div>
@@ -570,23 +570,23 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1, duration: 0.5 }}
+            transition={{ duration: 0.4 }}
             className="mt-24"
           >
             <div className="relative max-w-4xl mx-auto">
               {/* E2 Evidence Engine — center stage */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="relative"
               >
                 {/* Outer glow rings */}
                 <div className="absolute inset-0 bg-accent/10 rounded-3xl blur-[80px] -z-10" />
                 <div className="absolute -inset-6 bg-accent/[0.04] rounded-[40px] blur-3xl -z-10" />
 
-                <div className="relative p-8 md:p-12 rounded-3xl bg-gradient-to-b from-accent/[0.12] via-accent/[0.05] to-transparent border border-accent/30 overflow-hidden">
+                <div className="relative p-5 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-accent/[0.12] via-accent/[0.05] to-transparent border border-accent/30 overflow-hidden">
                   {/* Background grid pattern */}
                   <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }} />
 
@@ -595,7 +595,7 @@ const Index = () => {
                     initial={{ opacity: 0, y: -10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
+                    transition={{ delay: 0.1 }}
                     className="flex justify-center mb-8"
                   >
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20">
@@ -607,8 +607,8 @@ const Index = () => {
                     </div>
                   </motion.div>
 
-                  {/* Neural network — bold E2 visualization */}
-                  <div className="relative w-full h-52 mb-8">
+                  {/* Neural network — bold E2 visualization (hidden on small mobile, simplified) */}
+                  <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8 hidden sm:block">
                     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
                       <defs>
                         <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
@@ -769,18 +769,32 @@ const Index = () => {
                     </svg>
                   </div>
 
+                  {/* Mobile-only: simple static pipeline flow */}
+                  <div className="sm:hidden flex items-center justify-center gap-2 mb-6 py-4">
+                    {["CLAIMS", "ENCODE", "ATTENTION", "CLASSIFY"].map((step, i) => (
+                      <div key={step} className="flex items-center gap-2">
+                        <div className={`px-2 py-1 rounded-md text-[8px] font-mono font-semibold tracking-wide ${
+                          step === "ATTENTION" ? "bg-accent/15 text-accent border border-accent/30" : "bg-secondary border border-border text-muted-foreground"
+                        }`}>{step}</div>
+                        {i < 3 && <ArrowRight className="w-3 h-3 text-accent/40" />}
+                      </div>
+                    ))}
+                    <ArrowRight className="w-3 h-3 text-emerald-400/60" />
+                    <div className="px-2 py-1 rounded-md bg-emerald-400/10 border border-emerald-400/25 text-[8px] font-mono font-bold text-emerald-400 tracking-wide">VERDICT</div>
+                  </div>
+
                   {/* E2 Title */}
                   <div className="text-center relative">
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.4, duration: 0.5 }}
+                      transition={{ delay: 0.15, duration: 0.4 }}
                     >
-                      <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
-                        E<sup className="text-lg md:text-xl">2</sup> Evidence Engine
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+                        E<sup className="text-sm sm:text-lg md:text-xl">2</sup> Evidence Engine
                       </h3>
-                      <p className="text-base text-muted-foreground mt-3 max-w-lg mx-auto">
+                      <p className="text-sm sm:text-base text-muted-foreground mt-2 sm:mt-3 max-w-lg mx-auto">
                         Purpose-built NLI models fine-tuned on real verification data.
                         Not prompt engineering. Not chain-of-thought. Real neural inference.
                       </p>
@@ -791,8 +805,8 @@ const Index = () => {
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.5, duration: 0.4 }}
-                      className="grid grid-cols-3 gap-4 mt-8 max-w-lg mx-auto"
+                      transition={{ delay: 0.2, duration: 0.3 }}
+                      className="grid grid-cols-3 gap-2 sm:gap-4 mt-6 sm:mt-8 max-w-lg mx-auto"
                     >
                       {[
                         { value: "2.39M", label: "Training Examples", sub: "Real verification pairs" },
@@ -804,12 +818,12 @@ const Index = () => {
                           initial={{ opacity: 0, scale: 0.9 }}
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
-                          transition={{ delay: 0.6 + i * 0.1 }}
-                          className="p-3 rounded-xl bg-accent/[0.04] border border-accent/10"
+                          transition={{ delay: 0.25 + i * 0.06 }}
+                          className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-accent/[0.04] border border-accent/10"
                         >
-                          <div className="text-xl md:text-2xl font-bold text-accent">{stat.value}</div>
-                          <div className="text-[11px] font-semibold text-foreground mt-1">{stat.label}</div>
-                          <div className="text-[10px] text-muted-foreground">{stat.sub}</div>
+                          <div className="text-lg sm:text-xl md:text-2xl font-bold text-accent">{stat.value}</div>
+                          <div className="text-[10px] sm:text-[11px] font-semibold text-foreground mt-1">{stat.label}</div>
+                          <div className="text-[9px] sm:text-[10px] text-muted-foreground">{stat.sub}</div>
                         </motion.div>
                       ))}
                     </motion.div>
@@ -822,7 +836,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.5 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
                 className="mt-10"
               >
                 <h4 className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">Three models. One mission. Evidence over guesswork.</h4>
@@ -866,7 +880,7 @@ const Index = () => {
                         initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: 0.4 + i * 0.12 }}
+                        transition={{ delay: 0.15 + i * 0.08 }}
                         className="relative p-5 rounded-xl border border-border bg-card hover:border-accent/15 transition-all duration-300"
                       >
                         <div className="flex items-center gap-3 mb-3">
@@ -903,7 +917,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.15 }}
                 className="mt-10 p-6 rounded-2xl bg-gradient-to-r from-accent/[0.04] via-accent/[0.08] to-accent/[0.04] border border-accent/15"
               >
                 <div className="flex flex-col md:flex-row items-center gap-6">
@@ -935,7 +949,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.2 }}
                 className="flex flex-wrap justify-center gap-2 mt-8"
               >
                 {[
@@ -958,7 +972,7 @@ const Index = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.55 + i * 0.04 }}
+                    transition={{ delay: 0.22 + i * 0.02 }}
                     className="px-3 py-1.5 rounded-full bg-card border border-border text-[10px] text-muted-foreground font-medium hover:border-accent/20 hover:text-accent transition-colors"
                   >
                     {step}
