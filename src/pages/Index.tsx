@@ -292,9 +292,10 @@ const Index = () => {
           className="max-w-3xl w-full text-center space-y-8"
         >
           <div className="space-y-4">
-            <Badge variant="outline" className="text-xs font-normal gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Powered by E2 Evidence Engine &middot; Fine-tuned on 2.39M+ examples
+            <Badge variant="outline" className="text-[10px] sm:text-xs font-normal gap-1.5 max-w-[90vw]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="hidden sm:inline">Powered by E2 Evidence Engine &middot; Fine-tuned on 2.39M+ examples</span>
+              <span className="sm:hidden">E2 Evidence Engine &middot; 2.39M+ examples</span>
             </Badge>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.05]">
               Research Infra
@@ -586,7 +587,7 @@ const Index = () => {
                 <div className="absolute inset-0 bg-accent/10 rounded-3xl blur-[80px] -z-10" />
                 <div className="absolute -inset-6 bg-accent/[0.04] rounded-[40px] blur-3xl -z-10" />
 
-                <div className="relative p-8 md:p-12 rounded-3xl bg-gradient-to-b from-accent/[0.12] via-accent/[0.05] to-transparent border border-accent/30 overflow-hidden">
+                <div className="relative p-5 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-accent/[0.12] via-accent/[0.05] to-transparent border border-accent/30 overflow-hidden">
                   {/* Background grid pattern */}
                   <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }} />
 
@@ -607,8 +608,8 @@ const Index = () => {
                     </div>
                   </motion.div>
 
-                  {/* Neural network — bold E2 visualization */}
-                  <div className="relative w-full h-52 mb-8">
+                  {/* Neural network — bold E2 visualization (hidden on small mobile, simplified) */}
+                  <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8 hidden sm:block">
                     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
                       <defs>
                         <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
@@ -769,6 +770,20 @@ const Index = () => {
                     </svg>
                   </div>
 
+                  {/* Mobile-only: simple static pipeline flow */}
+                  <div className="sm:hidden flex items-center justify-center gap-2 mb-6 py-4">
+                    {["CLAIMS", "ENCODE", "ATTENTION", "CLASSIFY"].map((step, i) => (
+                      <div key={step} className="flex items-center gap-2">
+                        <div className={`px-2 py-1 rounded-md text-[8px] font-mono font-semibold tracking-wide ${
+                          step === "ATTENTION" ? "bg-accent/15 text-accent border border-accent/30" : "bg-secondary border border-border text-muted-foreground"
+                        }`}>{step}</div>
+                        {i < 3 && <ArrowRight className="w-3 h-3 text-accent/40" />}
+                      </div>
+                    ))}
+                    <ArrowRight className="w-3 h-3 text-emerald-400/60" />
+                    <div className="px-2 py-1 rounded-md bg-emerald-400/10 border border-emerald-400/25 text-[8px] font-mono font-bold text-emerald-400 tracking-wide">VERDICT</div>
+                  </div>
+
                   {/* E2 Title */}
                   <div className="text-center relative">
                     <motion.div
@@ -777,10 +792,10 @@ const Index = () => {
                       viewport={{ once: true }}
                       transition={{ delay: 0.15, duration: 0.4 }}
                     >
-                      <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
-                        E<sup className="text-lg md:text-xl">2</sup> Evidence Engine
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+                        E<sup className="text-sm sm:text-lg md:text-xl">2</sup> Evidence Engine
                       </h3>
-                      <p className="text-base text-muted-foreground mt-3 max-w-lg mx-auto">
+                      <p className="text-sm sm:text-base text-muted-foreground mt-2 sm:mt-3 max-w-lg mx-auto">
                         Purpose-built NLI models fine-tuned on real verification data.
                         Not prompt engineering. Not chain-of-thought. Real neural inference.
                       </p>
@@ -792,7 +807,7 @@ const Index = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: 0.2, duration: 0.3 }}
-                      className="grid grid-cols-3 gap-4 mt-8 max-w-lg mx-auto"
+                      className="grid grid-cols-3 gap-2 sm:gap-4 mt-6 sm:mt-8 max-w-lg mx-auto"
                     >
                       {[
                         { value: "2.39M", label: "Training Examples", sub: "Real verification pairs" },
@@ -805,11 +820,11 @@ const Index = () => {
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
                           transition={{ delay: 0.25 + i * 0.06 }}
-                          className="p-3 rounded-xl bg-accent/[0.04] border border-accent/10"
+                          className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-accent/[0.04] border border-accent/10"
                         >
-                          <div className="text-xl md:text-2xl font-bold text-accent">{stat.value}</div>
-                          <div className="text-[11px] font-semibold text-foreground mt-1">{stat.label}</div>
-                          <div className="text-[10px] text-muted-foreground">{stat.sub}</div>
+                          <div className="text-lg sm:text-xl md:text-2xl font-bold text-accent">{stat.value}</div>
+                          <div className="text-[10px] sm:text-[11px] font-semibold text-foreground mt-1">{stat.label}</div>
+                          <div className="text-[9px] sm:text-[10px] text-muted-foreground">{stat.sub}</div>
                         </motion.div>
                       ))}
                     </motion.div>
