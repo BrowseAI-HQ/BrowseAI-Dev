@@ -607,8 +607,8 @@ const Index = () => {
                     </div>
                   </motion.div>
 
-                  {/* Neural network — bold E2 visualization (hidden on small mobile, simplified) */}
-                  <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8 hidden sm:block">
+                  {/* Neural network — bold E2 visualization */}
+                  <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8">
                     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
                       <defs>
                         <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
@@ -769,20 +769,6 @@ const Index = () => {
                     </svg>
                   </div>
 
-                  {/* Mobile-only: simple static pipeline flow */}
-                  <div className="sm:hidden flex items-center justify-center gap-2 mb-6 py-4">
-                    {["CLAIMS", "ENCODE", "ATTENTION", "CLASSIFY"].map((step, i) => (
-                      <div key={step} className="flex items-center gap-2">
-                        <div className={`px-2 py-1 rounded-md text-[8px] font-mono font-semibold tracking-wide ${
-                          step === "ATTENTION" ? "bg-accent/15 text-accent border border-accent/30" : "bg-secondary border border-border text-muted-foreground"
-                        }`}>{step}</div>
-                        {i < 3 && <ArrowRight className="w-3 h-3 text-accent/40" />}
-                      </div>
-                    ))}
-                    <ArrowRight className="w-3 h-3 text-emerald-400/60" />
-                    <div className="px-2 py-1 rounded-md bg-emerald-400/10 border border-emerald-400/25 text-[8px] font-mono font-bold text-emerald-400 tracking-wide">VERDICT</div>
-                  </div>
-
                   {/* E2 Title */}
                   <div className="text-center relative">
                     <motion.div
@@ -792,7 +778,7 @@ const Index = () => {
                       transition={{ delay: 0.15, duration: 0.4 }}
                     >
                       <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-                        E<sup className="text-sm sm:text-lg md:text-xl">2</sup> Evidence Engine
+                        E2 Evidence Engine
                       </h3>
                       <p className="text-sm sm:text-base text-muted-foreground mt-2 sm:mt-3 max-w-lg mx-auto">
                         Purpose-built NLI models fine-tuned on real verification data.
@@ -1377,7 +1363,7 @@ const Index = () => {
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <Badge variant="outline" className="text-xs font-normal mb-6">The Difference</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Raw LLM vs <span className="text-accent">E<sup className="text-base">2</sup> Evidence Engine</span></h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Raw LLM vs <span className="text-accent">E2 Evidence Engine</span></h2>
             <p className="text-muted-foreground">LLMs guess. E2 verifies. Your agent deserves the difference.</p>
           </motion.div>
 
@@ -1675,7 +1661,7 @@ result = client.ask("What causes aurora borealis?")`}</pre>
         <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none opacity-20" />
         <div className="max-w-2xl mx-auto text-center space-y-6 relative">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">The E<sup className="text-base">2</sup> Evidence Engine is open — <span className="text-accent">and you can build on it.</span></h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">The E2 Evidence Engine is open — <span className="text-accent">and you can build on it.</span></h2>
             <p className="text-muted-foreground text-sm">
               Open source SDKs. Purpose-built verification models. Star the repo, join Discord, and help build the trust layer agents deserve.
             </p>
