@@ -292,10 +292,9 @@ const Index = () => {
           className="max-w-3xl w-full text-center space-y-8"
         >
           <div className="space-y-4">
-            <Badge variant="outline" className="text-[10px] sm:text-xs font-normal gap-1.5 max-w-[90vw]">
+            <Badge variant="outline" className="text-[10px] sm:text-xs font-normal gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-              <span className="hidden sm:inline">Powered by E2 Evidence Engine &middot; Fine-tuned on 2.39M+ examples</span>
-              <span className="sm:hidden">E2 Evidence Engine &middot; 2.39M+ examples</span>
+              Powered by E2 Evidence Engine
             </Badge>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.05]">
               Research Infra
@@ -303,7 +302,7 @@ const Index = () => {
               <span className="text-shimmer">for AI Agents</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto">
-              Purpose-built verification models fine-tuned on 2.39M+ real examples and growing.
+              Real-time web search with evidence-backed citations and confidence scores.
               Not an LLM guessing — a dedicated evidence engine. MCP, Python SDK &amp; REST API.
             </p>
           </div>
