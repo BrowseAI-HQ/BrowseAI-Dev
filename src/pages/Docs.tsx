@@ -140,7 +140,7 @@ const Docs = () => {
             <p>Every query goes through a 6-step pipeline. Each step adds a layer of verification.</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
-                { step: "1. Search", desc: "Query the web via Tavily API. Returns 5-10 relevant results." },
+                { step: "1. Search", desc: "Query the web via multi-provider search. Returns 5-10 relevant results." },
                 { step: "2. Fetch", desc: "Parse each page with Readability. Strip ads, nav, scripts — keep content." },
                 { step: "3. Extract", desc: "LLM extracts structured claims with source attribution." },
                 { step: "4. Verify", desc: "Each claim is scored against its cited source text." },
@@ -693,7 +693,7 @@ result = tool.invoke({"query": "What is quantum computing?", "depth": "thorough"
                   <tr><td className="py-2 pr-4">Accuracy over time</td><td className="py-2 pr-4 text-accent">Gets smarter with every query</td><td className="py-2">Same accuracy forever</td></tr>
                   <tr><td className="py-2 pr-4">Updates</td><td className="py-2 pr-4 text-accent">Automatic — new algorithms, domains, features</td><td className="py-2">Manual git pull</td></tr>
                   <tr><td className="py-2 pr-4">Infrastructure</td><td className="py-2 pr-4 text-accent">Zero ops — we handle scaling, uptime, monitoring</td><td className="py-2">You manage everything</td></tr>
-                  <tr><td className="py-2 pr-4">API key management</td><td className="py-2 pr-4 text-accent">One BrowseAI Dev key bundles all services</td><td className="py-2">Manage Tavily + OpenRouter keys yourself</td></tr>
+                  <tr><td className="py-2 pr-4">API key management</td><td className="py-2 pr-4 text-accent">One BrowseAI Dev key bundles all services</td><td className="py-2">Configure search and LLM provider keys yourself</td></tr>
                   <tr><td className="py-2 pr-4">Pro features (coming)</td><td className="py-2 pr-4 text-accent">Multi-model verification, priority queue, 15+ sources</td><td className="py-2">Not available</td></tr>
                 </tbody>
               </table>

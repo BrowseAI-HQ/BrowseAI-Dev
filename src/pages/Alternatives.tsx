@@ -159,7 +159,7 @@ const FEATURE_MATRIX: FeatureRow[] = [
   { feature: "Domain authority scoring", tooltip: "Domain authority scoring with 10K+ domains", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   // Infrastructure
   { feature: "Open source (full pipeline)", browseai: "full", tavily: "partial", perplexity: "partial", exa: "partial", you: "partial", brave: "partial" },
-  { feature: "Self-hostable", browseai: "partial", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
+  { feature: "Open-core (SDKs + integrations)", browseai: "full", tavily: "none", perplexity: "none", exa: "none", you: "none", brave: "none" },
   { feature: "Free API key with generous quota", browseai: "full", tavily: "partial", perplexity: "none", exa: "partial", you: "none", brave: "partial" },
 ];
 

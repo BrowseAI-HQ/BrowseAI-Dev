@@ -402,7 +402,7 @@ const Developers = () => {
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
                   Go to the playground page, type a question, and see the full evidence pipeline in action.
-                  No signup needed. Bring your own API keys for unlimited usage.
+                  No signup needed. Sign in to get a free API key for 100 queries/day.
                 </p>
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/playground")}>
                   Open Playground <ArrowRight className="w-3.5 h-3.5" />
@@ -450,7 +450,7 @@ print(result.answer, result.confidence)`}</pre>
                   <span className="font-semibold">REST API — For any language</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Use the REST API from any HTTP client. Self-host or use the hosted version.
+                  Use the REST API from any HTTP client. Get a free API key to start.
                 </p>
                 <pre className="text-xs font-mono text-muted-foreground bg-secondary rounded-lg p-4 overflow-x-auto">{`curl -X POST https://browseai.dev/api/browse/answer \\
   -H "Content-Type: application/json" \\

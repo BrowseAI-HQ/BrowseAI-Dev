@@ -42,7 +42,7 @@ const Privacy = () => {
             <div className="space-y-2">
               <h3 className="text-sm font-medium">API Keys</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                If you store third-party API keys (Tavily, OpenRouter) with us, they are encrypted using AES-256-GCM before storage. We never log, share, or access your keys in plaintext. Keys stored in browser localStorage never leave your device.
+                Your BrowseAI Dev API keys (bai_xxx) are encrypted using AES-256-GCM before storage. We never log, share, or access your keys in plaintext.
               </p>
             </div>
             <div className="space-y-2">
@@ -102,7 +102,7 @@ const Privacy = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Data Sharing</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              We do not sell your personal data. Your search queries are sent to third-party APIs (Tavily for web search, OpenRouter for LLM processing) as part of the service. These providers have their own privacy policies. We do not share your account information with any third parties.
+              We do not sell your personal data. Your search queries are processed by our verification engine, which uses third-party search and LLM services internally. We do not share your account information with any third parties.
             </p>
           </section>
 

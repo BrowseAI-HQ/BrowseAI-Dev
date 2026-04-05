@@ -159,7 +159,7 @@ const Dashboard = () => {
                 <div className="space-y-1">
                   <h3 className="font-semibold">Welcome! Create your BAI key to get started</h3>
                   <p className="text-sm text-muted-foreground">
-                    Add your Tavily and OpenRouter keys below to generate a BAI key. This gives you 100 premium queries/day with semantic verification, multi-source search, and more.
+                    Create a BAI key below to get 100 premium queries/day with semantic verification, multi-source search, and more.
                   </p>
                   <button
                     onClick={() => document.getElementById("api-keys")?.scrollIntoView({ behavior: "smooth" })}

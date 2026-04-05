@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const allowedKeys = ["SERP_API_KEY", "OPENROUTER_API_KEY"];
+    const allowedKeys: string[] = [];
     const secrets: Record<string, string> = {};
 
     for (const key of keys) {
