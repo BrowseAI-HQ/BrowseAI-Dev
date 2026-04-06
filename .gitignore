@@ -75,6 +75,11 @@ apps/mcp/.mcpregistry*
 benchmarks/data/
 benchmarks/results/
 
+# Training data (large — stored on HuggingFace: BrowseAIDev/dev-nli-data)
+training/*/data/
+training/*/logs/
+training/*/__pycache__/
+
 # Internal planning & strategy (not for public repo)
 .planning/
 docs/launch-video-script.md
