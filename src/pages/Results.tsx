@@ -349,7 +349,7 @@ const Results = () => {
                   Create a free account to get 100 queries/day with premium verification, citations, and confidence scores.
                 </p>
                 <div className="pt-2">
-                  <LoginModal open={true} onOpenChange={(open) => { if (!open) { setShowLoginGate(false); navigate("/"); } }} redirectTo="/dashboard#api-keys" />
+                  <LoginModal open={true} onOpenChange={(open) => { if (!open) { setShowLoginGate(false); navigate("/"); } }} redirectTo={window.location.href} />
                 </div>
               </motion.div>
             )}
