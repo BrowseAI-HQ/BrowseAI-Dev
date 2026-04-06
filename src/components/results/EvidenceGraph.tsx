@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Globe, Quote, LinkIcon, CheckCircle2, AlertCircle, Users, AlertTriangle } from "lucide-react";
+import { Globe, Quote, LinkIcon, CheckCircle2, AlertCircle, Users, AlertTriangle, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { BrowseClaim, BrowseSource, Contradiction } from "@/lib/api/browse";
 
@@ -103,6 +103,23 @@ export function EvidenceGraph({
                     >
                       <Users className="w-3 h-3 mr-0.5" />
                       {CONSENSUS_LABELS[claim.consensusLevel]}
+                    </Badge>
+                  )}
+                  {claim.nliScore && (
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] px-1.5 py-0 h-4 ${
+                        claim.nliScore.label === "entailment" ? "text-emerald-500 border-emerald-500/30" :
+                        claim.nliScore.label === "contradiction" ? "text-red-400 border-red-400/30" :
+                        "text-muted-foreground border-border"
+                      }`}
+                    >
+                      <Sparkles className="w-3 h-3 mr-0.5" />
+                      {claim.nliScore.label === "entailment"
+                        ? `${Math.round(claim.nliScore.entailment * 100)}% entails`
+                        : claim.nliScore.label === "contradiction"
+                        ? `${Math.round(claim.nliScore.contradiction * 100)}% contradicts`
+                        : `${Math.round(claim.nliScore.neutral * 100)}% neutral`}
                     </Badge>
                   )}
                 </div>

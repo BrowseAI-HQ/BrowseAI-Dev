@@ -110,7 +110,7 @@ const Compare = () => {
             <Shield className="w-10 h-10 text-accent mx-auto animate-float" />
             <h3 className="text-lg font-semibold">Sign in to continue</h3>
             <p className="text-sm text-muted-foreground">Create a free account to get 100 queries/day with premium features.</p>
-            <LoginModal open={true} onOpenChange={(open) => { if (!open) { setShowLoginGate(false); navigate("/"); } }} />
+            <LoginModal open={true} onOpenChange={(open) => { if (!open) { setShowLoginGate(false); navigate("/"); } }} redirectTo={window.location.href} />
           </motion.div>
         )}
 
