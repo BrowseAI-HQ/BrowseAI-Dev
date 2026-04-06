@@ -87,6 +87,14 @@ const Index = () => {
   const [activeUseCase, setActiveUseCase] = useState(0);
   const [activeTool, setActiveTool] = useState<number | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
   const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
   const [apiSuggestions, setApiSuggestions] = useState<string[]>([]);
   // Dropdown close handled by onBlur + setTimeout
@@ -633,12 +641,12 @@ const Index = () => {
                       {[25, 45, 65, 85, 105, 125, 145].map((y, i) => (
                         <g key={`in-${i}`}>
                           <rect x="35" y={y - 4} width="36" height="8" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.3" strokeWidth="0.8">
-                            <animate attributeName="opacity" values="0.15;0.35;0.15" dur={`${2 + i * 0.15}s`} repeatCount="indefinite" />
+                            {!isMobile && <animate attributeName="opacity" values="0.15;0.35;0.15" dur={`${2 + i * 0.15}s`} repeatCount="indefinite" />}
                           </rect>
                           {/* Connections to encoder — converge to encoder nodes */}
                           {[45, 65, 85, 105, 125].map((ey, j) => (
                             <line key={`ie-${i}-${j}`} x1="71" y1={y} x2="160" y2={ey} stroke="hsl(var(--accent))" strokeOpacity="0.07" strokeWidth="0.6">
-                              <animate attributeName="stroke-opacity" values="0.04;0.15;0.04" dur={`${2.5 + (i + j) * 0.12}s`} repeatCount="indefinite" />
+                              {!isMobile && <animate attributeName="stroke-opacity" values="0.04;0.15;0.04" dur={`${2.5 + (i + j) * 0.12}s`} repeatCount="indefinite" />}
                             </line>
                           ))}
                         </g>
@@ -648,10 +656,10 @@ const Index = () => {
                       {[45, 65, 85, 105, 125].map((y, i) => (
                         <g key={`enc-${i}`}>
                           <circle cx="175" cy={y} r="9" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.45" strokeWidth="1.5">
-                            <animate attributeName="r" values="8;10;8" dur={`${2.5 + i * 0.25}s`} repeatCount="indefinite" />
+                            {!isMobile && <animate attributeName="r" values="8;10;8" dur={`${2.5 + i * 0.25}s`} repeatCount="indefinite" />}
                           </circle>
                           <circle cx="175" cy={y} r="3.5" fill="hsl(var(--accent))" fillOpacity="0.4">
-                            <animate attributeName="opacity" values="0.3;0.7;0.3" dur={`${1.8 + i * 0.2}s`} repeatCount="indefinite" />
+                            {!isMobile && <animate attributeName="opacity" values="0.3;0.7;0.3" dur={`${1.8 + i * 0.2}s`} repeatCount="indefinite" />}
                           </circle>
                         </g>
                       ))}
@@ -667,7 +675,7 @@ const Index = () => {
                             strokeOpacity={y === 85 ? 0.35 : 0.12}
                             strokeWidth={y === 85 ? 2 : 1}
                           >
-                            <animate attributeName="stroke-opacity" values={y === 85 ? "0.25;0.5;0.25" : "0.08;0.2;0.08"} dur={`${2.5 + i * 0.3}s`} repeatCount="indefinite" />
+                            {!isMobile && <animate attributeName="stroke-opacity" values={y === 85 ? "0.25;0.5;0.25" : "0.08;0.2;0.08"} dur={`${2.5 + i * 0.3}s`} repeatCount="indefinite" />}
                           </line>
                         );
                       })}
@@ -693,7 +701,7 @@ const Index = () => {
                         return (
                           <g key={`cls-${i}`}>
                             <line x1={edgeX} y1={edgeY} x2="410" y2={y} stroke="hsl(var(--accent))" strokeOpacity="0.2" strokeWidth="1.5">
-                              <animate attributeName="stroke-opacity" values="0.12;0.35;0.12" dur={`${2.2 + i * 0.3}s`} repeatCount="indefinite" />
+                              {!isMobile && <animate attributeName="stroke-opacity" values="0.12;0.35;0.12" dur={`${2.2 + i * 0.3}s`} repeatCount="indefinite" />}
                             </line>
                             <circle cx="420" cy={y} r="8" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.4" strokeWidth="1.5" />
                             <circle cx="420" cy={y} r="3" fill="hsl(var(--accent))" fillOpacity="0.35" />
@@ -728,7 +736,7 @@ const Index = () => {
                       {/* Particles: enter as accent, pass through attention, then split to verdicts with matching colors */}
 
                       {/* → ENTAILS (green) — most particles go here */}
-                      {[0, 1, 2].map((i) => (
+                      {(isMobile ? [0] : [0, 1, 2]).map((i) => (
                         <g key={`p-entail-${i}`}>
                           {/* Accent-colored from input to attention */}
                           <circle r="3" fill="hsl(var(--accent))">
@@ -756,16 +764,18 @@ const Index = () => {
                       </g>
 
                       {/* → NEUTRAL (amber) — rare particle */}
-                      <g>
-                        <circle r="2" fill="hsl(var(--accent))">
-                          <animateMotion dur="7s" repeatCount="indefinite" path="M55,125 L175,125 L300,85" />
-                          <animate attributeName="opacity" values="0;0.7;0.7;0" dur="7s" repeatCount="indefinite" />
-                        </circle>
-                        <circle r="2" fill="#fbbf24">
-                          <animateMotion dur="7s" repeatCount="indefinite" path="M300,85 L420,115 L535,128" />
-                          <animate attributeName="opacity" values="0;0;0;0.7;0.6;0" dur="7s" repeatCount="indefinite" />
-                        </circle>
-                      </g>
+                      {!isMobile && (
+                        <g>
+                          <circle r="2" fill="hsl(var(--accent))">
+                            <animateMotion dur="7s" repeatCount="indefinite" path="M55,125 L175,125 L300,85" />
+                            <animate attributeName="opacity" values="0;0.7;0.7;0" dur="7s" repeatCount="indefinite" />
+                          </circle>
+                          <circle r="2" fill="#fbbf24">
+                            <animateMotion dur="7s" repeatCount="indefinite" path="M300,85 L420,115 L535,128" />
+                            <animate attributeName="opacity" values="0;0;0;0.7;0.6;0" dur="7s" repeatCount="indefinite" />
+                          </circle>
+                        </g>
+                      )}
                     </svg>
                   </div>
 
