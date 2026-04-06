@@ -105,21 +105,22 @@ export function EvidenceGraph({
                       {CONSENSUS_LABELS[claim.consensusLevel]}
                     </Badge>
                   )}
-                  {claim.nliScore && (
+                  {claim.nliScore && claim.nliScore.label === "entailment" && (
                     <Badge
                       variant="outline"
-                      className={`text-[10px] px-1.5 py-0 h-4 ${
-                        claim.nliScore.label === "entailment" ? "text-emerald-500 border-emerald-500/30" :
-                        claim.nliScore.label === "contradiction" ? "text-red-400 border-red-400/30" :
-                        "text-muted-foreground border-border"
-                      }`}
+                      className="text-[10px] px-1.5 py-0 h-4 text-emerald-500 border-emerald-500/30"
                     >
                       <Sparkles className="w-3 h-3 mr-0.5" />
-                      {claim.nliScore.label === "entailment"
-                        ? `${Math.round(claim.nliScore.entailment * 100)}% entails`
-                        : claim.nliScore.label === "contradiction"
-                        ? `${Math.round(claim.nliScore.contradiction * 100)}% contradicts`
-                        : `${Math.round(claim.nliScore.neutral * 100)}% neutral`}
+                      {Math.round(claim.nliScore.entailment * 100)}% entails
+                    </Badge>
+                  )}
+                  {claim.nliScore && claim.nliScore.label === "contradiction" && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 h-4 text-red-400 border-red-400/30"
+                    >
+                      <Sparkles className="w-3 h-3 mr-0.5" />
+                      {Math.round(claim.nliScore.contradiction * 100)}% contradicts
                     </Badge>
                   )}
                 </div>
