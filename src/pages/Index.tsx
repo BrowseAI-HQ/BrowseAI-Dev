@@ -898,145 +898,122 @@ const Index = () => {
               >
                 <h4 className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">Smart routing. Domain specialists. Evidence over guesswork.</h4>
 
-                {/* Smart Router Visualization */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.12 }}
-                  className="mb-6 p-4 rounded-xl border border-accent/15 bg-gradient-to-r from-accent/[0.03] via-accent/[0.06] to-accent/[0.03]"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <GitCompare className="w-4 h-4 text-accent" />
-                    <h5 className="text-xs font-bold text-accent uppercase tracking-wider">Intelligent Model Router</h5>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-                    Every query is analyzed and routed to the best specialist model. Technical queries about APIs, frameworks, and infrastructure go to the dev-domain model. General queries use the universal model. Zero config — it just works.
-                  </p>
-                  <div className="flex items-center justify-center gap-2 text-[10px]">
-                    <span className="px-2.5 py-1 rounded-full bg-secondary border border-border font-mono">Query</span>
-                    <ArrowRight className="w-3 h-3 text-muted-foreground/40" />
-                    <span className="px-2.5 py-1 rounded-full bg-accent/10 text-accent border border-accent/20 font-semibold">Router</span>
-                    <ArrowRight className="w-3 h-3 text-muted-foreground/40" />
-                    <div className="flex flex-col gap-1">
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 font-mono text-[9px]">General NLI</span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-blue-400/10 text-blue-400 border border-blue-400/20 font-mono text-[9px]">Dev NLI</span>
-                    </div>
-                    <ArrowRight className="w-3 h-3 text-muted-foreground/40" />
-                    <span className="px-2.5 py-1 rounded-full bg-secondary border border-border font-mono">Score</span>
-                  </div>
-                </motion.div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Two deployed models side by side */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
                       name: "E2-Small",
-                      model: "DeBERTa-v3-small fine-tuned",
-                      params: "44M params",
-                      speed: "~8ms",
-                      mode: "General",
-                      accuracy: "93.1%",
-                      f1: "93.0%",
-                      baseline: "87.6%",
-                      desc: "Universal verification model. Fine-tuned on 2.39M real claim-evidence pairs. Sub-10ms on CPU.",
-                      color: "emerald",
+                      badge: "General",
+                      accuracy: "93.1",
+                      baseline: "87.6",
+                      speed: "~8ms/claim",
+                      params: "44M",
+                      desc: "Universal verification. 2.39M training pairs.",
+                      routes: "General knowledge, news, science, history",
+                      color: "emerald" as const,
                       icon: Zap,
-                      deployed: true,
-                      routing: "All non-technical queries",
                     },
                     {
                       name: "E2-Dev",
-                      model: "DeBERTa-v3-small domain-tuned",
-                      params: "44M params",
-                      speed: "~8ms",
-                      mode: "Dev Specialist",
-                      accuracy: "99.4%",
-                      f1: "88.7%",
-                      baseline: "93.1%",
-                      desc: "Domain-specialized for developer content. Trained on Stack Overflow, docs, and technical QA. Routed automatically for code queries.",
-                      color: "blue",
+                      badge: "Dev Specialist",
+                      accuracy: "99.4",
+                      baseline: "93.1",
+                      speed: "~8ms/claim",
+                      params: "44M",
+                      desc: "Domain-tuned on Stack Overflow, docs, technical QA.",
+                      routes: "APIs, frameworks, languages, infrastructure",
+                      color: "blue" as const,
                       icon: Code2,
-                      deployed: true,
-                      routing: "APIs, frameworks, infra",
                     },
-                    {
-                      name: "E2-Large",
-                      model: "DeBERTa-v3-large fine-tuned",
-                      params: "304M params",
-                      speed: "~80ms",
-                      mode: "Deep mode",
-                      accuracy: "92.2%",
-                      f1: "",
-                      baseline: "",
-                      desc: "Maximum accuracy for high-stakes verification. Currently training on 770K examples — deploying soon.",
-                      color: "purple",
-                      icon: Brain,
-                      deployed: false,
-                      routing: "Thorough & deep queries",
-                    },
-                  ].map((tier, i) => {
-                    const TierIcon = tier.icon;
+                  ].map((m, i) => {
+                    const Icon = m.icon;
                     return (
                       <motion.div
-                        key={tier.name}
+                        key={m.name}
                         initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.15 + i * 0.08 }}
-                        className="relative p-5 rounded-xl border border-border bg-card hover:border-accent/15 transition-all duration-300"
+                        className="p-5 rounded-xl border border-border bg-card hover:border-accent/15 transition-all duration-300"
                       >
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                            tier.color === "emerald" ? "bg-emerald-400/10" : tier.color === "blue" ? "bg-blue-400/10" : tier.color === "purple" ? "bg-purple-400/10" : "bg-accent/10"
-                          }`}>
-                            <TierIcon className={`w-4 h-4 ${
-                              tier.color === "emerald" ? "text-emerald-400" : tier.color === "blue" ? "text-blue-400" : tier.color === "purple" ? "text-purple-400" : "text-accent"
-                            }`} />
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${m.color === "emerald" ? "bg-emerald-400/10" : "bg-blue-400/10"}`}>
+                              <Icon className={`w-4 h-4 ${m.color === "emerald" ? "text-emerald-400" : "text-blue-400"}`} />
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-bold">{m.name}</h5>
+                              <span className="text-[10px] text-muted-foreground">{m.params} params &middot; {m.speed}</span>
+                            </div>
                           </div>
-                          <div>
-                            <h5 className="text-sm font-bold">{tier.name}</h5>
-                            <span className="text-[10px] text-muted-foreground font-mono">{tier.model}</span>
-                          </div>
+                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${m.color === "emerald" ? "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20" : "bg-blue-400/10 text-blue-400 border border-blue-400/20"}`}>{m.badge}</span>
                         </div>
-                        {tier.deployed && tier.f1 && (
-                          <div className="mb-3 p-2.5 rounded-lg bg-emerald-400/5 border border-emerald-400/10">
-                            <div className="flex items-center justify-between text-[10px] mb-1.5">
-                              <span className="text-muted-foreground">Accuracy</span>
-                              <span className={`font-mono font-bold ${tier.color === "blue" ? "text-blue-400" : "text-emerald-400"}`}>{tier.accuracy}</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-                              <div className={`h-full rounded-full ${tier.color === "blue" ? "bg-blue-400" : "bg-emerald-400"}`} style={{ width: tier.accuracy }} />
-                            </div>
-                            <p className="text-[9px] text-muted-foreground/60 mt-1">vs {tier.baseline} baseline (+{(parseFloat(tier.accuracy) - parseFloat(tier.baseline)).toFixed(1)}%)</p>
-                          </div>
-                        )}
-                        {!tier.deployed && (
-                          <div className="mb-3 p-2.5 rounded-lg bg-secondary/50 border border-border">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                              <span className="text-[10px] text-muted-foreground font-mono">Training — {tier.accuracy} accuracy so far</span>
-                            </div>
-                          </div>
-                        )}
-                        <p className="text-xs text-muted-foreground leading-relaxed mb-3">{tier.desc}</p>
-                        <div className="flex items-center gap-2 text-[10px] flex-wrap">
-                          <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{tier.params}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{tier.speed}/claim</span>
-                          <span className={`px-2 py-0.5 rounded-full font-medium ${
-                            tier.color === "emerald" ? "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20" :
-                            tier.color === "blue" ? "bg-blue-400/10 text-blue-400 border border-blue-400/20" :
-                            tier.color === "purple" ? "bg-purple-400/10 text-purple-400 border border-purple-400/20" :
-                            "bg-accent/10 text-accent border border-accent/20"
-                          }`}>{tier.mode}</span>
+                        <div className="flex items-end gap-3 mb-3">
+                          <span className={`text-3xl font-bold font-mono ${m.color === "emerald" ? "text-emerald-400" : "text-blue-400"}`}>{m.accuracy}%</span>
+                          <span className="text-[10px] text-muted-foreground mb-1">accuracy &middot; +{(parseFloat(m.accuracy) - parseFloat(m.baseline)).toFixed(1)}% vs baseline</span>
                         </div>
-                        {tier.routing && (
-                          <div className="mt-2 text-[9px] text-muted-foreground/60 font-mono">
-                            Routes: {tier.routing}
-                          </div>
-                        )}
+                        <p className="text-xs text-muted-foreground mb-2">{m.desc}</p>
+                        <div className="text-[10px] text-muted-foreground/70 flex items-center gap-1.5">
+                          <ArrowRight className="w-3 h-3" />
+                          <span>{m.routes}</span>
+                        </div>
                       </motion.div>
                     );
                   })}
+                </div>
+
+                {/* Router + E2-Large row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {/* Router */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.25 }}
+                    className="p-4 rounded-xl border border-accent/15 bg-accent/[0.03]"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <GitCompare className="w-3.5 h-3.5 text-accent" />
+                      <h5 className="text-xs font-bold">Smart Router</h5>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      Queries are automatically analyzed and routed to the best specialist. No config needed.
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px]">
+                      <span className="px-2 py-0.5 rounded bg-secondary border border-border font-mono">Query</span>
+                      <ArrowRight className="w-3 h-3 text-muted-foreground/30" />
+                      <span className="px-2 py-0.5 rounded bg-accent/10 text-accent border border-accent/20 font-semibold">Detect</span>
+                      <ArrowRight className="w-3 h-3 text-muted-foreground/30" />
+                      <span className="px-2 py-0.5 rounded bg-emerald-400/10 text-emerald-400 border border-emerald-400/15 font-mono">General</span>
+                      <span className="text-muted-foreground/30">/</span>
+                      <span className="px-2 py-0.5 rounded bg-blue-400/10 text-blue-400 border border-blue-400/15 font-mono">Dev</span>
+                    </div>
+                  </motion.div>
+                  {/* E2-Large */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="p-4 rounded-xl border border-border bg-card"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-purple-400/10 flex items-center justify-center">
+                          <Brain className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-bold">E2-Large</h5>
+                          <span className="text-[10px] text-muted-foreground">304M params &middot; ~80ms/claim</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                        <span className="text-[9px] text-amber-400 font-mono">Training</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Maximum accuracy for deep verification. Training on 770K examples — deploying for thorough &amp; deep modes.</p>
+                  </motion.div>
                 </div>
               </motion.div>
 
