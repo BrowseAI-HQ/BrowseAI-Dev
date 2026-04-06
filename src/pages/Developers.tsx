@@ -114,7 +114,7 @@ const ROADMAP_ITEMS = [
   {
     phase: "Shipped",
     title: "E2 Verification Models",
-    desc: "E2-Small deployed: 93.1% accuracy, 93.0% F1 macro. Fine-tuned on 2.39M examples. ONNX on CPU — zero inference cost.",
+    desc: "E2-Small (general, 93.1% acc) + E2-Dev (dev specialist, 99.4% acc) deployed. Smart routing auto-selects model per query. E2-Large training.",
     done: true,
   },
 ];
