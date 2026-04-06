@@ -643,7 +643,7 @@ const Index = () => {
                           <rect x="35" y={y - 4} width="36" height="8" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.3" strokeWidth="0.8">
                             {!isMobile && <animate attributeName="opacity" values="0.15;0.35;0.15" dur={`${2 + i * 0.15}s`} repeatCount="indefinite" />}
                           </rect>
-                          {/* Connections to encoder */}
+                          {/* Connections to encoder — converge to encoder nodes */}
                           {[45, 65, 85, 105, 125].map((ey, j) => (
                             <line key={`ie-${i}-${j}`} x1="71" y1={y} x2="160" y2={ey} stroke="hsl(var(--accent))" strokeOpacity="0.07" strokeWidth="0.6">
                               {!isMobile && <animate attributeName="stroke-opacity" values="0.04;0.15;0.04" dur={`${2.5 + (i + j) * 0.12}s`} repeatCount="indefinite" />}
@@ -738,10 +738,12 @@ const Index = () => {
                       {/* → ENTAILS (green) — most particles go here */}
                       {(isMobile ? [0] : [0, 1, 2]).map((i) => (
                         <g key={`p-entail-${i}`}>
+                          {/* Accent-colored from input to attention */}
                           <circle r="3" fill="hsl(var(--accent))">
                             <animateMotion dur={`${4 + i * 0.8}s`} repeatCount="indefinite" path={`M55,${65 + i * 20} L175,${65 + i * 20} L300,85`} />
                             <animate attributeName="opacity" values="0;0.9;0.9;0" dur={`${4 + i * 0.8}s`} repeatCount="indefinite" />
                           </circle>
+                          {/* Turns green from attention → ENTAILS */}
                           <circle r="3" fill="#34d399">
                             <animateMotion dur={`${4 + i * 0.8}s`} repeatCount="indefinite" path="M300,85 L420,55 L535,42" />
                             <animate attributeName="opacity" values="0;0;0;0.9;0.9;0" dur={`${4 + i * 0.8}s`} repeatCount="indefinite" />
@@ -749,7 +751,7 @@ const Index = () => {
                         </g>
                       ))}
 
-                      {/* → CONTRADICTS (red) */}
+                      {/* → CONTRADICTS (red) — fewer particles */}
                       <g>
                         <circle r="2.5" fill="hsl(var(--accent))">
                           <animateMotion dur="5.5s" repeatCount="indefinite" path="M55,45 L175,45 L300,85" />
@@ -761,7 +763,7 @@ const Index = () => {
                         </circle>
                       </g>
 
-                      {/* → NEUTRAL (amber) */}
+                      {/* → NEUTRAL (amber) — rare particle */}
                       {!isMobile && (
                         <g>
                           <circle r="2" fill="hsl(var(--accent))">
