@@ -617,154 +617,215 @@ const Index = () => {
 
                   {/* Neural network — bold E2 visualization */}
                   <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8">
-                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
-                      <defs>
-                        <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
-                        </radialGradient>
-                        <radialGradient id="entailGlow" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#34d399" stopOpacity="0.3" />
-                          <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
-                        </radialGradient>
-                      </defs>
-                      <circle cx="300" cy="85" r="60" fill="url(#coreGlow)" />
-
-                      {/* Layer labels */}
-                      <text x="55" y="172" fill="hsl(var(--muted-foreground))" opacity="0.6" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">CLAIMS</text>
-                      <text x="175" y="172" fill="hsl(var(--accent))" opacity="0.8" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">ENCODE</text>
-                      <text x="300" y="172" fill="hsl(var(--accent))" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ATTENTION</text>
-                      <text x="420" y="172" fill="hsl(var(--accent))" opacity="0.8" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">CLASSIFY</text>
-                      <text x="535" y="172" fill="#34d399" opacity="0.9" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">VERDICT</text>
-
-                      {/* Input layer — token blocks */}
-                      {[25, 45, 65, 85, 105, 125, 145].map((y, i) => (
-                        <g key={`in-${i}`}>
-                          <rect x="35" y={y - 4} width="36" height="8" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.3" strokeWidth="0.8">
-                            {!isMobile && <animate attributeName="opacity" values="0.15;0.35;0.15" dur={`${2 + i * 0.15}s`} repeatCount="indefinite" />}
-                          </rect>
-                          {/* Connections to encoder — converge to encoder nodes */}
-                          {[45, 65, 85, 105, 125].map((ey, j) => (
-                            <line key={`ie-${i}-${j}`} x1="71" y1={y} x2="160" y2={ey} stroke="hsl(var(--accent))" strokeOpacity="0.07" strokeWidth="0.6">
-                              {!isMobile && <animate attributeName="stroke-opacity" values="0.04;0.15;0.04" dur={`${2.5 + (i + j) * 0.12}s`} repeatCount="indefinite" />}
-                            </line>
-                          ))}
-                        </g>
-                      ))}
-
-                      {/* Encoder layer nodes */}
-                      {[45, 65, 85, 105, 125].map((y, i) => (
-                        <g key={`enc-${i}`}>
-                          <circle cx="175" cy={y} r="9" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.45" strokeWidth="1.5">
-                            {!isMobile && <animate attributeName="r" values="8;10;8" dur={`${2.5 + i * 0.25}s`} repeatCount="indefinite" />}
-                          </circle>
-                          <circle cx="175" cy={y} r="3.5" fill="hsl(var(--accent))" fillOpacity="0.4">
-                            {!isMobile && <animate attributeName="opacity" values="0.3;0.7;0.3" dur={`${1.8 + i * 0.2}s`} repeatCount="indefinite" />}
-                          </circle>
-                        </g>
-                      ))}
-
-                      {/* Encoder → Attention core — lines converge INTO the circle edge */}
-                      {[45, 65, 85, 105, 125].map((y, i) => {
-                        const angle = Math.atan2(y - 85, 175 - 300);
-                        const edgeX = 300 + Math.cos(angle) * 24;
-                        const edgeY = 85 + Math.sin(angle) * 24;
-                        return (
-                          <line key={`enc-att-${i}`} x1="185" y1={y} x2={edgeX} y2={edgeY}
-                            stroke="hsl(var(--accent))"
-                            strokeOpacity={y === 85 ? 0.35 : 0.12}
-                            strokeWidth={y === 85 ? 2 : 1}
-                          >
-                            {!isMobile && <animate attributeName="stroke-opacity" values={y === 85 ? "0.25;0.5;0.25" : "0.08;0.2;0.08"} dur={`${2.5 + i * 0.3}s`} repeatCount="indefinite" />}
-                          </line>
-                        );
-                      })}
-
-                      {/* Attention core — pulsing hub */}
-                      <circle cx="300" cy="85" r="24" fill="hsl(var(--accent))" fillOpacity="0.06" stroke="hsl(var(--accent))" strokeOpacity="0.3" strokeWidth="2">
-                        <animate attributeName="r" values="22;26;22" dur="4s" repeatCount="indefinite" />
-                        <animate attributeName="stroke-opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite" />
-                      </circle>
-                      <circle cx="300" cy="85" r="13" fill="hsl(var(--accent))" fillOpacity="0.15" stroke="hsl(var(--accent))" strokeOpacity="0.5" strokeWidth="1.5">
-                        <animate attributeName="r" values="11;15;11" dur="3s" repeatCount="indefinite" />
-                      </circle>
-                      <circle cx="300" cy="85" r="5" fill="hsl(var(--accent))" fillOpacity="0.7">
-                        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
-                        <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite" />
-                      </circle>
-
-                      {/* Attention → Classifier — lines from circle edge to classifier nodes */}
-                      {[55, 85, 115].map((y, i) => {
-                        const angle = Math.atan2(y - 85, 420 - 300);
-                        const edgeX = 300 + Math.cos(angle) * 24;
-                        const edgeY = 85 + Math.sin(angle) * 24;
-                        return (
-                          <g key={`cls-${i}`}>
-                            <line x1={edgeX} y1={edgeY} x2="410" y2={y} stroke="hsl(var(--accent))" strokeOpacity="0.2" strokeWidth="1.5">
-                              {!isMobile && <animate attributeName="stroke-opacity" values="0.12;0.35;0.12" dur={`${2.2 + i * 0.3}s`} repeatCount="indefinite" />}
-                            </line>
-                            <circle cx="420" cy={y} r="8" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.4" strokeWidth="1.5" />
-                            <circle cx="420" cy={y} r="3" fill="hsl(var(--accent))" fillOpacity="0.35" />
+                    {isMobile ? (
+                      /* Mobile: fully static SVG — zero animations for smooth scrolling */
+                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
+                        <defs>
+                          <radialGradient id="coreGlowM" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
+                          </radialGradient>
+                          <radialGradient id="entailGlowM" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stopColor="#34d399" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+                          </radialGradient>
+                        </defs>
+                        <circle cx="300" cy="85" r="60" fill="url(#coreGlowM)" />
+                        <text x="55" y="172" fill="hsl(var(--muted-foreground))" opacity="0.6" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">CLAIMS</text>
+                        <text x="175" y="172" fill="hsl(var(--accent))" opacity="0.8" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">ENCODE</text>
+                        <text x="300" y="172" fill="hsl(var(--accent))" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ATTENTION</text>
+                        <text x="420" y="172" fill="hsl(var(--accent))" opacity="0.8" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">CLASSIFY</text>
+                        <text x="535" y="172" fill="#34d399" opacity="0.9" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">VERDICT</text>
+                        {[25, 45, 65, 85, 105, 125, 145].map((y, i) => (
+                          <g key={`in-${i}`}>
+                            <rect x="35" y={y - 4} width="36" height="8" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.3" strokeWidth="0.8" />
+                            {[45, 65, 85, 105, 125].map((ey, j) => (
+                              <line key={`ie-${i}-${j}`} x1="71" y1={y} x2="160" y2={ey} stroke="hsl(var(--accent))" strokeOpacity={i === j ? 0.13 : 0.05} strokeWidth="0.6" />
+                            ))}
                           </g>
-                        );
-                      })}
+                        ))}
+                        {[45, 65, 85, 105, 125].map((y, i) => (
+                          <g key={`enc-${i}`}>
+                            <circle cx="175" cy={y} r="9" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.45" strokeWidth="1.5" />
+                            <circle cx="175" cy={y} r="3.5" fill="hsl(var(--accent))" fillOpacity="0.4" />
+                          </g>
+                        ))}
+                        {[45, 65, 85, 105, 125].map((y, i) => {
+                          const angle = Math.atan2(y - 85, 175 - 300);
+                          const edgeX = 300 + Math.cos(angle) * 24;
+                          const edgeY = 85 + Math.sin(angle) * 24;
+                          return <line key={`enc-att-${i}`} x1="185" y1={y} x2={edgeX} y2={edgeY} stroke="hsl(var(--accent))" strokeOpacity={y === 85 ? 0.35 : 0.12} strokeWidth={y === 85 ? 2 : 1} />;
+                        })}
+                        <circle cx="300" cy="85" r="24" fill="hsl(var(--accent))" fillOpacity="0.06" stroke="hsl(var(--accent))" strokeOpacity="0.35" strokeWidth="2" />
+                        <circle cx="300" cy="85" r="13" fill="hsl(var(--accent))" fillOpacity="0.15" stroke="hsl(var(--accent))" strokeOpacity="0.5" strokeWidth="1.5" />
+                        <circle cx="300" cy="85" r="5" fill="hsl(var(--accent))" fillOpacity="0.7" />
+                        {[55, 85, 115].map((y, i) => {
+                          const angle = Math.atan2(y - 85, 420 - 300);
+                          const edgeX = 300 + Math.cos(angle) * 24;
+                          const edgeY = 85 + Math.sin(angle) * 24;
+                          return (
+                            <g key={`cls-${i}`}>
+                              <line x1={edgeX} y1={edgeY} x2="410" y2={y} stroke="hsl(var(--accent))" strokeOpacity="0.25" strokeWidth="1.5" />
+                              <circle cx="420" cy={y} r="8" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.4" strokeWidth="1.5" />
+                              <circle cx="420" cy={y} r="3" fill="hsl(var(--accent))" fillOpacity="0.35" />
+                            </g>
+                          );
+                        })}
+                        <line x1="428" y1="55" x2="495" y2="42" stroke="#34d399" strokeOpacity="0.5" strokeWidth="2" />
+                        <circle cx="535" cy="42" r="22" fill="url(#entailGlowM)" />
+                        <rect x="495" y="28" width="80" height="28" rx="6" fill="#34d399" fillOpacity="0.2" stroke="#34d399" strokeOpacity="0.6" strokeWidth="1.5" />
+                        <text x="535" y="39" fill="#34d399" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ENTAILS</text>
+                        <text x="535" y="51" fill="#34d399" opacity="0.8" fontSize="8" fontFamily="monospace" textAnchor="middle">0.94</text>
+                        <line x1="428" y1="85" x2="495" y2="88" stroke="#f87171" strokeOpacity="0.25" strokeWidth="1.5" />
+                        <rect x="495" y="75" width="80" height="26" rx="6" fill="#f87171" fillOpacity="0.07" stroke="#f87171" strokeOpacity="0.2" strokeWidth="1" />
+                        <text x="535" y="86" fill="#f87171" opacity="0.55" fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="600">CONTRADICTS</text>
+                        <text x="535" y="96" fill="#f87171" opacity="0.35" fontSize="7" fontFamily="monospace" textAnchor="middle">0.04</text>
+                        <line x1="428" y1="115" x2="495" y2="128" stroke="#fbbf24" strokeOpacity="0.15" strokeWidth="1" />
+                        <rect x="495" y="118" width="80" height="26" rx="6" fill="#fbbf24" fillOpacity="0.05" stroke="#fbbf24" strokeOpacity="0.15" strokeWidth="1" />
+                        <text x="535" y="129" fill="#fbbf24" opacity="0.45" fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="600">NEUTRAL</text>
+                        <text x="535" y="139" fill="#fbbf24" opacity="0.3" fontSize="7" fontFamily="monospace" textAnchor="middle">0.02</text>
+                      </svg>
+                    ) : (
+                      /* Desktop: full animated SVG */
+                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
+                        <defs>
+                          <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
+                          </radialGradient>
+                          <radialGradient id="entailGlow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stopColor="#34d399" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+                          </radialGradient>
+                        </defs>
+                        <circle cx="300" cy="85" r="60" fill="url(#coreGlow)" />
 
-                      {/* Classifier → Verdict outputs */}
-                      {/* ENTAILS */}
-                      <line x1="428" y1="55" x2="495" y2="42" stroke="#34d399" strokeOpacity="0.5" strokeWidth="2">
-                        <animate attributeName="stroke-opacity" values="0.3;0.6;0.3" dur="2.5s" repeatCount="indefinite" />
-                      </line>
-                      <circle cx="535" cy="42" r="22" fill="url(#entailGlow)" />
-                      <rect x="495" y="28" width="80" height="28" rx="6" fill="#34d399" fillOpacity="0.2" stroke="#34d399" strokeOpacity="0.6" strokeWidth="1.5">
-                        <animate attributeName="fill-opacity" values="0.15;0.28;0.15" dur="3s" repeatCount="indefinite" />
-                      </rect>
-                      <text x="535" y="39" fill="#34d399" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ENTAILS</text>
-                      <text x="535" y="51" fill="#34d399" opacity="0.8" fontSize="8" fontFamily="monospace" textAnchor="middle">0.94</text>
+                        {/* Layer labels */}
+                        <text x="55" y="172" fill="hsl(var(--muted-foreground))" opacity="0.6" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">CLAIMS</text>
+                        <text x="175" y="172" fill="hsl(var(--accent))" opacity="0.8" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">ENCODE</text>
+                        <text x="300" y="172" fill="hsl(var(--accent))" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ATTENTION</text>
+                        <text x="420" y="172" fill="hsl(var(--accent))" opacity="0.8" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="600">CLASSIFY</text>
+                        <text x="535" y="172" fill="#34d399" opacity="0.9" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">VERDICT</text>
 
-                      {/* CONTRADICTS */}
-                      <line x1="428" y1="85" x2="495" y2="88" stroke="#f87171" strokeOpacity="0.25" strokeWidth="1.5" />
-                      <rect x="495" y="75" width="80" height="26" rx="6" fill="#f87171" fillOpacity="0.07" stroke="#f87171" strokeOpacity="0.2" strokeWidth="1" />
-                      <text x="535" y="86" fill="#f87171" opacity="0.55" fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="600">CONTRADICTS</text>
-                      <text x="535" y="96" fill="#f87171" opacity="0.35" fontSize="7" fontFamily="monospace" textAnchor="middle">0.04</text>
+                        {/* Input layer — token blocks */}
+                        {[25, 45, 65, 85, 105, 125, 145].map((y, i) => (
+                          <g key={`in-${i}`}>
+                            <rect x="35" y={y - 4} width="36" height="8" rx="2" fill="hsl(var(--muted-foreground))" opacity="0.2" stroke="hsl(var(--muted-foreground))" strokeOpacity="0.3" strokeWidth="0.8">
+                              <animate attributeName="opacity" values="0.15;0.35;0.15" dur={`${2 + i * 0.15}s`} repeatCount="indefinite" />
+                            </rect>
+                            {/* Connections to encoder — converge to encoder nodes */}
+                            {[45, 65, 85, 105, 125].map((ey, j) => (
+                              <line key={`ie-${i}-${j}`} x1="71" y1={y} x2="160" y2={ey} stroke="hsl(var(--accent))" strokeOpacity="0.07" strokeWidth="0.6">
+                                <animate attributeName="stroke-opacity" values="0.04;0.15;0.04" dur={`${2.5 + (i + j) * 0.12}s`} repeatCount="indefinite" />
+                              </line>
+                            ))}
+                          </g>
+                        ))}
 
-                      {/* NEUTRAL */}
-                      <line x1="428" y1="115" x2="495" y2="128" stroke="#fbbf24" strokeOpacity="0.15" strokeWidth="1" />
-                      <rect x="495" y="118" width="80" height="26" rx="6" fill="#fbbf24" fillOpacity="0.05" stroke="#fbbf24" strokeOpacity="0.15" strokeWidth="1" />
-                      <text x="535" y="129" fill="#fbbf24" opacity="0.45" fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="600">NEUTRAL</text>
-                      <text x="535" y="139" fill="#fbbf24" opacity="0.3" fontSize="7" fontFamily="monospace" textAnchor="middle">0.02</text>
+                        {/* Encoder layer nodes */}
+                        {[45, 65, 85, 105, 125].map((y, i) => (
+                          <g key={`enc-${i}`}>
+                            <circle cx="175" cy={y} r="9" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.45" strokeWidth="1.5">
+                              <animate attributeName="r" values="8;10;8" dur={`${2.5 + i * 0.25}s`} repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="175" cy={y} r="3.5" fill="hsl(var(--accent))" fillOpacity="0.4">
+                              <animate attributeName="opacity" values="0.3;0.7;0.3" dur={`${1.8 + i * 0.2}s`} repeatCount="indefinite" />
+                            </circle>
+                          </g>
+                        ))}
 
-                      {/* Particles: enter as accent, pass through attention, then split to verdicts with matching colors */}
+                        {/* Encoder → Attention core — lines converge INTO the circle edge */}
+                        {[45, 65, 85, 105, 125].map((y, i) => {
+                          const angle = Math.atan2(y - 85, 175 - 300);
+                          const edgeX = 300 + Math.cos(angle) * 24;
+                          const edgeY = 85 + Math.sin(angle) * 24;
+                          return (
+                            <line key={`enc-att-${i}`} x1="185" y1={y} x2={edgeX} y2={edgeY}
+                              stroke="hsl(var(--accent))"
+                              strokeOpacity={y === 85 ? 0.35 : 0.12}
+                              strokeWidth={y === 85 ? 2 : 1}
+                            >
+                              <animate attributeName="stroke-opacity" values={y === 85 ? "0.25;0.5;0.25" : "0.08;0.2;0.08"} dur={`${2.5 + i * 0.3}s`} repeatCount="indefinite" />
+                            </line>
+                          );
+                        })}
 
-                      {/* → ENTAILS (green) — most particles go here */}
-                      {(isMobile ? [0] : [0, 1, 2]).map((i) => (
-                        <g key={`p-entail-${i}`}>
-                          {/* Accent-colored from input to attention */}
-                          <circle r="3" fill="hsl(var(--accent))">
-                            <animateMotion dur={`${4 + i * 0.8}s`} repeatCount="indefinite" path={`M55,${65 + i * 20} L175,${65 + i * 20} L300,85`} />
-                            <animate attributeName="opacity" values="0;0.9;0.9;0" dur={`${4 + i * 0.8}s`} repeatCount="indefinite" />
+                        {/* Attention core — pulsing hub */}
+                        <circle cx="300" cy="85" r="24" fill="hsl(var(--accent))" fillOpacity="0.06" stroke="hsl(var(--accent))" strokeOpacity="0.3" strokeWidth="2">
+                          <animate attributeName="r" values="22;26;22" dur="4s" repeatCount="indefinite" />
+                          <animate attributeName="stroke-opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="300" cy="85" r="13" fill="hsl(var(--accent))" fillOpacity="0.15" stroke="hsl(var(--accent))" strokeOpacity="0.5" strokeWidth="1.5">
+                          <animate attributeName="r" values="11;15;11" dur="3s" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="300" cy="85" r="5" fill="hsl(var(--accent))" fillOpacity="0.7">
+                          <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+                          <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite" />
+                        </circle>
+
+                        {/* Attention → Classifier — lines from circle edge to classifier nodes */}
+                        {[55, 85, 115].map((y, i) => {
+                          const angle = Math.atan2(y - 85, 420 - 300);
+                          const edgeX = 300 + Math.cos(angle) * 24;
+                          const edgeY = 85 + Math.sin(angle) * 24;
+                          return (
+                            <g key={`cls-${i}`}>
+                              <line x1={edgeX} y1={edgeY} x2="410" y2={y} stroke="hsl(var(--accent))" strokeOpacity="0.2" strokeWidth="1.5">
+                                <animate attributeName="stroke-opacity" values="0.12;0.35;0.12" dur={`${2.2 + i * 0.3}s`} repeatCount="indefinite" />
+                              </line>
+                              <circle cx="420" cy={y} r="8" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeOpacity="0.4" strokeWidth="1.5" />
+                              <circle cx="420" cy={y} r="3" fill="hsl(var(--accent))" fillOpacity="0.35" />
+                            </g>
+                          );
+                        })}
+
+                        {/* Classifier → Verdict outputs */}
+                        {/* ENTAILS */}
+                        <line x1="428" y1="55" x2="495" y2="42" stroke="#34d399" strokeOpacity="0.5" strokeWidth="2">
+                          <animate attributeName="stroke-opacity" values="0.3;0.6;0.3" dur="2.5s" repeatCount="indefinite" />
+                        </line>
+                        <circle cx="535" cy="42" r="22" fill="url(#entailGlow)" />
+                        <rect x="495" y="28" width="80" height="28" rx="6" fill="#34d399" fillOpacity="0.2" stroke="#34d399" strokeOpacity="0.6" strokeWidth="1.5">
+                          <animate attributeName="fill-opacity" values="0.15;0.28;0.15" dur="3s" repeatCount="indefinite" />
+                        </rect>
+                        <text x="535" y="39" fill="#34d399" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ENTAILS</text>
+                        <text x="535" y="51" fill="#34d399" opacity="0.8" fontSize="8" fontFamily="monospace" textAnchor="middle">0.94</text>
+
+                        {/* CONTRADICTS */}
+                        <line x1="428" y1="85" x2="495" y2="88" stroke="#f87171" strokeOpacity="0.25" strokeWidth="1.5" />
+                        <rect x="495" y="75" width="80" height="26" rx="6" fill="#f87171" fillOpacity="0.07" stroke="#f87171" strokeOpacity="0.2" strokeWidth="1" />
+                        <text x="535" y="86" fill="#f87171" opacity="0.55" fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="600">CONTRADICTS</text>
+                        <text x="535" y="96" fill="#f87171" opacity="0.35" fontSize="7" fontFamily="monospace" textAnchor="middle">0.04</text>
+
+                        {/* NEUTRAL */}
+                        <line x1="428" y1="115" x2="495" y2="128" stroke="#fbbf24" strokeOpacity="0.15" strokeWidth="1" />
+                        <rect x="495" y="118" width="80" height="26" rx="6" fill="#fbbf24" fillOpacity="0.05" stroke="#fbbf24" strokeOpacity="0.15" strokeWidth="1" />
+                        <text x="535" y="129" fill="#fbbf24" opacity="0.45" fontSize="8" fontFamily="monospace" textAnchor="middle" fontWeight="600">NEUTRAL</text>
+                        <text x="535" y="139" fill="#fbbf24" opacity="0.3" fontSize="7" fontFamily="monospace" textAnchor="middle">0.02</text>
+
+                        {/* Particles */}
+                        {[0, 1, 2].map((i) => (
+                          <g key={`p-entail-${i}`}>
+                            <circle r="3" fill="hsl(var(--accent))">
+                              <animateMotion dur={`${4 + i * 0.8}s`} repeatCount="indefinite" path={`M55,${65 + i * 20} L175,${65 + i * 20} L300,85`} />
+                              <animate attributeName="opacity" values="0;0.9;0.9;0" dur={`${4 + i * 0.8}s`} repeatCount="indefinite" />
+                            </circle>
+                            <circle r="3" fill="#34d399">
+                              <animateMotion dur={`${4 + i * 0.8}s`} repeatCount="indefinite" path="M300,85 L420,55 L535,42" />
+                              <animate attributeName="opacity" values="0;0;0;0.9;0.9;0" dur={`${4 + i * 0.8}s`} repeatCount="indefinite" />
+                            </circle>
+                          </g>
+                        ))}
+                        <g>
+                          <circle r="2.5" fill="hsl(var(--accent))">
+                            <animateMotion dur="5.5s" repeatCount="indefinite" path="M55,45 L175,45 L300,85" />
+                            <animate attributeName="opacity" values="0;0.8;0.8;0" dur="5.5s" repeatCount="indefinite" />
                           </circle>
-                          {/* Turns green from attention → ENTAILS */}
-                          <circle r="3" fill="#34d399">
-                            <animateMotion dur={`${4 + i * 0.8}s`} repeatCount="indefinite" path="M300,85 L420,55 L535,42" />
-                            <animate attributeName="opacity" values="0;0;0;0.9;0.9;0" dur={`${4 + i * 0.8}s`} repeatCount="indefinite" />
+                          <circle r="2.5" fill="#f87171">
+                            <animateMotion dur="5.5s" repeatCount="indefinite" path="M300,85 L420,85 L535,88" />
+                            <animate attributeName="opacity" values="0;0;0;0.8;0.7;0" dur="5.5s" repeatCount="indefinite" />
                           </circle>
                         </g>
-                      ))}
-
-                      {/* → CONTRADICTS (red) — fewer particles */}
-                      <g>
-                        <circle r="2.5" fill="hsl(var(--accent))">
-                          <animateMotion dur="5.5s" repeatCount="indefinite" path="M55,45 L175,45 L300,85" />
-                          <animate attributeName="opacity" values="0;0.8;0.8;0" dur="5.5s" repeatCount="indefinite" />
-                        </circle>
-                        <circle r="2.5" fill="#f87171">
-                          <animateMotion dur="5.5s" repeatCount="indefinite" path="M300,85 L420,85 L535,88" />
-                          <animate attributeName="opacity" values="0;0;0;0.8;0.7;0" dur="5.5s" repeatCount="indefinite" />
-                        </circle>
-                      </g>
-
-                      {/* → NEUTRAL (amber) — rare particle */}
-                      {!isMobile && (
                         <g>
                           <circle r="2" fill="hsl(var(--accent))">
                             <animateMotion dur="7s" repeatCount="indefinite" path="M55,125 L175,125 L300,85" />
@@ -775,8 +836,8 @@ const Index = () => {
                             <animate attributeName="opacity" values="0;0;0;0.7;0.6;0" dur="7s" repeatCount="indefinite" />
                           </circle>
                         </g>
-                      )}
-                    </svg>
+                      </svg>
+                    )}
                   </div>
 
                   {/* E2 Title */}
