@@ -113,9 +113,15 @@ const ROADMAP_ITEMS = [
   },
   {
     phase: "Shipped",
-    title: "E2 Verification Models",
-    desc: "E2-Small (general, 93.1% acc) + E2-Dev (dev specialist, 99.4% acc) deployed. Smart routing auto-selects model per query. E2-Large training.",
+    title: "Evidence Engine",
+    desc: "13-step verification pipeline with DeBERTa-v3 NLI (small + base, depth-routed), BM25 + dense retrieval, RRF fusion, cross-source consensus, contradiction detection, and 8-factor calibrated confidence.",
     done: true,
+  },
+  {
+    phase: "Coming based on demand",
+    title: "Domain Specialists & Self-Improving Flywheel",
+    desc: "Fine-tuned NLI for specific domains (dev, finance, medical, legal) and a continuous retraining loop from production query feedback. Building once we have the demand signal.",
+    done: false,
   },
 ];
 
