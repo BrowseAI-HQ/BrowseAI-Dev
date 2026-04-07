@@ -901,28 +901,16 @@ const Index = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
+                      tier: "Fast",
                       name: "DeBERTa-v3 Small",
-                      badge: "Fast tier",
-                      base: "cross-encoder/nli-deberta-v3-small",
-                      benchmark: "MNLI",
-                      accuracy: "91",
                       speed: "~8ms",
-                      params: "142M",
-                      desc: "Local INT8 ONNX. Sub-10ms inference for real-time agent loops.",
-                      routes: "Fast mode queries",
                       color: "emerald" as const,
                       icon: Zap,
                     },
                     {
+                      tier: "Thorough · Deep",
                       name: "DeBERTa-v3 Base",
-                      badge: "Thorough + Deep",
-                      base: "cross-encoder/nli-deberta-v3-base",
-                      benchmark: "MNLI + ANLI",
-                      accuracy: "92",
                       speed: "~25ms",
-                      params: "184M",
-                      desc: "Local quantized ONNX. Higher accuracy for thorough research and deep mode.",
-                      routes: "Thorough & deep mode queries",
                       color: "blue" as const,
                       icon: Brain,
                     },
@@ -937,30 +925,17 @@ const Index = () => {
                         transition={{ delay: 0.15 + i * 0.08 }}
                         className="p-5 rounded-xl border border-border bg-card hover:border-accent/15 transition-all duration-300"
                       >
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2.5">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${m.color === "emerald" ? "bg-emerald-400/10" : "bg-blue-400/10"}`}>
-                              <Icon className={`w-4 h-4 ${m.color === "emerald" ? "text-emerald-400" : "text-blue-400"}`} />
-                            </div>
-                            <div>
-                              <h5 className="text-sm font-bold">{m.name}</h5>
-                              <span className="text-[10px] text-muted-foreground font-mono">{m.base}</span>
-                            </div>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${m.color === "emerald" ? "bg-emerald-400/10" : "bg-blue-400/10"}`}>
+                            <Icon className={`w-5 h-5 ${m.color === "emerald" ? "text-emerald-400" : "text-blue-400"}`} />
                           </div>
-                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${m.color === "emerald" ? "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20" : "bg-blue-400/10 text-blue-400 border border-blue-400/20"}`}>{m.badge}</span>
-                        </div>
-                        <div className="flex items-end gap-3 mb-3">
-                          <span className={`text-3xl font-bold font-mono ${m.color === "emerald" ? "text-emerald-400" : "text-blue-400"}`}>{m.accuracy}%</span>
-                          <span className="text-[10px] text-muted-foreground mb-1">{m.benchmark} accuracy</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-3">{m.desc}</p>
-                        <div className="flex items-center gap-2 text-[10px] flex-wrap">
-                          <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{m.params}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{m.speed}/claim</span>
-                        </div>
-                        <div className="mt-2 text-[10px] text-muted-foreground/70 flex items-center gap-1.5">
-                          <ArrowRight className="w-3 h-3" />
-                          <span>{m.routes}</span>
+                          <div className="flex-1">
+                            <div className={`text-[10px] font-semibold uppercase tracking-wider ${m.color === "emerald" ? "text-emerald-400" : "text-blue-400"}`}>{m.tier}</div>
+                            <div className="text-sm font-bold">{m.name}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs font-mono text-muted-foreground">{m.speed}</div>
+                          </div>
                         </div>
                       </motion.div>
                     );
@@ -975,14 +950,12 @@ const Index = () => {
                   transition={{ delay: 0.3 }}
                   className="mt-4 p-4 rounded-xl border border-accent/15 bg-accent/[0.03]"
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-1">
                     <Layers className="w-3.5 h-3.5 text-accent" />
-                    <h5 className="text-xs font-bold">The Pipeline IS the Engine</h5>
+                    <h5 className="text-xs font-bold">The pipeline is the engine.</h5>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    DeBERTa NLI is one component. The Evidence Engine is everything around it: multi-provider search, atomic claim decomposition,
-                    BM25 + dense embedding retrieval (RRF fusion), NLI reranking, cross-source consensus, contradiction detection,
-                    Bayesian domain authority scoring, and 8-factor confidence calibration.
+                    NLI is one component. The Evidence Engine is everything around it.
                   </p>
                 </motion.div>
               </motion.div>
