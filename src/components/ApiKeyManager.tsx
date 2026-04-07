@@ -172,14 +172,14 @@ export function ApiKeyManager() {
               <h4 className="text-xs font-semibold text-foreground pt-1">Step 2: Paste them here</h4>
               <div className="space-y-2">
                 <Input
-                  placeholder="OpenRouter API key (sk-or-...)"
+                  placeholder="OpenRouter API key (sk-or-...) *"
                   value={openrouterKey}
                   onChange={(e) => setOpenrouterKey(e.target.value)}
                   className="text-xs max-w-md font-mono"
                   type="password"
                 />
                 <Input
-                  placeholder="Tavily API key (tvly-...)"
+                  placeholder="Tavily API key (tvly-...) *"
                   value={tavilyKey}
                   onChange={(e) => setTavilyKey(e.target.value)}
                   className="text-xs max-w-md font-mono"

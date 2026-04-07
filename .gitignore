@@ -27,8 +27,8 @@ bun.lockb
 # TypeScript build info
 *.tsbuildinfo
 
-# Supabase temp files
-supabase/.temp/
+# Supabase — lives in browseaidev-engine private repo
+supabase/
 
 # Claude Code local settings
 .claude/settings.local.json
@@ -75,10 +75,8 @@ apps/mcp/.mcpregistry*
 benchmarks/data/
 benchmarks/results/
 
-# Training data (large — stored on HuggingFace: BrowseAIDev/dev-nli-data)
-training/*/data/
-training/*/logs/
-training/*/__pycache__/
+# Training — lives in browseaidev-engine private repo
+training/
 
 # Internal planning & strategy (not for public repo)
 .planning/

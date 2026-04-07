@@ -1,7 +1,0 @@
-[api]
-enabled = true
-port = 54321
-schemas = ["public", "graphql_public"]
-
-[functions.get-secrets]
-verify_jwt = false
