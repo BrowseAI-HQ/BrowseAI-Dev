@@ -611,7 +611,7 @@ const Index = () => {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
                       </span>
-                      <span className="text-xs font-semibold text-accent tracking-wide">FINE-TUNED ON 2.39M EXAMPLES &amp; GROWING</span>
+                      <span className="text-xs font-semibold text-accent tracking-wide">EVIDENCE ENGINE — RETRIEVAL + REASONING</span>
                     </div>
                   </motion.div>
 
@@ -852,8 +852,7 @@ const Index = () => {
                         E2 Evidence Engine
                       </h3>
                       <p className="text-sm sm:text-base text-muted-foreground mt-2 sm:mt-3 max-w-lg mx-auto">
-                        Purpose-built NLI models fine-tuned on real verification data.
-                        Not prompt engineering. Not chain-of-thought. Real neural inference.
+                        Where retrieval meets reasoning.
                       </p>
                     </motion.div>
 
@@ -866,9 +865,9 @@ const Index = () => {
                       className="grid grid-cols-3 gap-2 sm:gap-4 mt-6 sm:mt-8 max-w-lg mx-auto"
                     >
                       {[
-                        { value: "2.39M", label: "Training Examples", sub: "Real verification pairs" },
-                        { value: "3", label: "Specialist Models", sub: "General · Dev · Large" },
-                        { value: "13", label: "Pipeline Steps", sub: "Search → Route → Verify" },
+                        { value: "13", label: "Pipeline Steps", sub: "Search → Verify → Score" },
+                        { value: "2", label: "DeBERTa Models", sub: "Small · Base (depth-routed)" },
+                        { value: "8", label: "Confidence Factors", sub: "Calibrated with isotonic regression" },
                       ].map((stat, i) => (
                         <motion.div
                           key={stat.label}
@@ -896,34 +895,36 @@ const Index = () => {
                 transition={{ delay: 0.1, duration: 0.4 }}
                 className="mt-10"
               >
-                <h4 className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">Smart routing. Domain specialists. Evidence over guesswork.</h4>
+                <h4 className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">DeBERTa NLI + classical retrieval, composed end-to-end.</h4>
 
                 {/* Two deployed models side by side */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
-                      name: "E2-Small",
-                      badge: "General",
-                      accuracy: "93.1",
-                      baseline: "87.6",
-                      speed: "~8ms/claim",
-                      params: "44M",
-                      desc: "Universal verification. 2.39M training pairs.",
-                      routes: "General knowledge, news, science, history",
+                      name: "DeBERTa-v3 Small",
+                      badge: "Fast tier",
+                      base: "cross-encoder/nli-deberta-v3-small",
+                      benchmark: "MNLI",
+                      accuracy: "91",
+                      speed: "~8ms",
+                      params: "142M",
+                      desc: "Local INT8 ONNX. Sub-10ms inference for real-time agent loops.",
+                      routes: "Fast mode queries",
                       color: "emerald" as const,
                       icon: Zap,
                     },
                     {
-                      name: "E2-Dev",
-                      badge: "Dev Specialist",
-                      accuracy: "99.4",
-                      baseline: "93.1",
-                      speed: "~8ms/claim",
-                      params: "44M",
-                      desc: "Domain-tuned on Stack Overflow, docs, technical QA.",
-                      routes: "APIs, frameworks, languages, infrastructure",
+                      name: "DeBERTa-v3 Base",
+                      badge: "Thorough + Deep",
+                      base: "cross-encoder/nli-deberta-v3-base",
+                      benchmark: "MNLI + ANLI",
+                      accuracy: "92",
+                      speed: "~25ms",
+                      params: "184M",
+                      desc: "Local quantized ONNX. Higher accuracy for thorough research and deep mode.",
+                      routes: "Thorough & deep mode queries",
                       color: "blue" as const,
-                      icon: Code2,
+                      icon: Brain,
                     },
                   ].map((m, i) => {
                     const Icon = m.icon;
@@ -943,17 +944,21 @@ const Index = () => {
                             </div>
                             <div>
                               <h5 className="text-sm font-bold">{m.name}</h5>
-                              <span className="text-[10px] text-muted-foreground">{m.params} params &middot; {m.speed}</span>
+                              <span className="text-[10px] text-muted-foreground font-mono">{m.base}</span>
                             </div>
                           </div>
                           <span className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${m.color === "emerald" ? "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20" : "bg-blue-400/10 text-blue-400 border border-blue-400/20"}`}>{m.badge}</span>
                         </div>
                         <div className="flex items-end gap-3 mb-3">
                           <span className={`text-3xl font-bold font-mono ${m.color === "emerald" ? "text-emerald-400" : "text-blue-400"}`}>{m.accuracy}%</span>
-                          <span className="text-[10px] text-muted-foreground mb-1">accuracy &middot; +{(parseFloat(m.accuracy) - parseFloat(m.baseline)).toFixed(1)}% vs baseline</span>
+                          <span className="text-[10px] text-muted-foreground mb-1">{m.benchmark} accuracy</span>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-2">{m.desc}</p>
-                        <div className="text-[10px] text-muted-foreground/70 flex items-center gap-1.5">
+                        <p className="text-xs text-muted-foreground mb-3">{m.desc}</p>
+                        <div className="flex items-center gap-2 text-[10px] flex-wrap">
+                          <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{m.params}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-secondary border border-border font-mono">{m.speed}/claim</span>
+                        </div>
+                        <div className="mt-2 text-[10px] text-muted-foreground/70 flex items-center gap-1.5">
                           <ArrowRight className="w-3 h-3" />
                           <span>{m.routes}</span>
                         </div>
@@ -962,94 +967,27 @@ const Index = () => {
                   })}
                 </div>
 
-                {/* Router + E2-Large row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {/* Router */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.25 }}
-                    className="p-4 rounded-xl border border-accent/15 bg-accent/[0.03]"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <GitCompare className="w-3.5 h-3.5 text-accent" />
-                      <h5 className="text-xs font-bold">Smart Router</h5>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-                      Queries are automatically analyzed and routed to the best specialist. No config needed.
-                    </p>
-                    <div className="flex items-center gap-2 text-[10px]">
-                      <span className="px-2 py-0.5 rounded bg-secondary border border-border font-mono">Query</span>
-                      <ArrowRight className="w-3 h-3 text-muted-foreground/30" />
-                      <span className="px-2 py-0.5 rounded bg-accent/10 text-accent border border-accent/20 font-semibold">Detect</span>
-                      <ArrowRight className="w-3 h-3 text-muted-foreground/30" />
-                      <span className="px-2 py-0.5 rounded bg-emerald-400/10 text-emerald-400 border border-emerald-400/15 font-mono">General</span>
-                      <span className="text-muted-foreground/30">/</span>
-                      <span className="px-2 py-0.5 rounded bg-blue-400/10 text-blue-400 border border-blue-400/15 font-mono">Dev</span>
-                    </div>
-                  </motion.div>
-                  {/* E2-Large */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                    className="p-4 rounded-xl border border-border bg-card"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-purple-400/10 flex items-center justify-center">
-                          <Brain className="w-4 h-4 text-purple-400" />
-                        </div>
-                        <div>
-                          <h5 className="text-sm font-bold">E2-Large</h5>
-                          <span className="text-[10px] text-muted-foreground">304M params &middot; ~80ms/claim</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        <span className="text-[9px] text-amber-400 font-mono">Training</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Maximum accuracy for deep verification. Training on 770K examples — deploying for thorough &amp; deep modes.</p>
-                  </motion.div>
-                </div>
+                {/* Pipeline note - the real moat */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-4 p-4 rounded-xl border border-accent/15 bg-accent/[0.03]"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Layers className="w-3.5 h-3.5 text-accent" />
+                    <h5 className="text-xs font-bold">The Pipeline IS the Engine</h5>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    DeBERTa NLI is one component. The Evidence Engine is everything around it: multi-provider search, atomic claim decomposition,
+                    BM25 + dense embedding retrieval (RRF fusion), NLI reranking, cross-source consensus, contradiction detection,
+                    Bayesian domain authority scoring, and 8-factor confidence calibration.
+                  </p>
+                </motion.div>
               </motion.div>
 
-              {/* Self-learning flywheel */}
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.15 }}
-                className="mt-10 p-6 rounded-2xl bg-gradient-to-r from-accent/[0.04] via-accent/[0.08] to-accent/[0.04] border border-accent/15"
-              >
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Activity className="w-4 h-4 text-accent" />
-                      <h4 className="text-sm font-bold">Self-Improving Flywheel</h4>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Every query generates NLI training pairs. Every user feedback signal recalibrates confidence via isotonic regression.
-                      The models improve continuously — no manual retraining needed.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {["Query", "Verify", "Learn", "Improve"].map((step, i) => (
-                      <div key={step} className="flex items-center gap-2">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${
-                          i === 3 ? "bg-accent/15 text-accent border border-accent/25" : "bg-secondary border border-border text-muted-foreground"
-                        }`}>{step}</span>
-                        {i < 3 && <ArrowRight className="w-3 h-3 text-muted-foreground/40" />}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Specialist Pipeline */}
+              {/* Coming soon: fine-tuning + flywheel */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -1059,32 +997,47 @@ const Index = () => {
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Layers className="w-4 h-4 text-accent" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider">Specialist Pipeline</h4>
-                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 font-medium ml-auto">Growing</span>
+                  <h4 className="text-xs font-bold uppercase tracking-wider">Roadmap — Domain Specialists & Self-Improving Loop</h4>
+                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20 font-medium ml-auto">Gauging interest</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                  We're building domain-specific NLI models that outperform general-purpose verification on their turf.
-                  Each specialist is trained on domain data and auto-routed — your queries get smarter without you changing anything.
+                  Coming based on demand: domain-specialized NLI models trained on real verification signals from the pipeline,
+                  plus a self-improving flywheel that retrains from query feedback. We're prioritizing based on user demand —
+                  tell us your domain and we'll build it.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {[
-                    { name: "Developer", status: "Live", color: "emerald", desc: "APIs, frameworks, code" },
-                    { name: "Finance", status: "Gauging interest", color: "amber", desc: "Markets, earnings, filings" },
-                    { name: "Medical", status: "Gauging interest", color: "amber", desc: "Clinical, pharma, research" },
-                    { name: "Legal", status: "Gauging interest", color: "amber", desc: "Case law, regulations" },
+                    { name: "Developer", desc: "APIs, frameworks, code" },
+                    { name: "Finance", desc: "Markets, earnings, filings" },
+                    { name: "Medical", desc: "Clinical, pharma, research" },
+                    { name: "Legal", desc: "Case law, regulations" },
                   ].map((spec) => (
                     <div key={spec.name} className="p-2.5 rounded-lg bg-secondary/50 border border-border">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <div className={`w-1.5 h-1.5 rounded-full ${spec.color === "emerald" ? "bg-emerald-400" : "bg-amber-400 animate-pulse"}`} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                         <span className="text-[10px] font-bold">{spec.name}</span>
                       </div>
                       <p className="text-[9px] text-muted-foreground">{spec.desc}</p>
-                      <span className={`text-[8px] font-mono mt-1 inline-block ${spec.color === "emerald" ? "text-emerald-400" : "text-amber-400"}`}>{spec.status}</span>
+                      <span className="text-[8px] font-mono mt-1 inline-block text-amber-400">Coming soon</span>
                     </div>
                   ))}
                 </div>
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Activity className="w-3.5 h-3.5 text-accent" />
+                    <h5 className="text-[11px] font-bold">Self-Improving Flywheel</h5>
+                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20 font-mono ml-auto">Coming soon</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Every query will generate training signal. Confidence scores will be calibrated from real user feedback via isotonic regression.
+                    Models will retrain continuously from production data — built once we have enough pipeline traffic to make it meaningful.
+                  </p>
+                </div>
                 <p className="text-[9px] text-muted-foreground/50 mt-3 text-center">
-                  Want a specialist for your domain? Let us know — we prioritize based on demand.
+                  Want a specialist for your domain or interested in the flywheel?{" "}
+                  <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener" className="text-accent hover:underline">
+                    Let us know on Discord
+                  </a>
                 </p>
               </motion.div>
 
@@ -1552,14 +1505,14 @@ const Index = () => {
               </div>
               <ul className="space-y-3 text-sm">
                 {[
-                  "93% F1 — fine-tuned NLI models (vs 87.6% off-the-shelf)",
-                  "2.39M+ real training examples & growing",
-                  "Smart model routing — dev queries auto-route to specialist NLI",
-                  "Bayesian domain authority scoring",
-                  "8-factor confidence, isotonic calibration",
-                  "BM25 + NLI entailment + RRF fusion",
-                  "3 models — General, Dev Specialist, Large (training)",
-                  "Self-improving with every query",
+                  "DeBERTa-v3 NLI — battle-tested on MNLI/FEVER/ANLI",
+                  "13-step verification pipeline (the real moat)",
+                  "Atomic claim decomposition + per-claim verification",
+                  "BM25 + dense embedding retrieval with RRF fusion",
+                  "Cross-source consensus + contradiction detection",
+                  "Bayesian domain authority scoring (10K+ domains)",
+                  "8-factor confidence with isotonic calibration",
+                  "Depth-routed: small for fast, base for thorough/deep",
                 ].map((item, i) => (
                   <motion.li key={i} initial={{ opacity: 0, x: 10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="flex items-start gap-2.5 py-1">
                     <span className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center shrink-0 mt-0.5"><CheckCircle2 className="w-3 h-3 text-accent" /></span>
