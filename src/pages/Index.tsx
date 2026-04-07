@@ -944,7 +944,7 @@ const Index = () => {
 
               </motion.div>
 
-              {/* Coming soon: fine-tuning + flywheel */}
+              {/* Coming soon: domain specialists */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -954,13 +954,11 @@ const Index = () => {
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Layers className="w-4 h-4 text-accent" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider">Roadmap — Domain Specialists & Self-Improving Loop</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider">Domain Specialists</h4>
                   <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20 font-medium ml-auto">Gauging interest</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                  Coming based on demand: domain-specialized NLI models trained on real verification signals from the pipeline,
-                  plus a self-improving flywheel that retrains from query feedback. We're prioritizing based on user demand —
-                  tell us your domain and we'll build it.
+                  Coming based on demand. Tell us your domain and we'll build it.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {[
@@ -979,19 +977,8 @@ const Index = () => {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 pt-4 border-t border-border/50">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Activity className="w-3.5 h-3.5 text-accent" />
-                    <h5 className="text-[11px] font-bold">Self-Improving Flywheel</h5>
-                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-400 border border-amber-400/20 font-mono ml-auto">Coming soon</span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    Every query will generate training signal. Confidence scores will be calibrated from real user feedback via isotonic regression.
-                    Models will retrain continuously from production data — built once we have enough pipeline traffic to make it meaningful.
-                  </p>
-                </div>
                 <p className="text-[9px] text-muted-foreground/50 mt-3 text-center">
-                  Want a specialist for your domain or interested in the flywheel?{" "}
+                  Want a specialist for your domain?{" "}
                   <a href="https://discord.gg/ubAuT4YQsT" target="_blank" rel="noopener" className="text-accent hover:underline">
                     Let us know on Discord
                   </a>
