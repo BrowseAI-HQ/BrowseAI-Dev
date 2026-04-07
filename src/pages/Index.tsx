@@ -611,7 +611,7 @@ const Index = () => {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
                       </span>
-                      <span className="text-xs font-semibold text-accent tracking-wide">FINE-TUNED ON 2.39M EXAMPLES &amp; GROWING</span>
+                      <span className="text-xs font-semibold text-accent tracking-wide">EVIDENCE ENGINE — RETRIEVAL + REASONING</span>
                     </div>
                   </motion.div>
 
@@ -901,9 +901,9 @@ const Index = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
-                      name: "E2-Small",
+                      name: "DeBERTa-v3 Small",
                       badge: "Fast tier",
-                      base: "DeBERTa-v3-small",
+                      base: "cross-encoder/nli-deberta-v3-small",
                       benchmark: "MNLI",
                       accuracy: "91",
                       speed: "~8ms",
@@ -914,9 +914,9 @@ const Index = () => {
                       icon: Zap,
                     },
                     {
-                      name: "E2-Base",
+                      name: "DeBERTa-v3 Base",
                       badge: "Thorough + Deep",
-                      base: "DeBERTa-v3-base",
+                      base: "cross-encoder/nli-deberta-v3-base",
                       benchmark: "MNLI + ANLI",
                       accuracy: "92",
                       speed: "~25ms",
@@ -1001,8 +1001,8 @@ const Index = () => {
                   <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/20 font-medium ml-auto">Gauging interest</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                  Coming based on demand: domain-specialized NLI models fine-tuned on real verification signals from the pipeline,
-                  plus a self-improving flywheel that retrains models from query feedback. We're prioritizing based on user demand —
+                  Coming based on demand: domain-specialized NLI models trained on real verification signals from the pipeline,
+                  plus a self-improving flywheel that retrains from query feedback. We're prioritizing based on user demand —
                   tell us your domain and we'll build it.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
