@@ -24,10 +24,11 @@ import { SearchInput, saveRecentQuery } from "@/components/SearchInput";
 import { LoginModal } from "@/components/LoginModal";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
+import { VerifyDocumentTab } from "@/components/playground/VerifyDocumentTab";
 
 // ── Example queries per tab ─────────────────────────────────────────
 
-const TABS = ["answer", "search", "open", "extract", "compare"] as const;
+const TABS = ["answer", "search", "open", "extract", "compare", "verify"] as const;
 
 const EXAMPLES: Record<string, string[]> = {
   answer: [
@@ -146,6 +147,7 @@ const PLACEHOLDERS: Record<string, string> = {
   open: "Enter a URL to fetch and parse…",
   extract: "Enter a URL to extract claims from…",
   compare: "Compare raw LLM vs evidence-backed…",
+  verify: "Paste a document to fact-check…",
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -421,6 +423,10 @@ const Playground = () => {
 
           {TABS.map((tab) => (
             <TabsContent key={tab} value={tab}>
+              {tab === "verify" ? (
+                <VerifyDocumentTab />
+              ) : (
+              <>
               <div className="flex gap-2 mt-4">
                 {tab === "answer" && isDepthBlocked(depth, !!user, quota) ? (
                   <>
@@ -499,6 +505,8 @@ const Playground = () => {
                     </button>
                   ))}
                 </div>
+              )}
+              </>
               )}
             </TabsContent>
           ))}

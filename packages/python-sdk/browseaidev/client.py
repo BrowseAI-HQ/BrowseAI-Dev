@@ -203,8 +203,9 @@ class BrowseAIDev:
 
     def verify_document(
         self,
-        text: str,
+        text: str | None = None,
         *,
+        url: str | None = None,
         title: str | None = None,
         depth: str = "fast",
         max_claims: int = 20,
@@ -216,7 +217,9 @@ class BrowseAIDev:
         verification report with sources, NLI scores, and an overall A-F grade.
 
         Args:
-            text: The document text to verify (50-50000 characters).
+            text: The document text to verify (50-50000 characters). Provide
+                either text OR url.
+            url: URL to fetch and verify (alternative to text).
             title: Optional document title for context.
             depth: "fast" for quick triage, "thorough" for high-stakes audits.
             max_claims: Maximum claims to extract and verify (1-50).
@@ -224,7 +227,13 @@ class BrowseAIDev:
         Returns:
             Dict with summary stats and per-claim verification details.
         """
-        body: dict = {"text": text, "depth": depth, "maxClaims": max_claims}
+        if not text and not url:
+            raise ValueError("Either text or url must be provided")
+        body: dict = {"depth": depth, "maxClaims": max_claims}
+        if text:
+            body["text"] = text
+        if url:
+            body["url"] = url
         if title:
             body["title"] = title
         return self._post("/browse/verify-document", body)
@@ -513,14 +522,21 @@ class AsyncBrowseAIDev:
 
     async def verify_document(
         self,
-        text: str,
+        text: str | None = None,
         *,
+        url: str | None = None,
         title: str | None = None,
         depth: str = "fast",
         max_claims: int = 20,
     ) -> dict:
         """Fact-check an entire document. See sync version for details."""
-        body: dict = {"text": text, "depth": depth, "maxClaims": max_claims}
+        if not text and not url:
+            raise ValueError("Either text or url must be provided")
+        body: dict = {"depth": depth, "maxClaims": max_claims}
+        if text:
+            body["text"] = text
+        if url:
+            body["url"] = url
         if title:
             body["title"] = title
         return await self._post("/browse/verify-document", body)

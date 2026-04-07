@@ -177,15 +177,18 @@ function registerTools(server: McpServer) {
   );
   server.tool(
     "browse_verify_document",
-    "Fact-check an entire document (AI-generated report, competitive analysis, market research, news article). Extracts every atomic claim and verifies each against live web sources. Returns a per-claim verification status with sources, NLI scores, and an overall A-F grade. Use for auditing the accuracy of long-form content from other AI agents.",
+    "Fact-check an entire document (AI-generated report, competitive analysis, market research, news article). Pass either raw text OR a URL — we'll extract every atomic claim and verify each against live web sources. Returns per-claim verification status with sources, NLI scores, and an overall A-F grade. Use for auditing the accuracy of long-form content from other AI agents.",
     {
-      text: z.string().describe("The full document text to verify (50-50000 chars)"),
+      text: z.string().optional().describe("The document text to verify (50-50000 chars). Either text OR url required."),
+      url: z.string().optional().describe("URL to fetch and verify (alternative to text). We fetch the page and verify its content."),
       title: z.string().optional().describe("Optional document title for context"),
       depth: z.enum(["fast", "thorough"]).optional().describe("'fast' (default) for quick triage, 'thorough' for high-stakes audits"),
       maxClaims: z.number().int().optional().describe("Maximum claims to extract and verify (default 20, max 50)"),
     },
-    async ({ text, title, depth, maxClaims }) => {
-      const body: Record<string, unknown> = { text };
+    async ({ text, url, title, depth, maxClaims }) => {
+      const body: Record<string, unknown> = {};
+      if (text) body.text = text;
+      if (url) body.url = url;
       if (title) body.title = title;
       if (depth) body.depth = depth;
       if (maxClaims) body.maxClaims = maxClaims;

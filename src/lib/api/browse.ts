@@ -155,6 +155,42 @@ export async function browseExtract(url: string, query?: string) {
   return apiCall<any>("/browse/extract", { url, query });
 }
 
+export type DocumentClaim = {
+  text: string;
+  status: "verified" | "contradicted" | "unverified";
+  confidence: number;
+  topSource?: { url: string; title: string; quote: string; domain: string };
+  sources: BrowseSource[];
+  nli?: NLIScore;
+  reason: string;
+};
+
+export type VerifyDocumentResult = {
+  title?: string;
+  documentLength: number;
+  summary: {
+    totalClaims: number;
+    verified: number;
+    contradicted: number;
+    unverified: number;
+    verificationRate: number;
+    overallConfidence: number;
+    grade: "A" | "B" | "C" | "D" | "F";
+  };
+  claims: DocumentClaim[];
+  durationMs: number;
+};
+
+export async function browseVerifyDocument(opts: {
+  text?: string;
+  url?: string;
+  title?: string;
+  depth?: "fast" | "thorough";
+  maxClaims?: number;
+}): Promise<VerifyDocumentResult> {
+  return apiCall<VerifyDocumentResult>("/browse/verify-document", { ...opts });
+}
+
 export async function browseCompare(query: string, provider: CompareProvider = "raw_llm"): Promise<CompareResult> {
   return apiCall<CompareResult>("/browse/compare", { query, provider });
 }
