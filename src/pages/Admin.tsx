@@ -123,7 +123,7 @@ const Admin = () => {
     }
   };
 
-  if (loading || loadingData) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
@@ -166,6 +166,9 @@ const Admin = () => {
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-accent" />
             <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            {loadingData && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent" />
+            )}
           </div>
 
           {/* Metrics Grid */}

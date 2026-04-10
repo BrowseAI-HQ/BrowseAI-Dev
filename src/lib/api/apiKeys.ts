@@ -1,10 +1,10 @@
-import { supabase } from "@/integrations/supabase/client";
+import { getCachedAccessToken, refreshAndCacheToken } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 async function getAccessToken(): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) return session.access_token;
+  const token = await getCachedAccessToken();
+  if (token) return token;
   throw new Error("Not authenticated");
 }
 
@@ -24,13 +24,14 @@ async function authFetch(path: string, options: RequestInit = {}) {
 
   // On 401, refresh the session once and retry
   if (res.status === 401) {
-    const { data: { session } } = await supabase.auth.refreshSession();
-    if (session?.access_token) {
-      token = session.access_token;
+    try {
+      token = await refreshAndCacheToken();
       res = await fetch(`${API_BASE}${path}`, {
         ...options,
         headers: { ...makeHeaders(token), ...options.headers },
       });
+    } catch {
+      // refresh failed — propagate original 401
     }
   }
 
