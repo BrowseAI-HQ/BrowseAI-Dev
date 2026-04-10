@@ -3,7 +3,7 @@
  * Connects to /browse/answer/stream and yields events as they arrive.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { getCachedAccessToken } from "./auth";
 import type { BrowseResult } from "./browse";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
@@ -44,10 +44,8 @@ export type StreamEvent =
   | { type: "done"; data?: { shareId?: string; effectiveDepth?: string; quota?: PremiumQuota } };
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) {
-    return { Authorization: `Bearer ${session.access_token}` };
-  }
+  const token = await getCachedAccessToken();
+  if (token) return { Authorization: `Bearer ${token}` };
   return {};
 }
 

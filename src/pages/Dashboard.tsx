@@ -47,25 +47,25 @@ const Dashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [joiningWaitlist, setJoiningWaitlist] = useState(false);
 
-  const loadData = useCallback(async () => {
+  const loadAllData = useCallback(async () => {
     try {
-      const [s, h] = await Promise.all([fetchUserStats(), fetchUserHistory()]);
-      setStats(s);
-      setHistory(h);
-    } catch {
-      // Silently fail — stats/history not critical
-    } finally {
-      setLoadingData(false);
-    }
-  }, []);
-
-  const checkWaitlist = useCallback(async () => {
-    try {
-      const data = await checkWaitlistStatus();
-      setOnWaitlist(data.onWaitlist);
-      setIsAdmin(data.isAdmin);
+      // Fire all three API calls in parallel — they share a single cached
+      // getSession() roundtrip via the auth module
+      const [s, h, wl] = await Promise.all([
+        fetchUserStats().catch(() => null),
+        fetchUserHistory().catch(() => []),
+        checkWaitlistStatus().catch(() => null),
+      ]);
+      if (s) setStats(s);
+      setHistory(h as QueryHistoryItem[]);
+      if (wl) {
+        setOnWaitlist(wl.onWaitlist);
+        setIsAdmin(wl.isAdmin);
+      }
     } catch {
       // Silently fail
+    } finally {
+      setLoadingData(false);
     }
   }, []);
 
@@ -90,10 +90,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      loadData();
-      checkWaitlist();
+      loadAllData();
     }
-  }, [user, loadData, checkWaitlist]);
+  }, [user, loadAllData]);
 
   useEffect(() => {
     if (!loading && user && window.location.hash === "#api-keys") {

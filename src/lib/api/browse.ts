@@ -81,15 +81,13 @@ export type CompareResult = {
   };
 };
 
-import { supabase } from "@/integrations/supabase/client";
+import { getCachedAccessToken } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) {
-    return { Authorization: `Bearer ${session.access_token}` };
-  }
+  const token = await getCachedAccessToken();
+  if (token) return { Authorization: `Bearer ${token}` };
   return {};
 }
 
