@@ -9,6 +9,7 @@ import {
   FileText, Share2, GitFork, ThumbsUp, Layers, Zap, Activity, Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EvidenceFlow } from "@/components/EvidenceFlow";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
@@ -193,7 +194,7 @@ const Index = () => {
         "programmingLanguage": ["TypeScript", "Python"],
       }}
     />
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
       {/* Nav */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
@@ -290,7 +291,8 @@ const Index = () => {
 
       {/* ===== HERO SECTION ===== */}
       <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-20 relative">
-        {/* Subtle grid background + radial glow */}
+        {/* Background */}
+        <EvidenceFlow className="absolute inset-0" />
         <div className="absolute inset-0 grid-bg grid-bg-fade pointer-events-none" />
         <div className="hero-glow" />
         <motion.div
@@ -590,11 +592,11 @@ const Index = () => {
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="relative"
               >
-                {/* Outer glow rings */}
-                <div className="absolute inset-0 bg-accent/10 rounded-3xl blur-[80px] -z-10" />
-                <div className="absolute -inset-6 bg-accent/[0.04] rounded-[40px] blur-3xl -z-10" />
+                {/* Outer glow rings — subtle */}
+                <div className="absolute inset-0 bg-accent/5 rounded-2xl blur-[60px] -z-10" />
+                <div className="absolute -inset-4 bg-accent/[0.02] rounded-[30px] blur-2xl -z-10" />
 
-                <div className="relative p-5 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-accent/[0.12] via-accent/[0.05] to-transparent border border-accent/30 overflow-hidden">
+                <div className="relative p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-b from-accent/[0.08] via-accent/[0.03] to-transparent border border-accent/20 overflow-hidden">
                   {/* Background grid pattern */}
                   <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }} />
 
@@ -604,7 +606,7 @@ const Index = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.1 }}
-                    className="flex justify-center mb-8"
+                    className="flex justify-center mb-4"
                   >
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20">
                       <span className="relative flex h-2 w-2">
@@ -615,8 +617,8 @@ const Index = () => {
                     </div>
                   </motion.div>
 
-                  {/* Neural network — bold E2 visualization */}
-                  <div className="relative w-full h-36 sm:h-44 md:h-52 mb-6 md:mb-8">
+                  {/* Neural network visualization */}
+                  <div className="relative w-full h-32 sm:h-40 md:h-48 mb-4">
                     {isMobile ? (
                       /* Mobile: fully static SVG — zero animations for smooth scrolling */
                       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 180" fill="none">
@@ -626,7 +628,7 @@ const Index = () => {
                             <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
                           </radialGradient>
                           <radialGradient id="entailGlowM" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="#34d399" stopOpacity="0.3" />
+                            <stop offset="0%" stopColor="#34d399" stopOpacity="0.15" />
                             <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
                           </radialGradient>
                         </defs>
@@ -673,7 +675,7 @@ const Index = () => {
                         })}
                         <line x1="428" y1="55" x2="495" y2="42" stroke="#34d399" strokeOpacity="0.5" strokeWidth="2" />
                         <circle cx="535" cy="42" r="22" fill="url(#entailGlowM)" />
-                        <rect x="495" y="28" width="80" height="28" rx="6" fill="#34d399" fillOpacity="0.2" stroke="#34d399" strokeOpacity="0.6" strokeWidth="1.5" />
+                        <rect x="495" y="28" width="80" height="28" rx="6" fill="#34d399" fillOpacity="0.1" stroke="#34d399" strokeOpacity="0.3" strokeWidth="1.5" />
                         <text x="535" y="39" fill="#34d399" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ENTAILS</text>
                         <text x="535" y="51" fill="#34d399" opacity="0.8" fontSize="8" fontFamily="monospace" textAnchor="middle">0.94</text>
                         <line x1="428" y1="85" x2="495" y2="88" stroke="#f87171" strokeOpacity="0.25" strokeWidth="1.5" />
@@ -694,7 +696,7 @@ const Index = () => {
                             <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
                           </radialGradient>
                           <radialGradient id="entailGlow" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="#34d399" stopOpacity="0.3" />
+                            <stop offset="0%" stopColor="#34d399" stopOpacity="0.15" />
                             <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
                           </radialGradient>
                         </defs>
@@ -785,7 +787,7 @@ const Index = () => {
                           <animate attributeName="stroke-opacity" values="0.3;0.6;0.3" dur="2.5s" repeatCount="indefinite" />
                         </line>
                         <circle cx="535" cy="42" r="22" fill="url(#entailGlow)" />
-                        <rect x="495" y="28" width="80" height="28" rx="6" fill="#34d399" fillOpacity="0.2" stroke="#34d399" strokeOpacity="0.6" strokeWidth="1.5">
+                        <rect x="495" y="28" width="80" height="28" rx="6" fill="#34d399" fillOpacity="0.1" stroke="#34d399" strokeOpacity="0.3" strokeWidth="1.5">
                           <animate attributeName="fill-opacity" values="0.15;0.28;0.15" dur="3s" repeatCount="indefinite" />
                         </rect>
                         <text x="535" y="39" fill="#34d399" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="700">ENTAILS</text>
