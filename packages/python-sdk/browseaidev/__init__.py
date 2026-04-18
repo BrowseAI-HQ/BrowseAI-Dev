@@ -9,6 +9,7 @@ from .exceptions import (
     ServerError,
     ValidationError,
 )
+from .middleware import AsyncVerifier, Verifier
 from .models import (
     BrowseClaim,
     BrowseResult,
@@ -28,11 +29,15 @@ from .models import (
     Session,
     SessionAskResult,
     TraceStep,
+    VerificationResult,
+    VerifiedClaim,
 )
 
 __all__ = [
     "BrowseAIDev",
     "AsyncBrowseAIDev",
+    "Verifier",
+    "AsyncVerifier",
     "BrowseAIDevError",
     "AuthenticationError",
     "RateLimitError",
@@ -57,6 +62,8 @@ __all__ = [
     "NLIScore",
     "ClarityClaim",
     "ClarityResult",
+    "VerificationResult",
+    "VerifiedClaim",
     "DISCLAIMER",
 ]
 

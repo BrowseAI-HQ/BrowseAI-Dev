@@ -226,3 +226,72 @@ class RecallResult(BaseModel):
     session: dict
     entries: list[KnowledgeEntry]
     count: int
+
+
+# ── Verification Middleware models ──
+
+
+class VerifiedClaim(BaseModel):
+    """A single claim from document verification with its verification status."""
+    claim: str
+    status: Literal["verified", "unverified", "contradicted"]
+    confidence: float = Field(ge=0, le=1)
+    sources: list[str] = []
+
+    model_config = {"populate_by_name": True}
+
+
+class VerificationResult(BaseModel):
+    """Result of verifying text through the BrowseAI Dev verification pipeline."""
+    text: str
+    grade: str = "?"
+    confidence: float = Field(0.0, ge=0, le=1)
+    claims: list[VerifiedClaim] = []
+    verified_count: int = 0
+    unverified_count: int = 0
+    contradicted_count: int = 0
+    total_claims: int = 0
+    raw: dict = Field(default_factory=dict)
+
+    model_config = {"populate_by_name": True}
+
+    @property
+    def passed(self) -> bool:
+        """Whether the verification grade is A, B, or C (passing)."""
+        return self.grade in ("A", "B", "C")
+
+    @classmethod
+    def from_api_response(cls, text: str, raw: dict) -> "VerificationResult":
+        """Parse an API response dict into a structured VerificationResult."""
+        claims: list[VerifiedClaim] = []
+        for c in raw.get("claims", []):
+            score = c.get("verificationScore", c.get("verification_score", 0.0))
+            verified = c.get("verified")
+            if verified is True:
+                status = "verified"
+            elif verified is False and score < 0.3:
+                status = "contradicted"
+            else:
+                status = "unverified"
+            claims.append(VerifiedClaim(
+                claim=c.get("claim", ""),
+                status=status,
+                confidence=score,
+                sources=c.get("sources", []),
+            ))
+
+        verified_count = sum(1 for c in claims if c.status == "verified")
+        contradicted_count = sum(1 for c in claims if c.status == "contradicted")
+        unverified_count = sum(1 for c in claims if c.status == "unverified")
+
+        return cls(
+            text=text,
+            grade=raw.get("grade", raw.get("documentGrade", "?")),
+            confidence=raw.get("overallScore", raw.get("confidence", 0.0)),
+            claims=claims,
+            verified_count=verified_count,
+            unverified_count=unverified_count,
+            contradicted_count=contradicted_count,
+            total_claims=len(claims),
+            raw=raw,
+        )
