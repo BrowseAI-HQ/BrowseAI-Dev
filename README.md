@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/browseai-hq-browseai-dev-badge.png)](https://mseep.ai/app/browseai-hq-browseai-dev)
+
 # BrowseAI Dev
 
 [![npm](https://img.shields.io/npm/v/browseai-dev)](https://www.npmjs.com/package/browseai-dev)
